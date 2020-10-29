@@ -3,10 +3,12 @@ package com.example.gossipwars.logic.entities
 import java.util.*
 
 data class Alliance(val id: UUID) {
+
     var name: String? = null
     var playersInvolved: MutableList<Player> = mutableListOf()
     val messageList: MutableList<Message> = mutableListOf()
     val proposalsList : MutableList<Proposal> = mutableListOf()
+
 
     companion object Factory {
         fun initAlliance(player : Player, name : String) : Alliance {

@@ -1,8 +1,9 @@
 package com.example.gossipwars.logic.entities
 
-data class KickProposal @JvmOverloads constructor(override val alliance: Alliance,
+class KickProposal @JvmOverloads constructor(override val alliance: Alliance,
     override val target: Player, override val initiator : Player,
-    override var votes : MutableMap<Player, Boolean> = mutableMapOf()) : Proposal(alliance, target, initiator, votes) {
+    override var votes : MutableMap<Player, Boolean> = mutableMapOf(),
+    override val proposalEnum: ProposalEnum = ProposalEnum.KICK) : Proposal(alliance, target, initiator, votes, proposalEnum) {
 
     override fun allPlayersVoted(): Boolean = alliance.allianceSize() == votes.size + 1
 
@@ -16,6 +17,11 @@ data class KickProposal @JvmOverloads constructor(override val alliance: Allianc
         }
         return yesVotes > noVotes / 2
     }
+
+    fun createAction() : MembersAction =
+        MembersAction(initiator.id, target.id, alliance.id, ProposalEnum.KICK)
+
+    fun proposalAccepted() : Boolean = allPlayersVoted() && voteResult()
 
     fun actionTaken() {
         alliance.kickPlayer(target)

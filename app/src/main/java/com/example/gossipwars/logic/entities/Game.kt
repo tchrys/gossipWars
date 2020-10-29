@@ -1,12 +1,23 @@
 package com.example.gossipwars.logic.entities
 
+import java.util.*
+
 object Game {
     var players : MutableList<Player> = mutableListOf()
     var regions : MutableList<Region> = mutableListOf()
     var alliances : MutableList<Alliance> = mutableListOf()
+    var regionsPerPlayers : MutableMap<Int, UUID> = mutableMapOf()
+    val noOfRegions : Int = 10;
+    var noOfRounds : Int = 0;
 
     init {
         regions = Region.initAllRegions()
+    }
+
+    fun initRegionForPlayer(playerId : UUID) : Region {
+        var idxInList = players.indexOfFirst { player -> player.id == playerId }
+        regionsPerPlayers[idxInList] = playerId
+        return regions[idxInList]
     }
 
     fun acceptPlayer(player : Player) {
