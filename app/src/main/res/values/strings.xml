@@ -4,5 +4,18 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
-    <string name="button">button_val</string>
+    <string name="username_action">Change username</string>
+    <string name="username">Username</string>
+    <string name="username_message">"Your current username is "</string>
+    <string name="textview">username_info</string>
+    <string name="create_game">Create lobby</string>
+    <string name="lobby_hint">Lobby name</string>
+    <string name="round_length">Round length</string>
+    <string-array name="game_length_array">
+        <item>45s</item>
+        <item>60s</item>
+        <item>90s</item>
+        <item>120s</item>
+    </string-array>
+
 </resources>
