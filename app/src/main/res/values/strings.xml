@@ -11,11 +11,25 @@
     <string name="create_game">Create lobby</string>
     <string name="lobby_hint">Lobby name</string>
     <string name="round_length">Round length</string>
+    <string name="players">players</string>
+    <string name="create_room">Create room</string>
+    <string name="rooms_available">Rooms</string>
+    <string name="join">Join</string>
+
     <string-array name="game_length_array">
         <item>45s</item>
         <item>60s</item>
         <item>90s</item>
         <item>120s</item>
+    </string-array>
+
+    <string-array name="nr_players_array">
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
     </string-array>
 
 </resources>
