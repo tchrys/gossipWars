@@ -3,7 +3,7 @@ package com.example.gossipwars.logic.entities
 class StrategyProposal(override val alliance: Alliance, override val target: Player,
                        override val initiator : Player,
                        override var votes : MutableMap<Player, Boolean> = mutableMapOf(),
-                       val targetRegion : Int,
+                       var targetRegion : Int,
                        override val proposalEnum: ProposalEnum) :
             Proposal(alliance, target, initiator, votes, proposalEnum) {
     init {

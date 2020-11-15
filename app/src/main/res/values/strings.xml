@@ -15,6 +15,12 @@
     <string name="create_room">Create room</string>
     <string name="rooms_available">Rooms</string>
     <string name="join">Join</string>
+    <string name="title_actions">Actions</string>
+    <string name="title_overview">Overview</string>
+    <string name="title_chat">Chat</string>
+    <string name="title_map">Map</string>
+    <string name="vote_yes">Yes</string>
+    <string name="vote_no">No</string>
 
     <string-array name="game_length_array">
         <item>45s</item>

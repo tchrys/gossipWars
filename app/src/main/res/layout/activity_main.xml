@@ -169,8 +169,5 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/roomsAvailable" />
 
-    <!--    <include layout="@layout/rooms_content" />-->
-
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

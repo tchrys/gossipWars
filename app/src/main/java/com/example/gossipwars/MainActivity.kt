@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity() {
         lengthSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
                 myRoomLength = parent.getItemAtPosition(position).toString().dropLast(1).toInt();
-                Log.d("DBG", parent.getItemAtPosition(position).toString().dropLast(1))
+//                Log.d("DBG", parent.getItemAtPosition(position).toString().dropLast(1))
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {
             }
@@ -91,7 +91,7 @@ class MainActivity : AppCompatActivity() {
         playersSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
                 myRoomMaxPlayers = parent.getItemAtPosition(position).toString().toInt();
-                Log.d("DBG", parent.getItemAtPosition(position).toString())
+//                Log.d("DBG", parent.getItemAtPosition(position).toString())
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {
             }

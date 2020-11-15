@@ -16,6 +16,8 @@ object Game {
 
     fun initRegionForPlayer(playerId : UUID) : Region {
         var idxInList = players.indexOfFirst { player -> player.id == playerId }
+        if (idxInList == -1)
+            idxInList = 0
         regionsPerPlayers[idxInList] = playerId
         return regions[idxInList]
     }
