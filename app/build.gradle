@@ -51,4 +51,7 @@ dependencies {
     // For control over item selection of both touch and mouse driven selection
     implementation "androidx.recyclerview:recyclerview-selection:1.1.0-rc03"
     implementation 'com.google.android:flexbox:2.0.1'
+    implementation 'com.google.android.gms:play-services-nearby:17.0.0'
+    implementation 'org.apache.commons:commons-lang3:3.6'
+
 }
