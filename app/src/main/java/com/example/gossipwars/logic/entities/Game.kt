@@ -9,6 +9,7 @@ object Game {
     var regionsPerPlayers : MutableMap<Int, UUID> = mutableMapOf()
     val noOfRegions : Int = 10;
     var noOfRounds : Int = 0;
+    var roomInfo : RoomInfo? = null
 
     init {
         regions = Region.initAllRegions()

@@ -1,15 +1,20 @@
 package com.example.gossipwars
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.entities.RoomInfo
 import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.connection.*
@@ -30,6 +35,27 @@ class MainActivity : AppCompatActivity() {
     private var username : String? = null;
     private var acceptedUsers = mutableSetOf<String>()
     private var peers = mutableSetOf<String>()
+    private val FINE_LOCATION_PERMISSION = 101
+
+    fun joinGame(roomInfo: RoomInfo) {
+        Log.d("DBG", roomInfo.username)
+        gameJoined = roomInfo
+        if (!username.equals(roomInfo.username)) {
+            sendRoomPayload(roomInfo)
+            Snackbar.make(findViewById(R.id.main_layout), "Wait for admin to set start",
+                Snackbar.LENGTH_SHORT).show()
+        } else {
+            // TODO a lot
+            gameJoined?.started = true
+            sendRoomPayload(gameJoined!!)
+            Game.roomInfo = gameJoined
+            val intent = Intent(this, InGameActivity::class.java).apply {}
+            startActivity(intent)
+        }
+    }
+
+    fun roomEquals(myRoomInfo: RoomInfo, roomToCompare : RoomInfo): Boolean =
+        myRoomInfo.username == roomToCompare.username && myRoomInfo.roomName == roomToCompare.roomName
 
     private val payloadCallback: PayloadCallback =
         object : PayloadCallback() {
@@ -40,15 +66,31 @@ class MainActivity : AppCompatActivity() {
                 var roomReceived : RoomInfo = SerializationUtils.deserialize(receivedBytes)
                 if (roomReceived.username.equals(username)) {
                     var joinedRoomInfo : RoomInfo = roomsList.find { roomInfo ->
-                        roomInfo.username.equals(username) }!!
+                        roomEquals(roomInfo, roomReceived) }!!
                     if (!joinedRoomInfo.playersList.contains(endpointId)
                         && joinedRoomInfo.crtPlayersNr < joinedRoomInfo.maxPlayers) {
                         joinedRoomInfo.crtPlayersNr += 1
                         joinedRoomInfo.playersList.add(endpointId)
-                        Toast.makeText(applicationContext, endpointId + " wants to join " + joinedRoomInfo.roomName, Toast.LENGTH_LONG).show()
+                        sendRoomPayload(joinedRoomInfo)
+                        Toast.makeText(this@MainActivity, endpointId + " wants to join " + joinedRoomInfo.roomName, Toast.LENGTH_LONG).show()
                     }
                 } else {
-                    Toast.makeText(applicationContext, endpointId + "updated / created " + roomReceived.roomName, Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@MainActivity, endpointId + "updated / created " + roomReceived.roomName, Toast.LENGTH_LONG).show()
+                    var roomInList : RoomInfo? = roomsList
+                        .find { roomInfo -> roomEquals(roomInfo, roomReceived) }
+                    if (roomInList != null) {
+                        roomInList.crtPlayersNr = roomReceived.crtPlayersNr
+                        roomInList.playersList = roomReceived.playersList
+                        roomInList.started = roomReceived.started
+                        if (roomInList.started) {
+                            Game.roomInfo = roomInList
+                            val intent = Intent(this@MainActivity, InGameActivity::class.java).apply {}
+                            startActivity(intent)
+                        }
+                    } else {
+                        roomsList.add(roomReceived)
+                        mRecyclerView?.adapter?.notifyDataSetChanged()
+                    }
                 }
             }
 
@@ -62,16 +104,16 @@ class MainActivity : AppCompatActivity() {
         object : EndpointDiscoveryCallback() {
             override fun onEndpointFound(endpointId: String, info: DiscoveredEndpointInfo) {
                 // an endpoint was found. we request a connection to it
-                Nearby.getConnectionsClient(applicationContext)
+                Nearby.getConnectionsClient(this@MainActivity)
                     .requestConnection(username.orEmpty(), endpointId, connectionLifecycleCallback)
                     .addOnSuccessListener { void ->
                         // we successfully requested a connection. now both sides
                         // must accept before the connection is established
-                        Toast.makeText(applicationContext, "Request connection", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@MainActivity, "Request connection", Toast.LENGTH_LONG).show()
                     }
                     .addOnFailureListener { exception ->
                         // nearby connections failed to request the connection
-                        Toast.makeText(applicationContext, "Request failed", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@MainActivity, "Request failed", Toast.LENGTH_LONG).show()
                     }
             }
 
@@ -88,7 +130,7 @@ class MainActivity : AppCompatActivity() {
                         if (acceptedUsers.contains(endpointId)) {
                             peers.add(endpointId)
                         }
-                        Toast.makeText(applicationContext, "Status ok", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@MainActivity, "Status ok", Toast.LENGTH_LONG).show()
                     }
                     ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED -> {
                     }
@@ -106,21 +148,21 @@ class MainActivity : AppCompatActivity() {
 
             override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
                 // Automatically accept the connection on both sides.
-               AlertDialog.Builder(applicationContext)
+               AlertDialog.Builder(this@MainActivity)
                    .setTitle("Accept connection to " + connectionInfo.endpointName)
                    .setMessage("Confirm the code matches on both devices " + connectionInfo.authenticationToken)
                    .setPositiveButton("Accept") {
                        dialogInterface, i ->
                        // the user confirmed, so we can accept the connection
-                       Nearby.getConnectionsClient(applicationContext)
+                       Nearby.getConnectionsClient(this@MainActivity)
                            .acceptConnection(endpointId, payloadCallback)
                        acceptedUsers.add(endpointId)
-                       Toast.makeText(applicationContext, endpointId, Toast.LENGTH_LONG).show()
+                       Toast.makeText(this@MainActivity, endpointId, Toast.LENGTH_LONG).show()
                    }
                    .setNegativeButton("Cancel") {
                        dialogInterface, i ->
                        // the user canceled, so we should reject the connection
-                       Nearby.getConnectionsClient(applicationContext).rejectConnection(endpointId)
+                       Nearby.getConnectionsClient(this@MainActivity).rejectConnection(endpointId)
                    }
                    .setIcon(android.R.drawable.ic_dialog_alert)
                    .show()
@@ -129,26 +171,26 @@ class MainActivity : AppCompatActivity() {
 
     fun startAdvertising() {
         val advertisingOptions = AdvertisingOptions.Builder().setStrategy(Strategy.P2P_CLUSTER).build()
-        Nearby.getConnectionsClient(applicationContext)
+        Nearby.getConnectionsClient(this)
             .startAdvertising(username.orEmpty(), "com.example.gossipwars",
                 connectionLifecycleCallback, advertisingOptions)
             .addOnSuccessListener { void ->
-                Toast.makeText(applicationContext, "We are advertising", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "We are advertising", Toast.LENGTH_LONG).show()
             }
             .addOnFailureListener { exception ->
-                Toast.makeText(applicationContext, "Unable to advertise", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Unable to advertise", Toast.LENGTH_LONG).show()
             }
     }
 
     fun startDiscovery() {
         val discoveryOptions = DiscoveryOptions.Builder().setStrategy(Strategy.P2P_CLUSTER).build()
-        Nearby.getConnectionsClient(applicationContext).startDiscovery("com.example.gossipwars",
+        Nearby.getConnectionsClient(this).startDiscovery("com.example.gossipwars",
             endpointDiscoveryCallback, discoveryOptions)
             .addOnSuccessListener { void ->
-                Toast.makeText(applicationContext, "We are discovering", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "We are discovering", Toast.LENGTH_LONG).show()
             }
             .addOnFailureListener { exception ->
-                Toast.makeText(applicationContext, "Unable to discover", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Unable to discover", Toast.LENGTH_LONG).show()
             }
     }
 
@@ -156,29 +198,40 @@ class MainActivity : AppCompatActivity() {
         val data = SerializationUtils.serialize(roomInfo)
         val streamPayload = Payload.fromBytes(data)
         for (peer in peers) {
-            Nearby.getConnectionsClient(applicationContext).sendPayload(peer, streamPayload)
+            Nearby.getConnectionsClient(this).sendPayload(peer, streamPayload)
         }
     }
 
-    fun joinGame(roomInfo: RoomInfo) {
-        Log.d("DBG", roomInfo.username)
-        gameJoined = roomInfo
-        if (!username.equals(roomInfo.username)) {
-            sendRoomPayload(roomInfo)
-
-            Snackbar.make(findViewById(R.id.main_layout), "Wait for admin to set start",
-                Snackbar.LENGTH_SHORT).show()
+    fun checkPermission(permission: String, requestCode: Int) {
+        if (ContextCompat.checkSelfPermission(this@MainActivity, permission)
+            == PackageManager.PERMISSION_DENIED) {
+            // Requesting the permission
+            ActivityCompat.requestPermissions(this@MainActivity, arrayOf(permission), requestCode)
         } else {
-            // TODO a lot
-            val intent = Intent(this, InGameActivity::class.java).apply {
+            Toast.makeText(this@MainActivity, "Permission already granted",
+                Toast.LENGTH_SHORT).show()
+            startAdvertising()
+            startDiscovery()
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>,
+                            grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == FINE_LOCATION_PERMISSION) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Location permission granted", Toast.LENGTH_LONG).show()
+                startAdvertising()
+                startDiscovery()
             }
-            startActivity(intent)
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, FINE_LOCATION_PERMISSION);
 
         // username block
         val sharedPref = getPreferences(Context.MODE_PRIVATE) ?: return
@@ -191,11 +244,6 @@ class MainActivity : AppCompatActivity() {
             usernameText.text = "Please enter your username"
         }
         usernameInput.placeholderText = username;
-
-        Toast.makeText(applicationContext, "Before starting nearby connections", Toast.LENGTH_LONG).show()
-        startAdvertising()
-        startDiscovery()
-
 
         // username button block
         val usernameButton = findViewById<Button>(R.id.username_button)
@@ -259,7 +307,7 @@ class MainActivity : AppCompatActivity() {
                 Snackbar.make(findViewById(R.id.main_layout), "No room name", Snackbar.LENGTH_SHORT).show()
             } else {
                 var myRoom = RoomInfo(username.orEmpty(),
-                    myRoomInput.editText?.text.toString(), myRoomLength, myRoomMaxPlayers)
+                    myRoomInput.editText?.text.toString(), myRoomLength, myRoomMaxPlayers, 1, false)
                 myRoom.playersList.add(username.orEmpty())
                 roomsList.addFirst(myRoom)
                 gameJoined = myRoom;

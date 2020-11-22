@@ -1,12 +1,15 @@
 package com.example.gossipwars
 
 import android.os.Bundle
+import android.widget.Toast
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.example.gossipwars.logic.entities.Game
+import com.example.gossipwars.logic.entities.RoomInfo
 
 class InGameActivity : AppCompatActivity() {
 
@@ -26,5 +29,7 @@ class InGameActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+        Toast.makeText(this, Game.roomInfo?.roomName, Toast.LENGTH_LONG).show()
     }
 }

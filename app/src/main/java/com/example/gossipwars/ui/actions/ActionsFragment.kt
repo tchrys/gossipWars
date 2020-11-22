@@ -11,7 +11,9 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.gossipwars.InGameActivity
 import com.example.gossipwars.R
+import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.entities.Proposal
 
 
@@ -35,6 +37,7 @@ class ActionsFragment : Fragment() {
             props.clear()
             it.forEach { proposal: Proposal -> props.add(proposal) }
         })
+
 
         mRecyclerView = root.findViewById(R.id.actions_recyclerview)
         mAdapter = ProposalListAdapter(this, props, username)
