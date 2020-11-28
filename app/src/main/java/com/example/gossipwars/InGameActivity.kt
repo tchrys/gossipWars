@@ -29,6 +29,8 @@ class InGameActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
+        // parent to get main activity
+
         Toast.makeText(this, Game.roomInfo?.roomName, Toast.LENGTH_LONG).show()
     }
 }

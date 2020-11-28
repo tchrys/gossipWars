@@ -8,17 +8,17 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.*
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.gossipwars.communication.components.NearbyConnectionsLogic
 import com.example.gossipwars.communication.messages.MessageCode
-import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.communication.messages.RoomInfo
+import com.example.gossipwars.logic.entities.Game
 import com.google.android.gms.nearby.Nearby
-import com.google.android.gms.nearby.connection.*
+import com.google.android.gms.nearby.connection.Payload
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputLayout
 import org.apache.commons.lang3.SerializationUtils
@@ -27,16 +27,20 @@ import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
+    var username : String? = null;
+    var acceptedUsers = mutableSetOf<String>()
+    var peers = mutableSetOf<String>()
+
     private val roomsList = LinkedList<RoomInfo>()
     private var mRecyclerView: RecyclerView? = null
     private var mAdapter: RoomListAdapter? = null
     private var myRoomLength: Int = 45
     private var myRoomMaxPlayers : Int = 4
     private var gameJoined : RoomInfo? = null;
-    private var username : String? = null;
-    private var acceptedUsers = mutableSetOf<String>()
-    private var peers = mutableSetOf<String>()
     private val FINE_LOCATION_PERMISSION = 101
+    lateinit var instance: MainActivity
+    private lateinit var nearbyConnectionsLogic: NearbyConnectionsLogic
+
 
     fun joinGame(roomInfo: RoomInfo) {
         Log.d("DBG", roomInfo.username)
@@ -58,144 +62,40 @@ class MainActivity : AppCompatActivity() {
     fun roomEquals(myRoomInfo: RoomInfo, roomToCompare : RoomInfo): Boolean =
         myRoomInfo.username == roomToCompare.username && myRoomInfo.roomName == roomToCompare.roomName
 
-    private val payloadCallback: PayloadCallback =
-        object : PayloadCallback() {
-            override fun onPayloadReceived(endpointId: String, payload: Payload) {
-                // This always gets the full data of the payload. Will be null if it's not a BYTES
-                // payload. You can check the payload type with payload.getType().
-                val receivedBytes = payload.asBytes()
-                if (payload.id == MessageCode.ROOM_INFO.toLong()) {
-                    var roomReceived : RoomInfo = SerializationUtils.deserialize(receivedBytes)
-                    if (roomReceived.username.equals(username)) {
-                        var joinedRoomInfo : RoomInfo = roomsList.find { roomInfo ->
-                            roomEquals(roomInfo, roomReceived) }!!
-                        if (!joinedRoomInfo.playersList.contains(endpointId)
-                            && joinedRoomInfo.crtPlayersNr < joinedRoomInfo.maxPlayers) {
-                            joinedRoomInfo.crtPlayersNr += 1
-                            joinedRoomInfo.playersList.add(endpointId)
-                            sendRoomPayload(joinedRoomInfo)
-                            Toast.makeText(this@MainActivity, endpointId + " wants to join " + joinedRoomInfo.roomName, Toast.LENGTH_LONG).show()
-                        }
-                    } else {
-                        Toast.makeText(this@MainActivity, endpointId + "updated / created " + roomReceived.roomName, Toast.LENGTH_LONG).show()
-                        var roomInList : RoomInfo? = roomsList
-                            .find { roomInfo -> roomEquals(roomInfo, roomReceived) }
-                        if (roomInList != null) {
-                            roomInList.crtPlayersNr = roomReceived.crtPlayersNr
-                            roomInList.playersList = roomReceived.playersList
-                            roomInList.started = roomReceived.started
-                            if (roomInList.started) {
-                                Game.roomInfo = roomInList
-                                val intent = Intent(this@MainActivity, InGameActivity::class.java).apply {}
-                                startActivity(intent)
-                            }
-                        } else {
-                            roomsList.add(roomReceived)
-                            mRecyclerView?.adapter?.notifyDataSetChanged()
-                        }
-                    }
-                }
-            }
 
-            override fun onPayloadTransferUpdate(endpointId: String, update: PayloadTransferUpdate) {
-                // Bytes payloads are sent as a single chunk, so you'll receive a SUCCESS update immediately
-                // after the call to onPayloadReceived().
+    fun manageRoomInfoPayload(roomReceived: RoomInfo, endpointId: String) {
+        if (roomReceived.username.equals(username)) {
+            var joinedRoomInfo : RoomInfo = roomsList.find { roomInfo ->
+                roomEquals(roomInfo, roomReceived) }!!
+            if (!joinedRoomInfo.playersList.contains(endpointId)
+                && joinedRoomInfo.crtPlayersNr < joinedRoomInfo.maxPlayers) {
+                joinedRoomInfo.crtPlayersNr += 1
+                joinedRoomInfo.playersList.add(endpointId)
+                sendRoomPayload(joinedRoomInfo)
+                Toast.makeText(this, endpointId + " wants to join " + joinedRoomInfo.roomName, Toast.LENGTH_LONG).show()
+            }
+        } else {
+            Toast.makeText(this, endpointId + "updated / created " + roomReceived.roomName, Toast.LENGTH_LONG).show()
+            var roomInList : RoomInfo? = roomsList
+                .find { roomInfo -> roomEquals(roomInfo, roomReceived) }
+            if (roomInList != null) {
+                roomInList.crtPlayersNr = roomReceived.crtPlayersNr
+                roomInList.playersList = roomReceived.playersList
+                roomInList.started = roomReceived.started
+                if (roomInList.started) {
+                    Game.roomInfo = roomInList
+                    val intent = Intent(this, InGameActivity::class.java).apply {}
+                    startActivity(intent)
+                }
+            } else {
+                roomsList.add(roomReceived)
+                mRecyclerView?.adapter?.notifyDataSetChanged()
             }
         }
-
-    private val endpointDiscoveryCallback: EndpointDiscoveryCallback =
-        object : EndpointDiscoveryCallback() {
-            override fun onEndpointFound(endpointId: String, info: DiscoveredEndpointInfo) {
-                // an endpoint was found. we request a connection to it
-                Nearby.getConnectionsClient(this@MainActivity)
-                    .requestConnection(username.orEmpty(), endpointId, connectionLifecycleCallback)
-                    .addOnSuccessListener { void ->
-                        // we successfully requested a connection. now both sides
-                        // must accept before the connection is established
-                        Toast.makeText(this@MainActivity, "Request connection", Toast.LENGTH_LONG).show()
-                    }
-                    .addOnFailureListener { exception ->
-                        // nearby connections failed to request the connection
-                        Toast.makeText(this@MainActivity, "Request failed", Toast.LENGTH_LONG).show()
-                    }
-            }
-
-            override fun onEndpointLost(endpointId: String) {
-                // a previously discovered endpoint has gone away
-            }
-        }
-
-    private val connectionLifecycleCallback: ConnectionLifecycleCallback =
-        object : ConnectionLifecycleCallback() {
-            override fun onConnectionResult(endpointId: String, result: ConnectionResolution) {
-                when (result.status.statusCode) {
-                    ConnectionsStatusCodes.STATUS_OK -> {
-                        if (acceptedUsers.contains(endpointId)) {
-                            peers.add(endpointId)
-                        }
-                        Toast.makeText(this@MainActivity, "Status ok", Toast.LENGTH_LONG).show()
-                    }
-                    ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED -> {
-                    }
-                    ConnectionsStatusCodes.STATUS_ERROR -> {
-                    }
-                    else -> {
-                    }
-                }
-            }
-
-            override fun onDisconnected(endpointId: String) {
-                // We've been disconnected from this endpoint. No more data can be
-                // sent or received.
-            }
-
-            override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
-                // Automatically accept the connection on both sides.
-               AlertDialog.Builder(this@MainActivity)
-                   .setTitle("Accept connection to " + connectionInfo.endpointName)
-                   .setMessage("Confirm the code matches on both devices " + connectionInfo.authenticationToken)
-                   .setPositiveButton("Accept") {
-                       dialogInterface, i ->
-                       // the user confirmed, so we can accept the connection
-                       Nearby.getConnectionsClient(this@MainActivity)
-                           .acceptConnection(endpointId, payloadCallback)
-                       acceptedUsers.add(endpointId)
-                       Toast.makeText(this@MainActivity, endpointId, Toast.LENGTH_LONG).show()
-                   }
-                   .setNegativeButton("Cancel") {
-                       dialogInterface, i ->
-                       // the user canceled, so we should reject the connection
-                       Nearby.getConnectionsClient(this@MainActivity).rejectConnection(endpointId)
-                   }
-                   .setIcon(android.R.drawable.ic_dialog_alert)
-                   .show()
-                }
-            }
-
-    fun startAdvertising() {
-        val advertisingOptions = AdvertisingOptions.Builder().setStrategy(Strategy.P2P_CLUSTER).build()
-        Nearby.getConnectionsClient(this)
-            .startAdvertising(username.orEmpty(), "com.example.gossipwars",
-                connectionLifecycleCallback, advertisingOptions)
-            .addOnSuccessListener { void ->
-                Toast.makeText(this, "We are advertising", Toast.LENGTH_LONG).show()
-            }
-            .addOnFailureListener { exception ->
-                Toast.makeText(this, "Unable to advertise", Toast.LENGTH_LONG).show()
-            }
     }
 
-    fun startDiscovery() {
-        val discoveryOptions = DiscoveryOptions.Builder().setStrategy(Strategy.P2P_CLUSTER).build()
-        Nearby.getConnectionsClient(this).startDiscovery("com.example.gossipwars",
-            endpointDiscoveryCallback, discoveryOptions)
-            .addOnSuccessListener { void ->
-                Toast.makeText(this, "We are discovering", Toast.LENGTH_LONG).show()
-            }
-            .addOnFailureListener { exception ->
-                Toast.makeText(this, "Unable to discover", Toast.LENGTH_LONG).show()
-            }
-    }
+
+
 
     private fun sendRoomPayload(roomInfo: RoomInfo) {
         val data = SerializationUtils.serialize(roomInfo)
@@ -213,8 +113,8 @@ class MainActivity : AppCompatActivity() {
         } else {
             Toast.makeText(this@MainActivity, "Permission already granted",
                 Toast.LENGTH_SHORT).show()
-            startAdvertising()
-            startDiscovery()
+            nearbyConnectionsLogic.startAdvertising()
+            nearbyConnectionsLogic.startDiscovery()
         }
     }
 
@@ -224,16 +124,18 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == FINE_LOCATION_PERMISSION) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Location permission granted", Toast.LENGTH_LONG).show()
-                startAdvertising()
-                startDiscovery()
+                nearbyConnectionsLogic.startAdvertising()
+                nearbyConnectionsLogic.startDiscovery()
             }
         }
     }
 
-    @ExperimentalStdlibApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        instance = this
+
+        nearbyConnectionsLogic = NearbyConnectionsLogic(this)
 
         checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, FINE_LOCATION_PERMISSION);
 
