@@ -1,4 +1,4 @@
-package com.example.gossipwars.logic.entities
+package com.example.gossipwars.communication.messages
 
 import java.io.Serializable
 

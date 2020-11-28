@@ -9,7 +9,6 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.gossipwars.logic.entities.Game
-import com.example.gossipwars.logic.entities.RoomInfo
 
 class InGameActivity : AppCompatActivity() {
 

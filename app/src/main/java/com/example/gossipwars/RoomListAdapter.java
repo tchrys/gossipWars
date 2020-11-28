@@ -1,7 +1,5 @@
 package com.example.gossipwars;
 
-import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,7 +7,7 @@ import android.widget.Button;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.gossipwars.logic.entities.RoomInfo;
+import com.example.gossipwars.communication.messages.RoomInfo;
 import com.google.android.material.chip.Chip;
 
 import java.util.LinkedList;

@@ -1,5 +1,6 @@
 package com.example.gossipwars.logic.entities
 
+import com.example.gossipwars.communication.messages.RoomInfo
 import java.util.*
 
 object Game {

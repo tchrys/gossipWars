@@ -14,8 +14,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.gossipwars.communication.messages.MessageCode
 import com.example.gossipwars.logic.entities.Game
-import com.example.gossipwars.logic.entities.RoomInfo
+import com.example.gossipwars.communication.messages.RoomInfo
 import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.connection.*
 import com.google.android.material.snackbar.Snackbar
@@ -63,33 +64,35 @@ class MainActivity : AppCompatActivity() {
                 // This always gets the full data of the payload. Will be null if it's not a BYTES
                 // payload. You can check the payload type with payload.getType().
                 val receivedBytes = payload.asBytes()
-                var roomReceived : RoomInfo = SerializationUtils.deserialize(receivedBytes)
-                if (roomReceived.username.equals(username)) {
-                    var joinedRoomInfo : RoomInfo = roomsList.find { roomInfo ->
-                        roomEquals(roomInfo, roomReceived) }!!
-                    if (!joinedRoomInfo.playersList.contains(endpointId)
-                        && joinedRoomInfo.crtPlayersNr < joinedRoomInfo.maxPlayers) {
-                        joinedRoomInfo.crtPlayersNr += 1
-                        joinedRoomInfo.playersList.add(endpointId)
-                        sendRoomPayload(joinedRoomInfo)
-                        Toast.makeText(this@MainActivity, endpointId + " wants to join " + joinedRoomInfo.roomName, Toast.LENGTH_LONG).show()
-                    }
-                } else {
-                    Toast.makeText(this@MainActivity, endpointId + "updated / created " + roomReceived.roomName, Toast.LENGTH_LONG).show()
-                    var roomInList : RoomInfo? = roomsList
-                        .find { roomInfo -> roomEquals(roomInfo, roomReceived) }
-                    if (roomInList != null) {
-                        roomInList.crtPlayersNr = roomReceived.crtPlayersNr
-                        roomInList.playersList = roomReceived.playersList
-                        roomInList.started = roomReceived.started
-                        if (roomInList.started) {
-                            Game.roomInfo = roomInList
-                            val intent = Intent(this@MainActivity, InGameActivity::class.java).apply {}
-                            startActivity(intent)
+                if (payload.id == MessageCode.ROOM_INFO.toLong()) {
+                    var roomReceived : RoomInfo = SerializationUtils.deserialize(receivedBytes)
+                    if (roomReceived.username.equals(username)) {
+                        var joinedRoomInfo : RoomInfo = roomsList.find { roomInfo ->
+                            roomEquals(roomInfo, roomReceived) }!!
+                        if (!joinedRoomInfo.playersList.contains(endpointId)
+                            && joinedRoomInfo.crtPlayersNr < joinedRoomInfo.maxPlayers) {
+                            joinedRoomInfo.crtPlayersNr += 1
+                            joinedRoomInfo.playersList.add(endpointId)
+                            sendRoomPayload(joinedRoomInfo)
+                            Toast.makeText(this@MainActivity, endpointId + " wants to join " + joinedRoomInfo.roomName, Toast.LENGTH_LONG).show()
                         }
                     } else {
-                        roomsList.add(roomReceived)
-                        mRecyclerView?.adapter?.notifyDataSetChanged()
+                        Toast.makeText(this@MainActivity, endpointId + "updated / created " + roomReceived.roomName, Toast.LENGTH_LONG).show()
+                        var roomInList : RoomInfo? = roomsList
+                            .find { roomInfo -> roomEquals(roomInfo, roomReceived) }
+                        if (roomInList != null) {
+                            roomInList.crtPlayersNr = roomReceived.crtPlayersNr
+                            roomInList.playersList = roomReceived.playersList
+                            roomInList.started = roomReceived.started
+                            if (roomInList.started) {
+                                Game.roomInfo = roomInList
+                                val intent = Intent(this@MainActivity, InGameActivity::class.java).apply {}
+                                startActivity(intent)
+                            }
+                        } else {
+                            roomsList.add(roomReceived)
+                            mRecyclerView?.adapter?.notifyDataSetChanged()
+                        }
                     }
                 }
             }
@@ -196,7 +199,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun sendRoomPayload(roomInfo: RoomInfo) {
         val data = SerializationUtils.serialize(roomInfo)
-        val streamPayload = Payload.fromBytes(data)
+        val streamPayload = Payload.zza(data, MessageCode.ROOM_INFO.toLong())
         for (peer in peers) {
             Nearby.getConnectionsClient(this).sendPayload(peer, streamPayload)
         }
@@ -227,6 +230,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @ExperimentalStdlibApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -306,13 +310,29 @@ class MainActivity : AppCompatActivity() {
             else if (myRoomInput.editText?.text.isNullOrEmpty()) {
                 Snackbar.make(findViewById(R.id.main_layout), "No room name", Snackbar.LENGTH_SHORT).show()
             } else {
-                var myRoom = RoomInfo(username.orEmpty(),
-                    myRoomInput.editText?.text.toString(), myRoomLength, myRoomMaxPlayers, 1, false)
+                var myRoom =
+                    RoomInfo(
+                        username.orEmpty(),
+                        myRoomInput.editText?.text.toString(),
+                        myRoomLength,
+                        myRoomMaxPlayers,
+                        1,
+                        false
+                    )
                 myRoom.playersList.add(username.orEmpty())
                 roomsList.addFirst(myRoom)
                 gameJoined = myRoom;
                 mRecyclerView?.adapter?.notifyDataSetChanged()
                 sendRoomPayload(myRoom)
+
+//                val data = SerializationUtils.serialize(myRoom)
+//                var streamPayload = Payload.zza(data, MessageCode.ROOM_INFO.toLong())
+//
+//                if (streamPayload.id == MessageCode.ROOM_INFO.toLong()) {
+//                    val receivedBytes = streamPayload.asBytes()
+//                    var roomReceived : RoomInfo = SerializationUtils.deserialize(receivedBytes)
+//                    Log.d("DBG", roomReceived.roomName)
+//                }
             }
         }
 
