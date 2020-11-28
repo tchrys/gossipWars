@@ -89,13 +89,13 @@ data class Player(var username : String, val id : UUID) {
         when (proposalType) {
             ProposalEnum.KICK -> {
                 val kickProposal = KickProposal(alliance = alliance,
-                    target = target, initiator = this)
+                    target = target, initiator = this, proposalId = UUID.randomUUID())
                 alliance.proposalsList.add(kickProposal)
             }
 
             ProposalEnum.JOIN -> {
                 val joinProposal = JoinProposal(alliance = alliance,
-                    target = target, initiator = this)
+                    target = target, initiator = this, proposalId = UUID.randomUUID())
                 alliance.proposalsList.add(joinProposal)
             }
         }

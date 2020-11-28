@@ -25,7 +25,7 @@ class ActionsViewModel : ViewModel() {
         var alliance = Alliance(UUID.randomUUID())
         alliance.name = "mockall"
         proposalsList.add(KickProposal(alliance, Player("mirel", UUID.randomUUID()),
-                Player("marcel", UUID.randomUUID())
+                Player("marcel", UUID.randomUUID()), proposalId = UUID.randomUUID()
         ))
         proposals.value = proposalsList
     }

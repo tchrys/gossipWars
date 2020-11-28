@@ -1,5 +1,6 @@
 package com.example.gossipwars.logic.entities
 
+import com.example.gossipwars.communication.messages.Message
 import java.util.*
 
 data class Alliance(val id: UUID) {

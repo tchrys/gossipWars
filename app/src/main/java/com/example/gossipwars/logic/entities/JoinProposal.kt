@@ -1,11 +1,15 @@
 package com.example.gossipwars.logic.entities
 
+import com.example.gossipwars.communication.messages.MembersAction
+import java.util.*
+
 class JoinProposal @JvmOverloads
     constructor(override val alliance: Alliance, override val target: Player,
                 override val initiator : Player,
                 override var votes : MutableMap<Player, Boolean> = mutableMapOf(),
-                override val proposalEnum: ProposalEnum = ProposalEnum.JOIN) :
-        Proposal(alliance, target, initiator, votes, proposalEnum) {
+                override val proposalEnum: ProposalEnum = ProposalEnum.JOIN,
+                override val proposalId: UUID) :
+        Proposal(alliance, target, initiator, votes, proposalEnum, proposalId) {
 
     override fun allPlayersVoted(): Boolean = alliance.allianceSize() == votes.size
 
@@ -21,7 +25,12 @@ class JoinProposal @JvmOverloads
     }
 
     fun createAction() : MembersAction =
-        MembersAction(initiator.id, target.id, alliance.id, ProposalEnum.JOIN)
+        MembersAction(
+            initiator.id,
+            target.id,
+            alliance.id,
+            ProposalEnum.JOIN
+        )
 
     fun proposalAccepted() : Boolean = allPlayersVoted() && voteResult()
 
