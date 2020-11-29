@@ -4,7 +4,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.example.gossipwars.MainActivity
 import com.example.gossipwars.communication.messages.MessageCode
+import com.example.gossipwars.communication.messages.PlayerDTO
+import com.example.gossipwars.communication.messages.PlayersOrderDTO
 import com.example.gossipwars.communication.messages.RoomInfo
+import com.example.gossipwars.logic.entities.Game
 import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.connection.*
 import org.apache.commons.lang3.SerializationUtils
@@ -111,9 +114,46 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
                 // This always gets the full data of the payload. Will be null if it's not a BYTES
                 // payload. You can check the payload type with payload.getType().
                 val receivedBytes = payload.asBytes()
-                if (payload.id == MessageCode.ROOM_INFO.toLong()) {
-                    var roomInfo: RoomInfo = SerializationUtils.deserialize(receivedBytes)
-                    mainActivity.manageRoomInfoPayload(roomInfo, endpointId)
+                when (payload.id) {
+                    MessageCode.ROOM_INFO.toLong() -> {
+                        var roomInfo: RoomInfo = SerializationUtils.deserialize(receivedBytes)
+                        mainActivity.manageRoomInfoPayload(roomInfo, endpointId)
+                    }
+                    MessageCode.ALLIANCE_INFO.toLong() -> {
+
+                    }
+                    MessageCode.JOIN_KICK_PROPOSAL.toLong() -> {
+
+                    }
+                    MessageCode.MEMBERS_ACTION.toLong() -> {
+
+                    }
+                    MessageCode.MESSAGE_DTO.toLong() -> {
+
+                    }
+                    MessageCode.PLAYER_INFO.toLong() -> {
+                        var playerDTO: PlayerDTO = SerializationUtils.deserialize(receivedBytes)
+                        Game.acknowledgePlayer(playerDTO, endpointId)
+                    }
+                    MessageCode.ACTION_END.toLong() -> {
+
+                    }
+                    MessageCode.PROPOSAL_RESPONSE.toLong() -> {
+
+                    }
+                    MessageCode.STRATEGY_ACTION.toLong() -> {
+
+                    }
+                    MessageCode.STRATEGY_PROPOSAL.toLong() -> {
+
+                    }
+                    MessageCode.TROOPS_ACTION.toLong() -> {
+
+                    }
+                    MessageCode.PLAYER_ORDER.toLong() -> {
+                        var playersOrderDTO: PlayersOrderDTO = SerializationUtils.deserialize(receivedBytes)
+                        Game.reorderPlayers(playersOrderDTO)
+                    }
                 }
             }
 

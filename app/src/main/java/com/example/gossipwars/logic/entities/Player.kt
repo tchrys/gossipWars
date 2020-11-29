@@ -3,19 +3,10 @@ package com.example.gossipwars.logic.entities
 import java.util.*
 
 data class Player(var username : String, val id : UUID) {
-    var army : Army = Army.initDefaultArmy(Game.initRegionForPlayer(id))
+    lateinit var army : Army
     var regionsOccupied : MutableSet<Region> = mutableSetOf()
     var trustInOthers : MutableMap<UUID, Int> = mutableMapOf()
     var alliances : MutableSet<Alliance> = mutableSetOf()
-
-    companion object Factory {
-        fun initPlayer(username: String, region: Region) : Player {
-            var player : Player = Player(username, UUID.randomUUID())
-            player.winRegion(region)
-            player.army = Army.initDefaultArmy(region)
-            return player
-        }
-    }
 
     fun quitAlliance(alliance: Alliance) {
         alliances.remove(alliance)

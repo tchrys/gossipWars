@@ -3,4 +3,4 @@ package com.example.gossipwars.communication.messages
 import java.io.Serializable
 import java.util.*
 
-class AllianceDTO(val name: String, val id: UUID) : Serializable
+class PlayerWithOrder(val order: Int, val username: String, val id: UUID) : Serializable

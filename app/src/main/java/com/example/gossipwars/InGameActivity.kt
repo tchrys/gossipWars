@@ -31,6 +31,8 @@ class InGameActivity : AppCompatActivity() {
 
         // parent to get main activity
 
+        Game.sendMyInfo()
+
         Toast.makeText(this, Game.roomInfo?.roomName, Toast.LENGTH_LONG).show()
     }
 }
