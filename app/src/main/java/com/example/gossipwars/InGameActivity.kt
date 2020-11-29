@@ -34,5 +34,13 @@ class InGameActivity : AppCompatActivity() {
         Game.sendMyInfo()
 
         Toast.makeText(this, Game.roomInfo?.roomName, Toast.LENGTH_LONG).show()
+
+//        while (!Game.gameStarted) {
+//
+//        }
+//
+//        Toast.makeText(this, Game.players.map { player -> player.username }
+//            .joinToString(","), Toast.LENGTH_LONG).show()
+
     }
 }

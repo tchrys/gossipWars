@@ -49,6 +49,7 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(findViewById(R.id.main_layout), "Wait for admin to set start",
                 Snackbar.LENGTH_SHORT).show()
         } else {
+            gameJoined = roomInfo
             gameJoined?.started = true
             sendRoomPayload(gameJoined!!)
             Game.roomInfo = gameJoined
@@ -61,7 +62,7 @@ class MainActivity : AppCompatActivity() {
         myRoomInfo.username == roomToCompare.username && myRoomInfo.roomName == roomToCompare.roomName
 
     fun manageRoomInfoPayload(roomReceived: RoomInfo, endpointId: String) {
-        if (roomReceived.username.equals(username)) {
+        if (roomReceived.username == username) {
             var joinedRoomInfo : RoomInfo = roomsList.find { roomInfo ->
                 roomEquals(roomInfo, roomReceived) }!!
             if (!joinedRoomInfo.playersList.contains(endpointId)
@@ -69,6 +70,7 @@ class MainActivity : AppCompatActivity() {
                 joinedRoomInfo.crtPlayersNr += 1
                 joinedRoomInfo.playersList.add(endpointId)
                 sendRoomPayload(joinedRoomInfo)
+                mRecyclerView?.adapter?.notifyDataSetChanged()
                 Toast.makeText(this, endpointId + " wants to join " +
                         joinedRoomInfo.roomName, Toast.LENGTH_LONG).show()
             }
@@ -81,7 +83,7 @@ class MainActivity : AppCompatActivity() {
                 roomInList.playersList = roomReceived.playersList
                 roomInList.started = roomReceived.started
                 mRecyclerView?.adapter?.notifyDataSetChanged()
-                if (roomInList.started) {
+                if (roomInList.started && gameJoined?.roomName == roomInList.roomName) {
                     Game.roomInfo = roomInList
                     val intent = Intent(this, InGameActivity::class.java).apply {}
                     startActivity(intent)
@@ -191,7 +193,7 @@ class MainActivity : AppCompatActivity() {
         if (!username.isNullOrEmpty()) {
             val me = Player(username!!, UUID.randomUUID())
             Game.myId = me.id
-            Game.players.add(me)
+            Game.players.value?.add(me)
             mRecyclerView = findViewById(R.id.recyclerview)
             mAdapter = RoomListAdapter(this, roomsList, username.orEmpty())
             mRecyclerView?.setAdapter(mAdapter)
