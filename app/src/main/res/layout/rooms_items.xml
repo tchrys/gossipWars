@@ -14,25 +14,33 @@
         android:gravity="center"
         android:orientation="horizontal"
         app:flexWrap="wrap"
+        app:alignItems="stretch"
+        app:alignContent="stretch"
         app:justifyContent="space_between">
 
         <com.google.android.material.chip.Chip
             android:id="@+id/nameChip"
             android:layout_width="wrap_content"
+            app:layout_flexShrink="2"
+            app:layout_flexBasisPercent="20%"
             android:layout_height="wrap_content" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/creatorChip"
             android:layout_width="wrap_content"
+            app:layout_flexShrink="2"
+            app:layout_flexBasisPercent="20%"
             android:layout_height="wrap_content" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/lengthChip"
             android:layout_width="wrap_content"
+            app:layout_flexShrink="1"
             android:layout_height="wrap_content" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/playersChip"
+            app:layout_flexShrink="1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
@@ -40,6 +48,7 @@
             android:id="@+id/roomButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            app:layout_flexShrink="1"
             android:text="@string/join"
             app:layout_constraintEnd_toEndOf="parent" />
 

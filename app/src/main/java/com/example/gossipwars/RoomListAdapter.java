@@ -18,6 +18,7 @@ public class RoomListAdapter extends
     private final LinkedList<RoomInfo> roomInfoList;
     private final LayoutInflater mInflater;
     private final String username;
+    private final int MAX_LEN = 12;
 
     class RoomViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public final Chip nameChip;
@@ -72,8 +73,16 @@ public class RoomListAdapter extends
         // Retrieve the data for that position.
         RoomInfo mCurrent = roomInfoList.get(position);
         // Add the data to the view holder.
-        holder.nameChip.setText(mCurrent.getRoomName());
-        holder.creatorChip.setText(mCurrent.getUsername());
+        if (mCurrent.getRoomName().length() <= MAX_LEN) {
+            holder.nameChip.setText(mCurrent.getRoomName());
+        } else {
+            holder.nameChip.setText(mCurrent.getRoomName().subSequence(0, MAX_LEN) + "...");
+        }
+        if (mCurrent.getUsername().length() <= MAX_LEN) {
+            holder.creatorChip.setText(mCurrent.getUsername());
+        } else {
+            holder.creatorChip.setText(mCurrent.getUsername().subSequence(0, MAX_LEN) + "...");
+        }
         holder.lengthChip.setText(mCurrent.getRoundLength() + "s");
         holder.playersChip.setText(mCurrent.getCrtPlayersNr() +
                         " / " + mCurrent.getMaxPlayers());

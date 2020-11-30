@@ -14,7 +14,7 @@
         android:gravity="center"
         android:orientation="horizontal"
         app:flexWrap="wrap"
-        app:justifyContent="space_between">
+        app:justifyContent="flex_start">
 
         <com.google.android.material.chip.Chip
             android:id="@+id/actionChip"
@@ -25,6 +25,18 @@
             android:id="@+id/initiatorChip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
+
+    </com.google.android.flexbox.FlexboxLayout>
+
+    <com.google.android.flexbox.FlexboxLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:flexWrap="wrap"
+        app:alignItems="stretch"
+        app:alignContent="stretch"
+        app:justifyContent="flex_end">
 
         <Button
             android:id="@+id/voteYesButton"

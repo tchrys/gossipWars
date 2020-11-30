@@ -12,7 +12,7 @@
     <string name="lobby_hint">Lobby name</string>
     <string name="round_length">Round length</string>
     <string name="players">players</string>
-    <string name="create_room">Create room</string>
+    <string name="create_room">Create</string>
     <string name="rooms_available">Rooms</string>
     <string name="join">Join</string>
     <string name="title_actions">Actions</string>
