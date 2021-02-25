@@ -38,7 +38,7 @@ class KickProposal @JvmOverloads constructor(override val alliance: Alliance,
         alliance.proposalsList.remove(this)
     }
 
-    override fun convertToJoinKickProposalDTO(): JoinKickProposalDTO {
+    fun convertToJoinKickProposalDTO(): JoinKickProposalDTO {
         return JoinKickProposalDTO(alliance.id, target.id, initiator.id, proposalId, ProposalEnum.KICK)
     }
 

@@ -226,4 +226,36 @@ object Game {
         alliance?.addMessage(message.convertToChatMessage())
     }
 
+    fun acknowledgeActionEnd(actionsEndDTO: ActionEndDTO) {
+        TODO("Not yet implemented")
+    }
+
+    fun sendActionEnd(actionsEndDTO: ActionEndDTO) {
+        TODO("Not yet implemented")
+    }
+
+    fun receiveStrategyAction(strategyActionDTO: StrategyActionDTO) {
+        TODO("Not yet implemented")
+    }
+
+    fun sendStrategyAction(strategyActionDTO: StrategyActionDTO) {
+        TODO("Not yet implemented")
+    }
+
+    fun receiveStrategyProposal(strategyProposalDTO: StrategyProposalDTO) {
+        TODO("Not yet implemented")
+    }
+
+    fun sendStrategyProposal(strategyProposalDTO: StrategyProposalDTO) {
+        TODO("Not yet implemented")
+    }
+
+    fun receiveTroopsAction(troopsActionDTO: TroopsActionDTO) {
+        TODO("Not yet implemented")
+    }
+
+    fun sendTroopsAction(troopsActionDTO: TroopsActionDTO) {
+        TODO("Not yet implemented")
+    }
+
 }

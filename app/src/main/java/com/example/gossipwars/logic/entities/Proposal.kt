@@ -12,9 +12,8 @@ abstract class Proposal(open val alliance: Alliance, open val target : Player,
 
     abstract fun allPlayersVoted() : Boolean
     abstract fun voteResult() : Boolean
-    abstract fun createAction(): MembersAction
+    abstract fun createAction(): Action
     abstract fun proposalAccepted(): Boolean
-    abstract fun convertToJoinKickProposalDTO(): JoinKickProposalDTO
 
     fun sendMyVote(myVote: Boolean): ProposalResponse {
         return ProposalResponse(alliance.id, proposalId, myVote, Game.myId)
@@ -23,7 +22,7 @@ abstract class Proposal(open val alliance: Alliance, open val target : Player,
     fun registerVote(player: Player, playerVote: Boolean) {
         votes[player] = playerVote
         if (proposalAccepted()) {
-            Game.sendMembersAction(createAction())
+            Game.sendMembersAction(createAction() as MembersAction)
         }
     }
 

@@ -41,7 +41,7 @@ class JoinProposal @JvmOverloads
         alliance.proposalsList.remove(this)
     }
 
-    override fun convertToJoinKickProposalDTO(): JoinKickProposalDTO {
+    fun convertToJoinKickProposalDTO(): JoinKickProposalDTO {
         return JoinKickProposalDTO(alliance.id, target.id, initiator.id, proposalId, ProposalEnum.JOIN)
     }
 

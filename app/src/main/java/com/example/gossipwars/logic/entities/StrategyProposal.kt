@@ -1,6 +1,7 @@
 package com.example.gossipwars.logic.entities
 
-import com.example.gossipwars.communication.messages.StrategyAction
+import com.example.gossipwars.communication.messages.StrategyActionDTO
+import com.example.gossipwars.communication.messages.StrategyProposalDTO
 import java.util.*
 
 class StrategyProposal(override val alliance: Alliance, override val target: Player,
@@ -20,15 +21,14 @@ class StrategyProposal(override val alliance: Alliance, override val target: Pla
         votes[player] = vote;
     }
 
-    fun votesToList() =
-        votes.filter { entry -> entry.value  }.toList().map { pair -> pair.first.id }
+    fun votesToList() = votes.filter { entry -> entry.value  }.toList().map { pair -> pair.first.id }
 
-    fun createAction() : StrategyAction =
-        StrategyAction(
-            initiator.id,
-            target.id,
-            targetRegion,
-            votesToList(),
-            proposalEnum
-        )
+    override fun createAction() : Action = StrategyActionDTO(initiator.id, target.id, targetRegion,
+                                                            votesToList(), proposalEnum)
+
+    override fun proposalAccepted(): Boolean = true
+
+    fun convertToDTO(): StrategyProposalDTO = StrategyProposalDTO(alliance.id, target.id, initiator.id,
+                                targetRegion, proposalEnum, proposalId)
+
 }

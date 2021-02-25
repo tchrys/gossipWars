@@ -137,20 +137,24 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
                         Game.acknowledgePlayer(playerDTO, endpointId)
                     }
                     MessageCode.ACTION_END.toLong() -> {
-
+                        var actionsEndDTO: ActionEndDTO = SerializationUtils.deserialize(receivedBytes)
+                        Game.acknowledgeActionEnd(actionsEndDTO)
                     }
                     MessageCode.PROPOSAL_RESPONSE.toLong() -> {
                         var proposalResponse: ProposalResponse = SerializationUtils.deserialize(receivedBytes)
                         Game.receiveProposalResponse(proposalResponse)
                     }
                     MessageCode.STRATEGY_ACTION.toLong() -> {
-
+                        var strategyActionDTO: StrategyActionDTO = SerializationUtils.deserialize(receivedBytes)
+                        Game.receiveStrategyAction(strategyActionDTO)
                     }
                     MessageCode.STRATEGY_PROPOSAL.toLong() -> {
-
+                        var strategyProposalDTO: StrategyProposalDTO = SerializationUtils.deserialize(receivedBytes)
+                        Game.receiveStrategyProposal(strategyProposalDTO)
                     }
                     MessageCode.TROOPS_ACTION.toLong() -> {
-
+                        var troopsActionDTO: TroopsActionDTO = SerializationUtils.deserialize(receivedBytes)
+                        Game.receiveTroopsAction(troopsActionDTO)
                     }
                     MessageCode.PLAYER_ORDER.toLong() -> {
                         var playersOrderDTO: PlayersOrderDTO = SerializationUtils.deserialize(receivedBytes)
