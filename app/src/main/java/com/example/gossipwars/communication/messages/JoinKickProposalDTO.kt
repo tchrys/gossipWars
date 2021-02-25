@@ -6,5 +6,5 @@ import com.example.gossipwars.logic.entities.ProposalEnum
 import java.io.Serializable
 import java.util.*
 
-class JoinKickProposalDTO(allianceId: UUID, target: UUID, initiator: UUID, proposalId: UUID,
-                          proposalEnum: ProposalEnum) : Serializable
+class JoinKickProposalDTO(val allianceId: UUID, val target: UUID, val initiator: UUID,
+                          val proposalId: UUID, val proposalEnum: ProposalEnum) : Serializable

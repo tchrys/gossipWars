@@ -1,7 +1,5 @@
 package com.example.gossipwars.logic.entities
 
-import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.example.gossipwars.MainActivity
 import com.example.gossipwars.communication.messages.*
@@ -14,20 +12,24 @@ object Game {
     var players = MutableLiveData<MutableList<Player>>().apply {
         value = mutableListOf()
     }
-    var regions : MutableList<Region> = mutableListOf()
-    var alliances : MutableList<Alliance> = mutableListOf()
-    var regionsPerPlayers : MutableMap<Int, UUID> = mutableMapOf()
-    val noOfRegions : Int = 10;
-    var noOfRounds : Int = 0;
-    var roomInfo : RoomInfo? = null
+    var regions: MutableList<Region> = mutableListOf()
+    var alliances: MutableList<Alliance> = mutableListOf()
+    var regionsPerPlayers: MutableMap<Int, UUID> = mutableMapOf()
+    val noOfRegions: Int = 10
+    var noOfRounds: Int = 0
+    var roomInfo: RoomInfo? = null
     lateinit var mainActivity: MainActivity
     lateinit var myId: UUID
-    var endpointToId : MutableMap<String, UUID> = mutableMapOf()
+    var endpointToId: MutableMap<String, UUID> = mutableMapOf()
     var idToEndpoint: MutableMap<UUID, String> = mutableMapOf()
     var gameStarted = false
 
     init {
         regions = Region.initAllRegions()
+    }
+
+    fun convertUUIDToPlayer(lookupId: UUID): Player {
+        return players.value?.find { player -> player.id == lookupId }!!
     }
 
     fun sendMyInfo() {
@@ -46,7 +48,8 @@ object Game {
             endpointToId[endpointId] = playerDTO.id
             idToEndpoint[playerDTO.id] = endpointId
             if (roomInfo?.username == players?.value?.get(0)?.username &&
-                roomInfo?.crtPlayersNr == players.value?.size) {
+                roomInfo?.crtPlayersNr == players.value?.size
+            ) {
                 sendOrderPayload()
             }
         }
@@ -95,15 +98,72 @@ object Game {
         gameStarted = true
     }
 
-    fun getKickablePlayers(alliance: Alliance) : List<Player> = alliance.playersInvolved
+    fun getKickablePlayers(alliance: Alliance): List<Player> = alliance.playersInvolved
 
-    fun getJoinablePlayers(alliance: Alliance) : List<Player>? =
-        players.value?.filter{ player -> !alliance.playersInvolved.contains(player) }
+    fun getJoinablePlayers(alliance: Alliance): List<Player>? =
+        players.value?.filter { player -> !alliance.playersInvolved.contains(player) }
 
-    fun addAlliance(player: Player, name : String) {
-        val alliance : Alliance = Alliance.initAlliance(player, name)
+    fun addAlliance(player: Player, name: String) {
+        val alliance: Alliance = Alliance.initAlliance(player, name)
         alliances.add(alliance)
-        player.joinAlliance(alliance)
+    }
+
+    fun sendAllianceDTO(allianceDTO: AllianceDTO, targetId: UUID) {
+        val data = SerializationUtils.serialize(allianceDTO)
+        val streamPayload = Payload.zza(data, MessageCode.ALLIANCE_INFO.toLong())
+        idToEndpoint[targetId]?.let {
+            Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+        }
+    }
+
+    fun receiveNewAllianceInfo(allianceDTO: AllianceDTO) {
+        val alliance: Alliance = allianceDTO.convertToAlliance()
+        alliances.add(alliance)
+        alliance.addPlayer(convertUUIDToPlayer(myId))
+    }
+
+    fun sendJoinKickProposalDTO(joinKickProposalDTO: JoinKickProposalDTO) {
+        val data = SerializationUtils.serialize(joinKickProposalDTO)
+        val streamPayload = Payload.zza(data, MessageCode.JOIN_KICK_PROPOSAL.toLong())
+        var alliance: Alliance? =
+            alliances.find { alliance -> alliance.id == joinKickProposalDTO.allianceId }
+        for (playerInvolved in alliance?.playersInvolved!!) {
+            if (ProposalEnum.KICK == joinKickProposalDTO.proposalEnum && playerInvolved.id == joinKickProposalDTO.target)
+                continue
+            idToEndpoint[playerInvolved.id]?.let {
+                Nearby.getConnectionsClient(mainActivity)
+                    .sendPayload(it, streamPayload)
+            };
+        }
+    }
+
+    fun sendMembersAction(membersAction: MembersAction) {
+        val data = SerializationUtils.serialize(membersAction)
+        val streamPayload = Payload.zza(data, MessageCode.MEMBERS_ACTION.toLong())
+        var alliance: Alliance? =
+            alliances.find { alliance -> alliance.id == membersAction.allianceId }
+        for (playerInvolved in alliance?.playersInvolved!!) {
+            idToEndpoint[playerInvolved.id]?.let {
+                Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+            }
+        }
+        if (ProposalEnum.JOIN == membersAction.proposalEnum) {
+            sendAllianceDTO(alliance.convertToAllianceDTO(), membersAction.targetId)
+        }
+    }
+
+    fun acknowledgeMembersAction(membersAction: MembersAction) {
+        var alliance: Alliance? =
+            alliances.find { alliance -> alliance.id == membersAction.allianceId }
+        var targetPlayer: Player? =
+            players.value?.find { player -> player.id == membersAction.targetId }
+        if (targetPlayer != null) {
+            if (ProposalEnum.JOIN == membersAction.proposalEnum) {
+                alliance?.addPlayer(targetPlayer)
+            } else if (ProposalEnum.KICK == membersAction.proposalEnum) {
+                alliance?.kickPlayer(targetPlayer)
+            }
+        }
     }
 
 }

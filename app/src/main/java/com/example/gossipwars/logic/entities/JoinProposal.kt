@@ -1,5 +1,6 @@
 package com.example.gossipwars.logic.entities
 
+import com.example.gossipwars.communication.messages.JoinKickProposalDTO
 import com.example.gossipwars.communication.messages.MembersAction
 import java.util.*
 
@@ -37,6 +38,10 @@ class JoinProposal @JvmOverloads
     fun actionTaken() {
         alliance.addPlayer(target)
         alliance.proposalsList.remove(this)
+    }
+
+    fun convertToJoinKickProposalDTO(): JoinKickProposalDTO {
+        return JoinKickProposalDTO(alliance.id, target.id, initiator.id, proposalId, ProposalEnum.JOIN)
     }
 
 

@@ -3,10 +3,7 @@ package com.example.gossipwars.communication.components
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.example.gossipwars.MainActivity
-import com.example.gossipwars.communication.messages.MessageCode
-import com.example.gossipwars.communication.messages.PlayerDTO
-import com.example.gossipwars.communication.messages.PlayersOrderDTO
-import com.example.gossipwars.communication.messages.RoomInfo
+import com.example.gossipwars.communication.messages.*
 import com.example.gossipwars.logic.entities.Game
 import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.connection.*
@@ -120,13 +117,15 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
                         mainActivity.manageRoomInfoPayload(roomInfo, endpointId)
                     }
                     MessageCode.ALLIANCE_INFO.toLong() -> {
-
+                        var allianceDTO: AllianceDTO = SerializationUtils.deserialize(receivedBytes)
+                        Game.receiveNewAllianceInfo(allianceDTO)
                     }
                     MessageCode.JOIN_KICK_PROPOSAL.toLong() -> {
 
                     }
                     MessageCode.MEMBERS_ACTION.toLong() -> {
-
+                        var membersAction: MembersAction = SerializationUtils.deserialize(receivedBytes)
+                        Game.acknowledgeMembersAction(membersAction)
                     }
                     MessageCode.MESSAGE_DTO.toLong() -> {
 

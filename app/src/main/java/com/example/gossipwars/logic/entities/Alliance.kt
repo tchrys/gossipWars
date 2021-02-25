@@ -1,12 +1,14 @@
 package com.example.gossipwars.logic.entities
 
+import com.example.gossipwars.communication.messages.AllianceDTO
 import com.example.gossipwars.communication.messages.Message
 import java.util.*
 
 data class Alliance(val id: UUID) {
 
-    var name: String? = null
+    lateinit var name: String
     var playersInvolved: MutableList<Player> = mutableListOf()
+    lateinit var founderId: UUID;
     val messageList: MutableList<Message> = mutableListOf()
     val proposalsList : MutableList<Proposal> = mutableListOf()
 
@@ -16,6 +18,7 @@ data class Alliance(val id: UUID) {
             var alliance = Alliance(UUID.randomUUID())
             alliance.addPlayer(player)
             alliance.name = name
+            var founderId = player.id
             return alliance
         }
     }
@@ -35,5 +38,9 @@ data class Alliance(val id: UUID) {
     }
 
     fun allianceSize() : Int = playersInvolved.size
+
+    fun convertToAllianceDTO() : AllianceDTO {
+        return AllianceDTO(name, id, founderId, playersInvolved.map { player -> player.id }.toMutableList())
+    }
 
 }
