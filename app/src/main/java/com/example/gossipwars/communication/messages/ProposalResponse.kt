@@ -4,5 +4,5 @@ import com.example.gossipwars.logic.entities.ProposalEnum
 import java.io.Serializable
 import java.util.*
 
-class ProposalResponse(allianceId: UUID, proposalId: UUID, response: Boolean,
-                       playerId: UUID) : Serializable
+class ProposalResponse(val allianceId: UUID, val proposalId: UUID, val response: Boolean,
+                       val playerId: UUID) : Serializable

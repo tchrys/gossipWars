@@ -28,8 +28,12 @@ object Game {
         regions = Region.initAllRegions()
     }
 
-    fun convertUUIDToPlayer(lookupId: UUID): Player {
+    fun findPlayerByUUID(lookupId: UUID): Player {
         return players.value?.find { player -> player.id == lookupId }!!
+    }
+
+    fun findAllianceByUUID(lookupId: UUID): Alliance {
+        return alliances.find { alliance -> alliance.id == lookupId }!!
     }
 
     fun sendMyInfo() {
@@ -119,7 +123,7 @@ object Game {
     fun receiveNewAllianceInfo(allianceDTO: AllianceDTO) {
         val alliance: Alliance = allianceDTO.convertToAlliance()
         alliances.add(alliance)
-        alliance.addPlayer(convertUUIDToPlayer(myId))
+        alliance.addPlayer(findPlayerByUUID(myId))
     }
 
     fun sendJoinKickProposalDTO(joinKickProposalDTO: JoinKickProposalDTO) {
@@ -128,12 +132,23 @@ object Game {
         var alliance: Alliance? =
             alliances.find { alliance -> alliance.id == joinKickProposalDTO.allianceId }
         for (playerInvolved in alliance?.playersInvolved!!) {
+            if (playerInvolved.id == myId)
+                continue
             if (ProposalEnum.KICK == joinKickProposalDTO.proposalEnum && playerInvolved.id == joinKickProposalDTO.target)
                 continue
             idToEndpoint[playerInvolved.id]?.let {
                 Nearby.getConnectionsClient(mainActivity)
                     .sendPayload(it, streamPayload)
-            };
+            }
+        }
+    }
+
+    fun receiveJoinKickProposalDTO(joinKickProposalDTO: JoinKickProposalDTO) {
+        var alliance: Alliance? = alliances.find { alliance -> alliance.id == joinKickProposalDTO.allianceId }
+        var targetPlayer: Player? = players.value?.find { player -> player.id == joinKickProposalDTO.target }
+        var initiator: Player? = players.value?.find { player -> player.id == joinKickProposalDTO.initiator }
+        if (targetPlayer != null && initiator != null) {
+            alliance?.addProposal(targetPlayer, initiator, joinKickProposalDTO.proposalId, joinKickProposalDTO.proposalEnum)
         }
     }
 
@@ -143,6 +158,8 @@ object Game {
         var alliance: Alliance? =
             alliances.find { alliance -> alliance.id == membersAction.allianceId }
         for (playerInvolved in alliance?.playersInvolved!!) {
+            if (playerInvolved.id == myId)
+                continue
             idToEndpoint[playerInvolved.id]?.let {
                 Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
             }
@@ -150,6 +167,7 @@ object Game {
         if (ProposalEnum.JOIN == membersAction.proposalEnum) {
             sendAllianceDTO(alliance.convertToAllianceDTO(), membersAction.targetId)
         }
+        acknowledgeMembersAction(membersAction)
     }
 
     fun acknowledgeMembersAction(membersAction: MembersAction) {
@@ -164,6 +182,48 @@ object Game {
                 alliance?.kickPlayer(targetPlayer)
             }
         }
+    }
+
+    fun sendProposalResponse(proposalResponse: ProposalResponse) {
+        val data = SerializationUtils.serialize(proposalResponse)
+        val streamPayload = Payload.zza(data, MessageCode.PROPOSAL_RESPONSE.toLong())
+        var alliance: Alliance? = alliances.find { alliance -> alliance.id == proposalResponse.allianceId }
+        var proposal: Proposal? = alliance?.proposalsList?.find { proposal ->
+                                        proposal.proposalId == proposalResponse.proposalId }
+        idToEndpoint[proposal?.initiator?.id]?.let {
+            Nearby.getConnectionsClient(mainActivity).sendPayload(
+                it, streamPayload)
+        }
+    }
+
+    fun receiveProposalResponse(proposalResponse: ProposalResponse) {
+        var alliance: Alliance? = alliances.find { alliance -> alliance.id == proposalResponse.allianceId }
+        var proposal: Proposal? = alliance?.proposalsList?.find { proposal ->
+            proposal.proposalId == proposalResponse.proposalId }
+        var sender: Player? = players.value?.find { player -> player.id == proposalResponse.playerId }
+        if (sender != null) {
+            proposal?.registerVote(sender, proposalResponse.response)
+        }
+    }
+
+    fun sendMessage(message: ChatMessageDTO) {
+        val data = SerializationUtils.serialize(message)
+        val streamPayload = Payload.zza(data, MessageCode.MESSAGE_DTO.toLong())
+        var alliance: Alliance? =
+            alliances.find { alliance -> alliance.id == message.allianceId }
+        for (playerInvolved in alliance?.playersInvolved!!) {
+            if (playerInvolved.id == myId)
+                continue
+            idToEndpoint[playerInvolved.id]?.let {
+                Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+            }
+        }
+        alliance.addMessage(message.convertToChatMessage())
+    }
+
+    fun receiveMessage(message: ChatMessageDTO) {
+        var alliance: Alliance? = alliances.find { alliance -> alliance.id == message.allianceId }
+        alliance?.addMessage(message.convertToChatMessage())
     }
 
 }

@@ -121,14 +121,16 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
                         Game.receiveNewAllianceInfo(allianceDTO)
                     }
                     MessageCode.JOIN_KICK_PROPOSAL.toLong() -> {
-
+                        var joinKickProposalDTO: JoinKickProposalDTO = SerializationUtils.deserialize(receivedBytes)
+                        Game.receiveJoinKickProposalDTO(joinKickProposalDTO)
                     }
                     MessageCode.MEMBERS_ACTION.toLong() -> {
                         var membersAction: MembersAction = SerializationUtils.deserialize(receivedBytes)
                         Game.acknowledgeMembersAction(membersAction)
                     }
                     MessageCode.MESSAGE_DTO.toLong() -> {
-
+                        var messageDTO: ChatMessageDTO = SerializationUtils.deserialize(receivedBytes)
+                        Game.receiveMessage(messageDTO)
                     }
                     MessageCode.PLAYER_INFO.toLong() -> {
                         var playerDTO: PlayerDTO = SerializationUtils.deserialize(receivedBytes)
@@ -138,7 +140,8 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
 
                     }
                     MessageCode.PROPOSAL_RESPONSE.toLong() -> {
-
+                        var proposalResponse: ProposalResponse = SerializationUtils.deserialize(receivedBytes)
+                        Game.receiveProposalResponse(proposalResponse)
                     }
                     MessageCode.STRATEGY_ACTION.toLong() -> {
 

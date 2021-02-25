@@ -2,6 +2,7 @@ package com.example.gossipwars.logic.entities
 
 import com.example.gossipwars.communication.messages.JoinKickProposalDTO
 import com.example.gossipwars.communication.messages.MembersAction
+import com.example.gossipwars.communication.messages.ProposalResponse
 import java.util.*
 
 class JoinProposal @JvmOverloads
@@ -25,7 +26,7 @@ class JoinProposal @JvmOverloads
         return yesVotes > noVotes / 2
     }
 
-    fun createAction() : MembersAction =
+    override fun createAction() : MembersAction =
         MembersAction(
             initiator.id,
             target.id,
@@ -33,14 +34,14 @@ class JoinProposal @JvmOverloads
             ProposalEnum.JOIN
         )
 
-    fun proposalAccepted() : Boolean = allPlayersVoted() && voteResult()
+    override fun proposalAccepted() : Boolean = allPlayersVoted() && voteResult()
 
     fun actionTaken() {
         alliance.addPlayer(target)
         alliance.proposalsList.remove(this)
     }
 
-    fun convertToJoinKickProposalDTO(): JoinKickProposalDTO {
+    override fun convertToJoinKickProposalDTO(): JoinKickProposalDTO {
         return JoinKickProposalDTO(alliance.id, target.id, initiator.id, proposalId, ProposalEnum.JOIN)
     }
 

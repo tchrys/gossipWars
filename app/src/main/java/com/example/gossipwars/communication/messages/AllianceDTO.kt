@@ -12,7 +12,7 @@ class AllianceDTO(val name: String, val id: UUID, val founderId: UUID,
         var alliance = Alliance(id)
         alliance.name = name
         alliance.founderId = founderId
-        alliance.playersInvolved = playersInvolved.map { uuid -> Game.convertUUIDToPlayer(uuid) }.toMutableList()
+        alliance.playersInvolved = playersInvolved.map { uuid -> Game.findPlayerByUUID(uuid) }.toMutableList()
         return alliance
     }
 }

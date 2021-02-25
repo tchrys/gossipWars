@@ -23,7 +23,7 @@ class KickProposal @JvmOverloads constructor(override val alliance: Alliance,
         return yesVotes > noVotes / 2
     }
 
-    fun createAction() : MembersAction =
+    override fun createAction() : MembersAction =
         MembersAction(
             initiator.id,
             target.id,
@@ -31,14 +31,14 @@ class KickProposal @JvmOverloads constructor(override val alliance: Alliance,
             ProposalEnum.KICK
         )
 
-    fun proposalAccepted() : Boolean = allPlayersVoted() && voteResult()
+    override fun proposalAccepted() : Boolean = allPlayersVoted() && voteResult()
 
     fun actionTaken() {
         alliance.kickPlayer(target)
         alliance.proposalsList.remove(this)
     }
 
-    fun convertToJoinKickProposalDTO(): JoinKickProposalDTO {
+    override fun convertToJoinKickProposalDTO(): JoinKickProposalDTO {
         return JoinKickProposalDTO(alliance.id, target.id, initiator.id, proposalId, ProposalEnum.KICK)
     }
 

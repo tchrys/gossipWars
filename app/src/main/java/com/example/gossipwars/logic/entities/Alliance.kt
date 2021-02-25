@@ -1,7 +1,7 @@
 package com.example.gossipwars.logic.entities
 
 import com.example.gossipwars.communication.messages.AllianceDTO
-import com.example.gossipwars.communication.messages.Message
+import com.example.gossipwars.communication.messages.ChatMessageDTO
 import java.util.*
 
 data class Alliance(val id: UUID) {
@@ -9,7 +9,7 @@ data class Alliance(val id: UUID) {
     lateinit var name: String
     var playersInvolved: MutableList<Player> = mutableListOf()
     lateinit var founderId: UUID;
-    val messageList: MutableList<Message> = mutableListOf()
+    val messageList: MutableList<ChatMessage> = mutableListOf()
     val proposalsList : MutableList<Proposal> = mutableListOf()
 
 
@@ -23,8 +23,25 @@ data class Alliance(val id: UUID) {
         }
     }
 
-    fun addMessage(message : Message) {
+    fun addMessage(message : ChatMessage) {
         messageList.add(message)
+    }
+
+    fun addProposal(targetPlayer: Player, initiator: Player, proposalId: UUID, proposalEnum: ProposalEnum) {
+        var proposal: Proposal? = null
+        when(proposalEnum) {
+            ProposalEnum.KICK -> {
+                proposal = KickProposal(alliance = this, proposalId = proposalId, initiator = initiator,
+                                            target = targetPlayer, proposalEnum = proposalEnum)
+            }
+            ProposalEnum.JOIN -> {
+                proposal = JoinProposal(alliance = this, proposalId = proposalId, initiator = initiator,
+                                            target = targetPlayer, proposalEnum = proposalEnum)
+            }
+        }
+        if (proposal != null) {
+            proposalsList.add(proposal)
+        }
     }
 
     fun addPlayer(player : Player) {
