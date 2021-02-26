@@ -2,6 +2,7 @@ package com.example.gossipwars.logic.entities
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import com.example.gossipwars.communication.messages.allianceCommunication.JoinKickProposalDTO
 import com.example.gossipwars.logic.actions.Action
 import com.example.gossipwars.logic.proposals.*
 import java.util.*
@@ -96,6 +97,15 @@ data class Player(var username : String, val id : UUID) {
                                                     targetRegion = targetRegion, proposalId = UUID.randomUUID())
         }
         alliance.proposalsList.add(proposalMade)
+        sendProposalToOtherPlayers(proposalMade)
+    }
+
+    fun sendProposalToOtherPlayers(proposal: Proposal) {
+        when(proposal.proposalEnum) {
+            ProposalEnum.JOIN -> Game.sendJoinKickProposalDTO((proposal as JoinProposal).convertToDTO())
+            ProposalEnum.KICK -> Game.sendJoinKickProposalDTO((proposal as KickProposal).convertToDTO())
+            else -> Game.sendStrategyProposal((proposal as StrategyProposal).convertToDTO())
+        }
     }
 
     fun iAmInvolvedInThisRegion(regionId: Int): Boolean {

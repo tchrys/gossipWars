@@ -9,7 +9,7 @@ import java.util.*
 class TroopsActionDTO(val initiatorId : UUID, val fromRegion: Int, val toRegion : Int,
                       val size : Int) : Action(initiatorId), Serializable {
 
-    fun convertToTroopsAction(): TroopsAction =
+    fun convertToEntity(): TroopsAction =
         TroopsAction(
             initiator = Game.findPlayerByUUID(initiatorId),
             fromRegion = fromRegion, toRegion = toRegion, size = size
