@@ -2,16 +2,20 @@ package com.example.gossipwars.logic.entities
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import com.example.gossipwars.communication.messages.allianceCommunication.ArmyRequestDTO
 import com.example.gossipwars.communication.messages.allianceCommunication.JoinKickProposalDTO
 import com.example.gossipwars.logic.actions.Action
 import com.example.gossipwars.logic.proposals.*
 import java.util.*
+import kotlin.math.max
 
 data class Player(var username : String, val id : UUID) {
     lateinit var army : Army
     var regionsOccupied : MutableSet<Region> = mutableSetOf()
     var trustInOthers : MutableMap<UUID, Int> = mutableMapOf()
     var alliances : MutableSet<Alliance> = mutableSetOf()
+    var armyImprovements: MutableList<ArmyRequest> = mutableListOf()
+    var armyRequestReceived: MutableList<ArmyRequest> = mutableListOf()
 
     fun quitAlliance(alliance: Alliance) {
         alliances.remove(alliance)
@@ -31,16 +35,36 @@ data class Player(var username : String, val id : UUID) {
         region.occupiedBy = null
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     fun moveTroops(fromRegion : Int, toRegion : Int, size : Int) {
         if (!army.sizePerRegion.containsKey(fromRegion))
             return;
         if (size > army.sizePerRegion[fromRegion]!!)
             return
         army.sizePerRegion[fromRegion] = army.sizePerRegion[fromRegion]!! - size
-        army.sizePerRegion[toRegion] = army.sizePerRegion.getOrDefault(toRegion, 0) + size
+        army.sizePerRegion[toRegion] = army.sizePerRegion.getOrPut(toRegion, {0})  + size
     }
 
+    fun improveArmy(armyRequest: ArmyRequest) {
+        when (armyRequest.armyOption) {
+            ArmyOption.ATTACK -> army.attack += armyRequest.increase
+            ArmyOption.DEFEND -> army.defense += armyRequest.increase
+            ArmyOption.SIZE -> army.size += armyRequest.increase
+        }
+    }
+
+    fun getArmySizeForRegion(regionId: Int) = army.sizePerRegion.getOrElse(regionId, {0})
+
+    fun changeArmySizeForRegion(regionId: Int, delta: Int) {
+        if (!army.sizePerRegion.containsKey(regionId))
+            return
+        army.sizePerRegion[regionId] = max(0, army.sizePerRegion[regionId]!! + delta)
+    }
+
+    fun getArmyAttDamage(regionId: Int): Float =
+                    1f * getArmySizeForRegion(regionId) * army.attack / 100 * 1.2f
+
+    fun getArmyDefDamage(regionId: Int): Float =
+                    1f * getArmySizeForRegion(regionId) * army.defense / 100 * 0.8f
 
     fun createAlliance(name : String) {
         Game.addAlliance(this, name)

@@ -5,10 +5,7 @@ import androidx.appcompat.app.AlertDialog
 import com.example.gossipwars.MainActivity
 import com.example.gossipwars.communication.messages.*
 import com.example.gossipwars.communication.messages.actions.*
-import com.example.gossipwars.communication.messages.allianceCommunication.ChatMessageDTO
-import com.example.gossipwars.communication.messages.allianceCommunication.JoinKickProposalDTO
-import com.example.gossipwars.communication.messages.allianceCommunication.ProposalResponse
-import com.example.gossipwars.communication.messages.allianceCommunication.StrategyProposalDTO
+import com.example.gossipwars.communication.messages.allianceCommunication.*
 import com.example.gossipwars.communication.messages.gameInit.PlayerDTO
 import com.example.gossipwars.communication.messages.gameInit.PlayersOrderDTO
 import com.example.gossipwars.communication.messages.gameInit.RoomInfoDTO
@@ -167,6 +164,18 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
                     MessageCode.PLAYER_ORDER.toLong() -> {
                         var playersOrderDTO: PlayersOrderDTO = SerializationUtils.deserialize(receivedBytes)
                         Game.reorderPlayers(playersOrderDTO)
+                    }
+                    MessageCode.ARMY_REQUEST.toLong() -> {
+                        var armyRequestDTO: ArmyRequestDTO = SerializationUtils.deserialize(receivedBytes)
+                        Game.receiveArmyRequest(armyRequestDTO)
+                    }
+                    MessageCode.ARMY_APPROVAL.toLong() -> {
+                        var armyRequestDTO: ArmyRequestDTO = SerializationUtils.deserialize(receivedBytes)
+                        Game.receiveArmyApproval(armyRequestDTO)
+                    }
+                    MessageCode.ARMY_UPGRADE.toLong() -> {
+                        var armyRequestDTO: ArmyRequestDTO = SerializationUtils.deserialize(receivedBytes)
+                        Game.receiveArmyAction(armyRequestDTO)
                     }
                 }
             }

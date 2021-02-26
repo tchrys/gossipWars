@@ -13,4 +13,7 @@ object MessageCode {
     const val STRATEGY_PROPOSAL = 20
     const val TROOPS_ACTION = 21
     const val PLAYER_ORDER = 22
+    const val ARMY_REQUEST = 23
+    const val ARMY_APPROVAL = 24
+    const val ARMY_UPGRADE = 25
 }

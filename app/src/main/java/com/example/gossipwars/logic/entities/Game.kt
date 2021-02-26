@@ -1,21 +1,17 @@
 package com.example.gossipwars.logic.entities
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.MutableLiveData
 import com.example.gossipwars.MainActivity
 import com.example.gossipwars.communication.messages.*
 import com.example.gossipwars.communication.messages.actions.*
-import com.example.gossipwars.communication.messages.allianceCommunication.ChatMessageDTO
-import com.example.gossipwars.communication.messages.allianceCommunication.JoinKickProposalDTO
-import com.example.gossipwars.communication.messages.allianceCommunication.ProposalResponse
-import com.example.gossipwars.communication.messages.allianceCommunication.StrategyProposalDTO
+import com.example.gossipwars.communication.messages.allianceCommunication.*
 import com.example.gossipwars.communication.messages.gameInit.PlayerDTO
 import com.example.gossipwars.communication.messages.gameInit.PlayerWithOrderDTO
 import com.example.gossipwars.communication.messages.gameInit.PlayersOrderDTO
 import com.example.gossipwars.communication.messages.gameInit.RoomInfoDTO
 import com.example.gossipwars.logic.actions.StrategyAction
 import com.example.gossipwars.logic.actions.TroopsAction
+import com.example.gossipwars.logic.proposals.ArmyRequest
 import com.example.gossipwars.logic.proposals.Proposal
 import com.example.gossipwars.logic.proposals.ProposalEnum
 import com.google.android.gms.nearby.Nearby
@@ -32,9 +28,10 @@ object Game {
     var regionsPerPlayers: MutableMap<Int, UUID> = mutableMapOf()
     val noOfRegions: Int = 10
     var noOfRounds: Int = 0
-    var playersNoWithActionSent: MutableSet<UUID> = mutableSetOf()
+    var playersWithAllActionsSent: MutableSet<UUID> = mutableSetOf()
     var strategyActions: MutableList<StrategyAction> = mutableListOf()
     var troopsActions: MutableList<TroopsAction> = mutableListOf()
+    var armyActions: MutableList<ArmyRequest> = mutableListOf()
     var roomInfo: RoomInfoDTO? = null
     lateinit var mainActivity: MainActivity
     lateinit var myId: UUID
@@ -67,7 +64,7 @@ object Game {
     fun findRegionOwner(regionId: Int): Player? {
         regions.forEach { region: Region ->
             if (region.id == regionId)
-                return region.occupiedBy
+                return region.occupiedBy?.id?.let { findPlayerByUUID(it) }
         }
         return null
     }
@@ -79,26 +76,46 @@ object Game {
         }
         strategyActions.forEach { strategyAction: StrategyAction ->
             if (strategyAction.proposalEnum == proposalEnum) {
-                ans.add(strategyAction.initiator)
+                ans.add(findPlayerByUUID(strategyAction.initiator.id))
                 for (helper in strategyAction.helpers) {
-                    ans.add(helper)
+                    ans.add(findPlayerByUUID(helper.id))
                 }
             }
         }
         return ans
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
+    fun simulateFight(attackers: Set<Player>, defenders: Set<Player>, region: Region) {
+        var attDamage = attackers.map { player -> player.getArmyAttDamage(region.id)}.sum()
+        var attSize = attackers.map { player -> player.getArmySizeForRegion(region.id) }.sum()
+        var defDamage = defenders.map { player -> player.getArmyDefDamage(region.id) }.sum()
+        var defSize = defenders.map { player -> player.getArmySizeForRegion(region.id) }.sum()
+        for (defender in defenders) {
+            val defWeight = 1f * defender.getArmySizeForRegion(region.id) / defSize
+            val soldiersLost = (attDamage * defWeight).toInt()
+            defender.changeArmySizeForRegion(region.id, -soldiersLost)
+        }
+        for (attacker in attackers) {
+            val attWeight = 1f * attacker.getArmySizeForRegion(region.id) / attSize
+            val soldiersLost = (defDamage * attWeight).toInt()
+            attacker.changeArmySizeForRegion(region.id, -soldiersLost)
+        }
+    }
+
     fun roundEndCompute() {
         // strategy actions
         for (region in regions) {
             val attackers: Set<Player> = findRegionDefOrAtt(region.id, ProposalEnum.ATTACK)
             val defenders: Set<Player> = findRegionDefOrAtt(region.id, ProposalEnum.DEFEND)
-            TODO("simulate fight")
+            simulateFight(attackers, defenders, region)
         }
         // troop actions
         for (troopAction in troopsActions) {
             troopAction.initiator.moveTroops(troopAction.fromRegion, troopAction.toRegion, troopAction.size)
+        }
+        // army actions
+        for (armyAction in armyActions) {
+            armyAction.initiator.improveArmy(armyAction)
         }
     }
 
@@ -199,12 +216,12 @@ object Game {
     fun sendJoinKickProposalDTO(joinKickProposalDTO: JoinKickProposalDTO) {
         val data = SerializationUtils.serialize(joinKickProposalDTO)
         val streamPayload = Payload.zza(data, MessageCode.JOIN_KICK_PROPOSAL.toLong())
-        var alliance: Alliance? =
-            alliances.find { alliance -> alliance.id == joinKickProposalDTO.allianceId }
-        for (playerInvolved in alliance?.playersInvolved!!) {
+        var alliance: Alliance = findAllianceByUUID(joinKickProposalDTO.allianceId)
+        for (playerInvolved in alliance.playersInvolved) {
             if (playerInvolved.id == myId)
                 continue
-            if (ProposalEnum.KICK == joinKickProposalDTO.proposalEnum && playerInvolved.id == joinKickProposalDTO.target)
+            if (ProposalEnum.KICK == joinKickProposalDTO.proposalEnum &&
+                    playerInvolved.id == joinKickProposalDTO.target)
                 continue
             idToEndpoint[playerInvolved.id]?.let {
                 Nearby.getConnectionsClient(mainActivity)
@@ -214,20 +231,18 @@ object Game {
     }
 
     fun receiveJoinKickProposalDTO(joinKickProposalDTO: JoinKickProposalDTO) {
-        var alliance: Alliance? = alliances.find { alliance -> alliance.id == joinKickProposalDTO.allianceId }
-        var targetPlayer: Player? = players.value?.find { player -> player.id == joinKickProposalDTO.target }
-        var initiator: Player? = players.value?.find { player -> player.id == joinKickProposalDTO.initiator }
-        if (targetPlayer != null && initiator != null) {
-            alliance?.addProposal(targetPlayer, initiator, joinKickProposalDTO.proposalId, joinKickProposalDTO.proposalEnum, 0)
-        }
+        var alliance: Alliance = findAllianceByUUID(joinKickProposalDTO.allianceId)
+        var targetPlayer: Player = findPlayerByUUID(joinKickProposalDTO.target)
+        var initiator: Player = findPlayerByUUID(joinKickProposalDTO.initiator)
+        alliance.addProposal(targetPlayer, initiator, joinKickProposalDTO.proposalId,
+                                    joinKickProposalDTO.proposalEnum, 0)
     }
 
     fun sendMembersAction(membersAction: MembersActionDTO) {
         val data = SerializationUtils.serialize(membersAction)
         val streamPayload = Payload.zza(data, MessageCode.MEMBERS_ACTION.toLong())
-        var alliance: Alliance? =
-            alliances.find { alliance -> alliance.id == membersAction.allianceId }
-        for (playerInvolved in alliance?.playersInvolved!!) {
+        var alliance: Alliance = findAllianceByUUID(membersAction.allianceId)
+        for (playerInvolved in alliance.playersInvolved) {
             if (playerInvolved.id == myId)
                 continue
             idToEndpoint[playerInvolved.id]?.let {
@@ -241,25 +256,21 @@ object Game {
     }
 
     fun acknowledgeMembersAction(membersAction: MembersActionDTO) {
-        var alliance: Alliance? =
-            alliances.find { alliance -> alliance.id == membersAction.allianceId }
-        var targetPlayer: Player? =
-            players.value?.find { player -> player.id == membersAction.targetId }
-        if (targetPlayer != null) {
-            if (ProposalEnum.JOIN == membersAction.proposalEnum) {
-                alliance?.addPlayer(targetPlayer)
-            } else if (ProposalEnum.KICK == membersAction.proposalEnum) {
-                alliance?.kickPlayer(targetPlayer)
-            }
+        var alliance: Alliance = findAllianceByUUID(membersAction.allianceId)
+        var targetPlayer: Player = findPlayerByUUID(membersAction.targetId)
+        if (ProposalEnum.JOIN == membersAction.proposalEnum) {
+            alliance.addPlayer(targetPlayer)
+        } else if (ProposalEnum.KICK == membersAction.proposalEnum) {
+            alliance.kickPlayer(targetPlayer)
         }
     }
 
     fun sendProposalResponse(proposalResponse: ProposalResponse) {
         val data = SerializationUtils.serialize(proposalResponse)
         val streamPayload = Payload.zza(data, MessageCode.PROPOSAL_RESPONSE.toLong())
-        var alliance: Alliance? = alliances.find { alliance -> alliance.id == proposalResponse.allianceId }
-        var proposal: Proposal? = alliance?.proposalsList?.find { proposal ->
-                                        proposal.proposalId == proposalResponse.proposalId }
+        var alliance: Alliance = findAllianceByUUID(proposalResponse.allianceId)
+        var proposal: Proposal? = alliance.proposalsList.find { proposal ->
+            proposal.proposalId == proposalResponse.proposalId }
         var meAsAPlayer: Player = findPlayerByUUID(myId)
         proposal?.votes?.set(meAsAPlayer, proposalResponse.response)
         idToEndpoint[proposal?.initiator?.id]?.let {
@@ -269,21 +280,18 @@ object Game {
     }
 
     fun receiveProposalResponse(proposalResponse: ProposalResponse) {
-        var alliance: Alliance? = alliances.find { alliance -> alliance.id == proposalResponse.allianceId }
-        var proposal: Proposal? = alliance?.proposalsList?.find { proposal ->
+        var alliance: Alliance = findAllianceByUUID(proposalResponse.allianceId)
+        var proposal: Proposal? = alliance.proposalsList.find { proposal ->
             proposal.proposalId == proposalResponse.proposalId }
-        var sender: Player? = players.value?.find { player -> player.id == proposalResponse.playerId }
-        if (sender != null) {
-            proposal?.registerVote(sender, proposalResponse.response)
-        }
+        var sender: Player = findPlayerByUUID(proposalResponse.playerId)
+        proposal?.registerVote(sender, proposalResponse.response)
     }
 
     fun sendMessage(message: ChatMessageDTO) {
         val data = SerializationUtils.serialize(message)
         val streamPayload = Payload.zza(data, MessageCode.MESSAGE_DTO.toLong())
-        var alliance: Alliance? =
-            alliances.find { alliance -> alliance.id == message.allianceId }
-        for (playerInvolved in alliance?.playersInvolved!!) {
+        var alliance: Alliance = findAllianceByUUID(message.allianceId)
+        for (playerInvolved in alliance.playersInvolved) {
             if (playerInvolved.id == myId)
                 continue
             idToEndpoint[playerInvolved.id]?.let {
@@ -294,15 +302,15 @@ object Game {
     }
 
     fun receiveMessage(message: ChatMessageDTO) {
-        var alliance: Alliance? = alliances.find { alliance -> alliance.id == message.allianceId }
-        alliance?.addMessage(message.convertToEntity())
+        var alliance: Alliance = findAllianceByUUID(message.allianceId)
+        alliance.addMessage(message.convertToEntity())
     }
 
     fun acknowledgeActionEnd(actionsEndDTO: ActionEndDTO) {
-        playersNoWithActionSent.add(actionsEndDTO.playerId)
-        if (playersNoWithActionSent.size == players.value?.size) {
+        playersWithAllActionsSent.add(actionsEndDTO.playerId)
+        if (playersWithAllActionsSent.size == players.value?.size) {
             // all players sent their actions, can start round end processing
-            Game.roundEndCompute()
+            roundEndCompute()
             TODO("logic for starting a new round, sth like two phase commit")
         }
     }
@@ -316,7 +324,7 @@ object Game {
                 Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
             }
         }
-        playersNoWithActionSent.add(myId)
+        playersWithAllActionsSent.add(myId)
     }
 
     fun receiveStrategyAction(strategyActionDTO: StrategyActionDTO) {
@@ -338,8 +346,7 @@ object Game {
 
     fun receiveStrategyProposal(strategyProposalDTO: StrategyProposalDTO) {
         val alliance: Alliance = findAllianceByUUID(strategyProposalDTO.allianceId)
-        alliance.addProposal(
-            findPlayerByUUID(strategyProposalDTO.target),
+        alliance.addProposal(findPlayerByUUID(strategyProposalDTO.target),
                              findPlayerByUUID(strategyProposalDTO.initiator),
                              strategyProposalDTO.proposalId, strategyProposalDTO.proposalEnum,
                              strategyProposalDTO.targetRegion)
@@ -373,6 +380,49 @@ object Game {
             }
         }
         troopsActions.add(troopsActionDTO.convertToEntity())
+    }
+
+    fun receiveArmyRequest(armyRequestDTO: ArmyRequestDTO) {
+        var meAsAPlayer = findPlayerByUUID(armyRequestDTO.approverId)
+        meAsAPlayer.armyRequestReceived.add(armyRequestDTO.convertToEntity())
+    }
+
+    fun sendArmyRequest(armyRequestDTO: ArmyRequestDTO) {
+        val data = SerializationUtils.serialize(armyRequestDTO)
+        val streamPayload = Payload.zza(data, MessageCode.ARMY_REQUEST.toLong())
+        idToEndpoint[armyRequestDTO.approverId]?.let {
+            Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+        }
+    }
+
+    fun receiveArmyApproval(armyRequestDTO: ArmyRequestDTO) {
+        var meAsAPlayer = findPlayerByUUID(armyRequestDTO.initiatorId)
+        meAsAPlayer.armyImprovements.add(armyRequestDTO.convertToEntity())
+    }
+
+    fun sendArmyApproval(armyRequestDTO: ArmyRequestDTO) {
+        val data = SerializationUtils.serialize(armyRequestDTO)
+        val streamPayload = Payload.zza(data, MessageCode.ARMY_APPROVAL.toLong())
+        idToEndpoint[armyRequestDTO.initiatorId]?.let {
+            Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+        }
+    }
+
+    fun receiveArmyAction(armyRequestDTO: ArmyRequestDTO) {
+        armyActions.add(armyRequestDTO.convertToEntity())
+    }
+
+    fun sendArmyAction(armyRequestDTO: ArmyRequestDTO) {
+        val data = SerializationUtils.serialize(armyRequestDTO)
+        val streamPayload = Payload.zza(data, MessageCode.ARMY_UPGRADE.toLong())
+        for (player in players.value!!) {
+            if (player.id == myId)
+                continue
+            idToEndpoint[player.id]?.let {
+                Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+            }
+        }
+        armyActions.add(armyRequestDTO.convertToEntity())
     }
 
 }
