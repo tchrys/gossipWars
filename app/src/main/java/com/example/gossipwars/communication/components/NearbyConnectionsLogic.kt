@@ -4,6 +4,14 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.example.gossipwars.MainActivity
 import com.example.gossipwars.communication.messages.*
+import com.example.gossipwars.communication.messages.actions.*
+import com.example.gossipwars.communication.messages.allianceCommunication.ChatMessageDTO
+import com.example.gossipwars.communication.messages.allianceCommunication.JoinKickProposalDTO
+import com.example.gossipwars.communication.messages.allianceCommunication.ProposalResponse
+import com.example.gossipwars.communication.messages.allianceCommunication.StrategyProposalDTO
+import com.example.gossipwars.communication.messages.gameInit.PlayerDTO
+import com.example.gossipwars.communication.messages.gameInit.PlayersOrderDTO
+import com.example.gossipwars.communication.messages.gameInit.RoomInfoDTO
 import com.example.gossipwars.logic.entities.Game
 import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.connection.*
@@ -113,19 +121,19 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
                 val receivedBytes = payload.asBytes()
                 when (payload.id) {
                     MessageCode.ROOM_INFO.toLong() -> {
-                        var roomInfo: RoomInfo = SerializationUtils.deserialize(receivedBytes)
+                        var roomInfo: RoomInfoDTO = SerializationUtils.deserialize(receivedBytes)
                         mainActivity.manageRoomInfoPayload(roomInfo, endpointId)
                     }
                     MessageCode.ALLIANCE_INFO.toLong() -> {
-                        var allianceDTO: AllianceDTO = SerializationUtils.deserialize(receivedBytes)
-                        Game.receiveNewAllianceInfo(allianceDTO)
+                        var allianceInvitationDTO: AllianceInvitationDTO = SerializationUtils.deserialize(receivedBytes)
+                        Game.receiveNewAllianceInfo(allianceInvitationDTO)
                     }
                     MessageCode.JOIN_KICK_PROPOSAL.toLong() -> {
                         var joinKickProposalDTO: JoinKickProposalDTO = SerializationUtils.deserialize(receivedBytes)
                         Game.receiveJoinKickProposalDTO(joinKickProposalDTO)
                     }
                     MessageCode.MEMBERS_ACTION.toLong() -> {
-                        var membersAction: MembersAction = SerializationUtils.deserialize(receivedBytes)
+                        var membersAction: MembersActionDTO = SerializationUtils.deserialize(receivedBytes)
                         Game.acknowledgeMembersAction(membersAction)
                     }
                     MessageCode.MESSAGE_DTO.toLong() -> {

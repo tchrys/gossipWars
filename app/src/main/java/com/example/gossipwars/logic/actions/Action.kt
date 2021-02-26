@@ -1,4 +1,4 @@
-package com.example.gossipwars.logic.entities
+package com.example.gossipwars.logic.actions
 
 import java.util.*
 

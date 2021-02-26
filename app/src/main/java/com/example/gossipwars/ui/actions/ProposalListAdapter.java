@@ -8,9 +8,9 @@ import android.widget.Button;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.gossipwars.R;
-import com.example.gossipwars.logic.entities.Proposal;
-import com.example.gossipwars.logic.entities.ProposalEnum;
-import com.example.gossipwars.logic.entities.StrategyProposal;
+import com.example.gossipwars.logic.proposals.Proposal;
+import com.example.gossipwars.logic.proposals.ProposalEnum;
+import com.example.gossipwars.logic.proposals.StrategyProposal;
 import com.google.android.material.chip.Chip;
 
 import java.util.ArrayList;

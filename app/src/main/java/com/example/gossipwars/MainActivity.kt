@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gossipwars.communication.components.NearbyConnectionsLogic
 import com.example.gossipwars.communication.messages.MessageCode
-import com.example.gossipwars.communication.messages.RoomInfo
+import com.example.gossipwars.communication.messages.gameInit.RoomInfoDTO
 import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.entities.Player
 import com.google.android.gms.nearby.Nearby
@@ -31,17 +31,17 @@ class MainActivity : AppCompatActivity() {
     var username : String? = null;
     var acceptedUsers = mutableSetOf<String>()
     var peers = mutableSetOf<String>()
-    private val roomsList = LinkedList<RoomInfo>()
+    private val roomsList = LinkedList<RoomInfoDTO>()
     private var mRecyclerView: RecyclerView? = null
     private var mAdapter: RoomListAdapter? = null
     private var myRoomLength: Int = 45
     private var myRoomMaxPlayers : Int = 4
-    private var gameJoined : RoomInfo? = null;
+    private var gameJoined : RoomInfoDTO? = null;
     private val FINE_LOCATION_PERMISSION = 101
     private lateinit var nearbyConnectionsLogic: NearbyConnectionsLogic
 
 
-    fun joinGame(roomInfo: RoomInfo) {
+    fun joinGame(roomInfo: RoomInfoDTO) {
         Log.d("DBG", roomInfo.username)
         gameJoined = roomInfo
         if (!username.equals(roomInfo.username)) {
@@ -58,12 +58,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun roomEquals(myRoomInfo: RoomInfo, roomToCompare : RoomInfo): Boolean =
+    fun roomEquals(myRoomInfo: RoomInfoDTO, roomToCompare : RoomInfoDTO): Boolean =
         myRoomInfo.username == roomToCompare.username && myRoomInfo.roomName == roomToCompare.roomName
 
-    fun manageRoomInfoPayload(roomReceived: RoomInfo, endpointId: String) {
+    fun manageRoomInfoPayload(roomReceived: RoomInfoDTO, endpointId: String) {
         if (roomReceived.username == username) {
-            var joinedRoomInfo : RoomInfo = roomsList.find { roomInfo ->
+            var joinedRoomInfo : RoomInfoDTO = roomsList.find { roomInfo ->
                 roomEquals(roomInfo, roomReceived) }!!
             if (!joinedRoomInfo.playersList.contains(endpointId)
                 && joinedRoomInfo.crtPlayersNr < joinedRoomInfo.maxPlayers) {
@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity() {
         } else {
             Toast.makeText(this, endpointId + "updated / created " +
                     roomReceived.roomName, Toast.LENGTH_LONG).show()
-            var roomInList : RoomInfo? = roomsList.find { roomInfo -> roomEquals(roomInfo, roomReceived) }
+            var roomInList : RoomInfoDTO? = roomsList.find { roomInfo -> roomEquals(roomInfo, roomReceived) }
             if (roomInList != null) {
                 roomInList.crtPlayersNr = roomReceived.crtPlayersNr
                 roomInList.playersList = roomReceived.playersList
@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun sendRoomPayload(roomInfo: RoomInfo) {
+    private fun sendRoomPayload(roomInfo: RoomInfoDTO) {
         val data = SerializationUtils.serialize(roomInfo)
         val streamPayload = Payload.zza(data, MessageCode.ROOM_INFO.toLong())
         for (peer in peers) {
@@ -209,8 +209,11 @@ class MainActivity : AppCompatActivity() {
             else if (myRoomInput.editText?.text.isNullOrEmpty()) {
                 Snackbar.make(findViewById(R.id.main_layout), "No room name", Snackbar.LENGTH_SHORT).show()
             } else {
-                var myRoom = RoomInfo(username.orEmpty(), myRoomInput.editText?.text.toString(),
-                        myRoomLength, myRoomMaxPlayers, 1, false)
+                var myRoom =
+                    RoomInfoDTO(
+                        username.orEmpty(), myRoomInput.editText?.text.toString(),
+                        myRoomLength, myRoomMaxPlayers, 1, false
+                    )
                 myRoom.playersList.add(username.orEmpty())
                 roomsList.addFirst(myRoom)
                 gameJoined = myRoom;

@@ -1,7 +1,7 @@
 package com.example.gossipwars.logic.entities
 
-import com.example.gossipwars.communication.messages.AllianceDTO
-import com.example.gossipwars.communication.messages.ChatMessageDTO
+import com.example.gossipwars.communication.messages.actions.AllianceInvitationDTO
+import com.example.gossipwars.logic.proposals.*
 import java.util.*
 
 data class Alliance(val id: UUID) {
@@ -27,21 +27,18 @@ data class Alliance(val id: UUID) {
         messageList.add(message)
     }
 
-    fun addProposal(targetPlayer: Player, initiator: Player, proposalId: UUID, proposalEnum: ProposalEnum) {
-        var proposal: Proposal? = null
-        when(proposalEnum) {
-            ProposalEnum.KICK -> {
-                proposal = KickProposal(alliance = this, proposalId = proposalId, initiator = initiator,
-                                            target = targetPlayer, proposalEnum = proposalEnum)
-            }
-            ProposalEnum.JOIN -> {
-                proposal = JoinProposal(alliance = this, proposalId = proposalId, initiator = initiator,
-                                            target = targetPlayer, proposalEnum = proposalEnum)
-            }
+    fun addProposal(targetPlayer: Player, initiator: Player, proposalId: UUID,
+                    proposalEnum: ProposalEnum, targetRegion: Int) {
+        var proposal: Proposal = when(proposalEnum) {
+            ProposalEnum.JOIN -> JoinProposal(alliance = this, proposalId = proposalId, initiator = initiator,
+                                                    target = targetPlayer, proposalEnum = proposalEnum)
+            ProposalEnum.KICK -> KickProposal(alliance = this, proposalId = proposalId, initiator = initiator,
+                                                    target = targetPlayer, proposalEnum = proposalEnum)
+            else -> StrategyProposal(alliance = this, proposalId = proposalId,
+                                                    initiator = initiator, target = targetPlayer,
+                                                    proposalEnum = proposalEnum, targetRegion = targetRegion)
         }
-        if (proposal != null) {
-            proposalsList.add(proposal)
-        }
+        proposalsList.add(proposal)
     }
 
     fun addPlayer(player : Player) {
@@ -56,8 +53,6 @@ data class Alliance(val id: UUID) {
 
     fun allianceSize() : Int = playersInvolved.size
 
-    fun convertToAllianceDTO() : AllianceDTO {
-        return AllianceDTO(name, id, founderId, playersInvolved.map { player -> player.id }.toMutableList())
-    }
-
+    fun convertToDTO() : AllianceInvitationDTO = AllianceInvitationDTO(name, id, founderId,
+                                    playersInvolved.map { player -> player.id }.toMutableList())
 }

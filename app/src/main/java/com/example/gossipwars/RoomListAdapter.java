@@ -7,7 +7,7 @@ import android.widget.Button;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.gossipwars.communication.messages.RoomInfo;
+import com.example.gossipwars.communication.messages.gameInit.RoomInfoDTO;
 import com.google.android.material.chip.Chip;
 
 import java.util.LinkedList;
@@ -15,7 +15,7 @@ import java.util.LinkedList;
 public class RoomListAdapter extends
         RecyclerView.Adapter<RoomListAdapter.RoomViewHolder> {
     private MainActivity context;
-    private final LinkedList<RoomInfo> roomInfoList;
+    private final LinkedList<RoomInfoDTO> roomInfoList;
     private final LayoutInflater mInflater;
     private final String username;
     private final int MAX_LEN = 12;
@@ -47,12 +47,12 @@ public class RoomListAdapter extends
             // Get the position of the item that was clicked.
             int mPosition = getLayoutPosition();
             // Use that to access the affected item in mWordList.
-            RoomInfo element = roomInfoList.get(mPosition);
+            RoomInfoDTO element = roomInfoList.get(mPosition);
             mAdapter.notifyDataSetChanged();
         }
     }
 
-    public RoomListAdapter(MainActivity context, LinkedList<RoomInfo> roomInfoList, String username) {
+    public RoomListAdapter(MainActivity context, LinkedList<RoomInfoDTO> roomInfoList, String username) {
         this.context = context;
         mInflater = LayoutInflater.from(context);
         this.roomInfoList = roomInfoList;
@@ -71,7 +71,7 @@ public class RoomListAdapter extends
     @Override
     public void onBindViewHolder(RoomViewHolder holder, int position) {
         // Retrieve the data for that position.
-        RoomInfo mCurrent = roomInfoList.get(position);
+        RoomInfoDTO mCurrent = roomInfoList.get(position);
         // Add the data to the view holder.
         if (mCurrent.getRoomName().length() <= MAX_LEN) {
             holder.nameChip.setText(mCurrent.getRoomName());

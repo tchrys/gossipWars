@@ -1,6 +1,5 @@
-package com.example.gossipwars.communication.messages
+package com.example.gossipwars.communication.messages.allianceCommunication
 
-import com.example.gossipwars.logic.entities.ProposalEnum
 import java.io.Serializable
 import java.util.*
 

@@ -1,4 +1,4 @@
-package com.example.gossipwars.communication.messages
+package com.example.gossipwars.communication.messages.gameInit
 
 import java.io.Serializable
 import java.util.*

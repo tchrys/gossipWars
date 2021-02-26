@@ -4,9 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.gossipwars.logic.entities.Alliance
-import com.example.gossipwars.logic.entities.KickProposal
+import com.example.gossipwars.logic.proposals.KickProposal
 import com.example.gossipwars.logic.entities.Player
-import com.example.gossipwars.logic.entities.Proposal
+import com.example.gossipwars.logic.proposals.Proposal
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -24,9 +24,12 @@ class ActionsViewModel : ViewModel() {
     fun addProposal() {
         var alliance = Alliance(UUID.randomUUID())
         alliance.name = "mockall"
-        proposalsList.add(KickProposal(alliance, Player("mirel", UUID.randomUUID()),
+        proposalsList.add(
+            KickProposal(
+                alliance, Player("mirel", UUID.randomUUID()),
                 Player("marcel", UUID.randomUUID()), proposalId = UUID.randomUUID()
-        ))
+            )
+        )
         proposals.value = proposalsList
     }
 }

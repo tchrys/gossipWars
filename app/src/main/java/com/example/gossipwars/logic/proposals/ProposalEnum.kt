@@ -1,4 +1,4 @@
-package com.example.gossipwars.logic.entities
+package com.example.gossipwars.logic.proposals
 
 enum class ProposalEnum {
     KICK, JOIN, ATTACK, DEFEND
