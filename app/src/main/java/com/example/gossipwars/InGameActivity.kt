@@ -1,6 +1,7 @@
 package com.example.gossipwars
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
@@ -8,9 +9,13 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.example.gossipwars.logic.entities.Alliance
 import com.example.gossipwars.logic.entities.Game
+import com.example.gossipwars.ui.chat.AddAllianceDialogFragment
+import com.example.gossipwars.ui.chat.AllianceAfterDialog
+import com.google.android.material.snackbar.Snackbar
 
-class InGameActivity : AppCompatActivity() {
+class InGameActivity : AppCompatActivity(), AddAllianceDialogFragment.NoticeDialogListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,4 +48,25 @@ class InGameActivity : AppCompatActivity() {
 //            .joinToString(","), Toast.LENGTH_LONG).show()
 
     }
+
+    override fun onDialogPositiveClick(dialog: AllianceAfterDialog?) {
+        dialog?.firstMemberUsername?.let { Log.d("DBG", it) }
+        if (dialog?.allianceName == null || dialog.firstMemberUsername == null
+                                        || dialog.firstMemberUsername?.length == 0) {
+            Snackbar.make(findViewById(R.id.fragment_chat_layout), "You didn't complete all fields",
+                Snackbar.LENGTH_SHORT).show()
+        } else {
+            val alliance: Alliance = Game.addAlliance(Game.findPlayerByUUID(Game.myId), dialog.allianceName)
+            Game.findPlayerByUsername(dialog.firstMemberUsername)?.id?.let {
+                Game.sendAllianceDTO(alliance.convertToDTO(),
+                    it
+                )
+            }
+        }
+    }
+
+    override fun onDialogNegativeClick(dialog: AllianceAfterDialog?) {
+        // do nothing
+    }
+
 }

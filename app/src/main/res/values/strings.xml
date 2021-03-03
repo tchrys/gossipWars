@@ -21,6 +21,8 @@
     <string name="title_map">Map</string>
     <string name="vote_yes">Yes</string>
     <string name="vote_no">No</string>
+    <string name="add_alliance">Add alliance</string>
+    <string name="add_chat">Add chat</string>
 
     <string-array name="game_length_array">
         <item>45s</item>

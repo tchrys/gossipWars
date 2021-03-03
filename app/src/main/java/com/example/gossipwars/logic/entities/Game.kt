@@ -47,6 +47,10 @@ object Game {
         return players.value?.find { player -> player.id == lookupId }!!
     }
 
+    fun findPlayerByUsername(username: String): Player? {
+        return players.value?.find { player -> player.username == username }
+    }
+
     fun findAllianceByUUID(lookupId: UUID): Alliance {
         return alliances.find { alliance -> alliance.id == lookupId }!!
     }
@@ -56,9 +60,10 @@ object Game {
         return roomInfo?.username == meAsAPlayer.username
     }
 
-    fun addAlliance(player: Player, name: String) {
+    fun addAlliance(player: Player, name: String): Alliance {
         val alliance: Alliance = Alliance.initAlliance(player, name)
         alliances.add(alliance)
+        return alliance
     }
 
     fun findRegionOwner(regionId: Int): Player? {
@@ -205,6 +210,10 @@ object Game {
         idToEndpoint[targetId]?.let {
             Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
         }
+        // register new member
+        var alliance: Alliance = findAllianceByUUID(allianceInvitationDTO.id)
+        var player: Player = findPlayerByUUID(targetId)
+        alliance.addPlayer(player)
     }
 
     fun receiveNewAllianceInfo(allianceInvitationDTO: AllianceInvitationDTO) {
@@ -251,8 +260,9 @@ object Game {
         }
         if (ProposalEnum.JOIN == membersAction.proposalEnum) {
             sendAllianceDTO(alliance.convertToDTO(), membersAction.targetId)
+        } else {
+            acknowledgeMembersAction(membersAction)
         }
-        acknowledgeMembersAction(membersAction)
     }
 
     fun acknowledgeMembersAction(membersAction: MembersActionDTO) {
