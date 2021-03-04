@@ -23,6 +23,14 @@
     <string name="vote_no">No</string>
     <string name="add_alliance">Add alliance</string>
     <string name="add_chat">Add chat</string>
+    <string name="join_chip">Join</string>
+    <string name="kick_chip">Kick</string>
+    <string name="attack_chip">Attack</string>
+    <string name="defend_chip">Defend</string>
+    <string name="initiate_proposals">Initiate proposals</string>
+    <string name="other_actions_and_requests">Other actions and requests</string>
+    <string name="negotiate_chip">Negotiate</string>
+    <string name="round_bonus">Round bonus</string>
 
     <string-array name="game_length_array">
         <item>45s</item>

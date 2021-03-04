@@ -4,7 +4,114 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.actions.ActionsFragment">
+    tools:context=".ui.actions.ActionsFragment"
+    android:id="@+id/fragment_actions_layout"
+    >
+
+    <TextView
+        android:id="@+id/proposalText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/initiate_proposals"
+        tools:layout_editor_absoluteX="189dp"
+        tools:layout_editor_absoluteY="1dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/proposalChipGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/proposalText">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/joinChip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/join_chip"
+            tools:layout_editor_absoluteX="82dp"
+            tools:layout_editor_absoluteY="46dp" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/kickChip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/kick_chip"
+            tools:layout_editor_absoluteX="82dp"
+            tools:layout_editor_absoluteY="46dp" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/attackChip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/attack_chip"
+            tools:layout_editor_absoluteX="82dp"
+            tools:layout_editor_absoluteY="46dp" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/defendChip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/defend_chip"
+            tools:layout_editor_absoluteX="82dp"
+            tools:layout_editor_absoluteY="46dp" />
+
+    </com.google.android.material.chip.ChipGroup>
+
+    <View
+        android:id="@+id/proposalsDivider"
+        android:layout_width="409dp"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintTop_toBottomOf="@id/proposalChipGroup"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/actionsAndRequests"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/other_actions_and_requests"
+        tools:layout_editor_absoluteX="189dp"
+        tools:layout_editor_absoluteY="1dp"
+        app:layout_constraintTop_toBottomOf="@id/proposalsDivider"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/actionsChipGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/actionsAndRequests">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/negotiateChip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/negotiate_chip"
+            tools:layout_editor_absoluteX="82dp"
+            tools:layout_editor_absoluteY="46dp" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/roundBonus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/round_bonus"
+            tools:layout_editor_absoluteX="82dp"
+            tools:layout_editor_absoluteY="46dp" />
+
+    </com.google.android.material.chip.ChipGroup>
+
+    <View
+        android:id="@+id/actionsDivider"
+        android:layout_width="409dp"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintTop_toBottomOf="@id/actionsChipGroup"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/text_actions"
@@ -17,7 +124,7 @@
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/exp_button" />
+        app:layout_constraintTop_toBottomOf="@id/proposalsDivider" />
 
     <Button
         android:id="@+id/exp_button"
@@ -25,7 +132,7 @@
         android:layout_height="wrap_content"
         android:text="Button"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/actionsDivider" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/actions_recyclerview"
@@ -36,6 +143,7 @@
         android:layout_marginEnd="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_actions" />
+        app:layout_constraintTop_toBottomOf="@+id/actionsDivider"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

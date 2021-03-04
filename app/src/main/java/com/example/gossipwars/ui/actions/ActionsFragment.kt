@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gossipwars.R
 import com.example.gossipwars.logic.proposals.Proposal
+import com.google.android.material.chip.Chip
 
 
 class ActionsFragment : Fragment() {
@@ -47,6 +48,11 @@ class ActionsFragment : Fragment() {
         button.setOnClickListener { view ->
             actionsViewModel.addProposal()
             mRecyclerView?.adapter?.notifyDataSetChanged()
+        }
+
+        val kickChip: Chip = root.findViewById(R.id.kickChip)
+        kickChip.setOnClickListener { view ->
+            fragmentManager?.let { KickDialogFragment().show(it, "asdf") }
         }
 
         return root

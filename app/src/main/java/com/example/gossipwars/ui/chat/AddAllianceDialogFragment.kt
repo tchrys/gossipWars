@@ -11,14 +11,14 @@ import com.example.gossipwars.logic.entities.Game
 import com.google.android.material.textfield.TextInputEditText
 
 class AddAllianceDialogFragment : DialogFragment() {
-    internal lateinit var listener: NoticeDialogListener
+    internal lateinit var listener: AllianceDialogListener
     var usernameSelected: String? = null
 
 
     /* The activity that creates an instance of this dialog fragment must
      * implement this interface in order to receive event callbacks.
      * Each method passes the DialogFragment in case the host needs to query it. */
-    interface NoticeDialogListener {
+    interface AllianceDialogListener {
         fun onDialogPositiveClick(dialog: AllianceAfterDialog?)
         fun onDialogNegativeClick(dialog: AllianceAfterDialog?)
     }
@@ -29,7 +29,7 @@ class AddAllianceDialogFragment : DialogFragment() {
         // Verify that the host activity implements the callback interface
         try {
             // Instantiate the NoticeDialogListener so we can send events to the host
-            listener = context as NoticeDialogListener
+            listener = context as AllianceDialogListener
         } catch (e: ClassCastException) {
             // The activity doesn't implement the interface, throw exception
             throw ClassCastException((context.toString() + " must implement NoticeDialogListener"))

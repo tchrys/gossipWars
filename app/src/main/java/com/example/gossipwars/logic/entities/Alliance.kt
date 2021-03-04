@@ -18,7 +18,7 @@ data class Alliance(val id: UUID) {
             var alliance = Alliance(UUID.randomUUID())
             alliance.addPlayer(player)
             alliance.name = name
-            var founderId = player.id
+            alliance.founderId = player.id
             return alliance
         }
     }

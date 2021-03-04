@@ -55,6 +55,32 @@ object Game {
         return alliances.find { alliance -> alliance.id == lookupId }!!
     }
 
+    fun findAllianceByName(allianceName: String): Alliance? {
+        return alliances.find { alliance -> alliance.name == allianceName }
+    }
+
+    fun findPlayersInsideAlliance(allianceName: String): MutableList<Player>? {
+        val alliance: Alliance? = findAllianceByName(allianceName)
+        return alliance?.playersInvolved?.filter { it.id !== myId }?.toMutableList()
+    }
+
+    fun playerBelongToAlliance(alliance: Alliance, player: Player): Boolean {
+        return alliance.playersInvolved.find { playerInv -> playerInv.id == player.id } == null
+    }
+
+    fun findPlayersOutsideAlliance(allianceName: String): MutableList<Player> {
+        var answer = mutableListOf<Player>()
+        val alliance: Alliance? = findAllianceByName(allianceName)
+        Game.players.value?.forEach { player: Player ->
+            alliance?.let {
+                if (!playerBelongToAlliance(it, player)) {
+                    answer.add(player)
+                }
+            }
+        }
+        return answer
+    }
+
     fun iAmTheHost(): Boolean {
         var meAsAPlayer = findPlayerByUUID(myId)
         return roomInfo?.username == meAsAPlayer.username
