@@ -31,6 +31,10 @@
     <string name="other_actions_and_requests">Other actions and requests</string>
     <string name="negotiate_chip">Negotiate</string>
     <string name="round_bonus">Round bonus</string>
+    <string name="army_size">Army size</string>
+    <string name="attack">Attack</string>
+    <string name="defense">Defense</string>
+    <string name="enter_desired_increase">Enter desired increase</string>
 
     <string-array name="game_length_array">
         <item>45s</item>

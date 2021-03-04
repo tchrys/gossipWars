@@ -9,14 +9,13 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.example.gossipwars.communication.messages.allianceCommunication.ArmyRequestDTO
 import com.example.gossipwars.logic.entities.Alliance
 import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.entities.Player
+import com.example.gossipwars.logic.proposals.ArmyOption
 import com.example.gossipwars.logic.proposals.ProposalEnum
-import com.example.gossipwars.ui.actions.JoinDialogFragment
-import com.example.gossipwars.ui.actions.JoinDialogResult
-import com.example.gossipwars.ui.actions.KickDialogResult
-import com.example.gossipwars.ui.actions.KickDialogFragment
+import com.example.gossipwars.ui.actions.*
 import com.example.gossipwars.ui.chat.AddAllianceDialogFragment
 import com.example.gossipwars.ui.chat.AllianceAfterDialog
 import com.google.android.material.snackbar.Snackbar
@@ -24,7 +23,9 @@ import com.google.android.material.snackbar.Snackbar
 class InGameActivity : AppCompatActivity(),
                         AddAllianceDialogFragment.AllianceDialogListener,
                         KickDialogFragment.KickDialogListener,
-                        JoinDialogFragment.JoinDialogListener {
+                        JoinDialogFragment.JoinDialogListener,
+                        NegotiateDialogFragment.NegotiateDialogListener,
+                        BonusDialogFragment.BonusDialogListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -116,6 +117,47 @@ class InGameActivity : AppCompatActivity(),
     }
 
     override fun onDialogNegativeClick(dialog: JoinDialogResult?) {
+        // do nothing
+    }
+
+    override fun onDialogPositiveClick(dialog: NegotiateDialogResult?) {
+        dialog?.usernameSelected?.let { Log.d("DBG", it) }
+        dialog?.armyOption?.let { Log.d("DBG", it.toString()) }
+        dialog?.increase?.let { Log.d("DBG", it.toString()) }
+        if (dialog?.usernameSelected == null || dialog?.armyOption == null || dialog?.increase == null) {
+            Snackbar.make(findViewById(R.id.fragment_negotiate_layout), "Please complete all fields",
+                            Snackbar.LENGTH_SHORT).show()
+        } else {
+            val playerSelected: Player? = dialog.usernameSelected.let { Game.findPlayerByUsername(it) }
+            if (playerSelected != null) {
+                when(dialog.armyOption) {
+                    ArmyOption.SIZE -> Game.sendArmyRequest(ArmyRequestDTO(Game.myId,
+                                            playerSelected.id, dialog.armyOption, dialog.increase))
+                    else -> Game.sendArmyRequest(ArmyRequestDTO(Game.myId, playerSelected.id,
+                                                    dialog.armyOption, dialog.increase))
+                }
+            }
+        }
+
+    }
+
+    override fun onDialogNegativeClick(dialog: NegotiateDialogResult?) {
+        // do nothing
+    }
+
+    override fun onDialogPositiveClick(dialog: ArmyOption?) {
+        dialog?.let { Log.d("DBG", it.toString()) }
+        when(dialog) {
+            ArmyOption.ATTACK -> Game.sendArmyAction(ArmyRequestDTO(Game.myId, Game.myId,
+                                                                    ArmyOption.ATTACK, 5))
+            ArmyOption.DEFEND -> Game.sendArmyAction(ArmyRequestDTO(Game.myId, Game.myId,
+                                                                    ArmyOption.DEFEND, 5))
+            ArmyOption.SIZE -> Game.sendArmyAction(ArmyRequestDTO(Game.myId, Game.myId,
+                                                                    ArmyOption.SIZE, 5000))
+        }
+    }
+
+    override fun onDialogNegativeClick(dialog: ArmyOption?) {
         // do nothing
     }
 

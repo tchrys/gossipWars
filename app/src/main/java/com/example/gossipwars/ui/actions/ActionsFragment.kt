@@ -60,6 +60,16 @@ class ActionsFragment : Fragment() {
             fragmentManager?.let { JoinDialogFragment().show(it, "joinDialogTag") }
         }
 
+        val negotiateChip: Chip = root.findViewById(R.id.negotiateChip)
+        negotiateChip.setOnClickListener {
+            fragmentManager?.let { NegotiateDialogFragment().show(it, "negotiateDialogTag") }
+        }
+
+        val bonusChip: Chip = root.findViewById(R.id.roundBonus)
+        bonusChip.setOnClickListener {
+            fragmentManager?.let { BonusDialogFragment().show(it, "bonusDialogTag") }
+        }
+
         return root
     }
 
