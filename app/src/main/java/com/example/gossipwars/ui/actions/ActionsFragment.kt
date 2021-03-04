@@ -40,19 +40,24 @@ class ActionsFragment : Fragment() {
 
         mRecyclerView = root.findViewById(R.id.actions_recyclerview)
         mAdapter = ProposalListAdapter(this, props, username)
-        mRecyclerView?.setAdapter(mAdapter)
-        mRecyclerView?.setLayoutManager(LinearLayoutManager(this.activity))
+        mRecyclerView?.adapter = mAdapter
+        mRecyclerView?.layoutManager = LinearLayoutManager(this.activity)
 
 
         val button : Button = root.findViewById(R.id.exp_button)
-        button.setOnClickListener { view ->
+        button.setOnClickListener {
             actionsViewModel.addProposal()
             mRecyclerView?.adapter?.notifyDataSetChanged()
         }
 
         val kickChip: Chip = root.findViewById(R.id.kickChip)
-        kickChip.setOnClickListener { view ->
-            fragmentManager?.let { KickDialogFragment().show(it, "asdf") }
+        kickChip.setOnClickListener {
+            fragmentManager?.let { KickDialogFragment().show(it, "kickDialogTag") }
+        }
+
+        val joinChip: Chip = root.findViewById(R.id.joinChip)
+        joinChip.setOnClickListener {
+            fragmentManager?.let { JoinDialogFragment().show(it, "joinDialogTag") }
         }
 
         return root

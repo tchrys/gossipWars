@@ -12,25 +12,24 @@ import com.example.gossipwars.R
 import com.example.gossipwars.communication.messages.actions.AllianceInvitationDTO
 import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.entities.Player
-import java.lang.ClassCastException
 import java.lang.IllegalStateException
 
-class KickDialogFragment: DialogFragment() {
-    internal lateinit var listener: KickDialogListener
+class JoinDialogFragment: DialogFragment() {
+    internal lateinit var listener: JoinDialogListener
     var usernameSelected: String? = null
     var allianceNameSelected: String? = null
 
-    interface KickDialogListener {
-        fun onDialogPositiveClick(dialog: KickDialogResult?)
-        fun onDialogNegativeClick(dialog: KickDialogResult?)
+    interface JoinDialogListener {
+        fun onDialogPositiveClick(dialog: JoinDialogResult?)
+        fun onDialogNegativeClick(dialog: JoinDialogResult?)
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         try {
-            listener = context as KickDialogListener
+            listener = context as JoinDialogListener
         } catch (e: ClassCastException) {
-            throw ClassCastException(context.toString() + " must implement KickDialogListener")
+            throw java.lang.ClassCastException(context.toString() + " must implement JoinListener")
         }
     }
 
@@ -40,9 +39,9 @@ class KickDialogFragment: DialogFragment() {
         }
         var inflater = requireActivity().layoutInflater
         var builder = AlertDialog.Builder(activity)
-        val kickProposalView: View = inflater.inflate(R.layout.alliance_kick_form, null)
-        val allianceRadioGroup: RadioGroup = kickProposalView.findViewById(R.id.allianceKickRadioGroup)
-        val playersRadioGroup: RadioGroup = kickProposalView.findViewById(R.id.playersKickRadioGroup)
+        val joinProposalView: View = inflater.inflate(R.layout.alliance_join_form, null)
+        val allianceRadioGroup: RadioGroup = joinProposalView.findViewById(R.id.allianceJoinRadioGroup)
+        val playersRadioGroup: RadioGroup = joinProposalView.findViewById(R.id.playersJoinRadioGroup)
 
         val alliances: List<AllianceInvitationDTO>? = Game.findAlliancesForPlayer(Game.myId)?.
                                                         map { alliance -> alliance.convertToDTO() }
@@ -56,7 +55,7 @@ class KickDialogFragment: DialogFragment() {
             val checkedRadioButton = allianceRadioGroup.findViewById<RadioButton>(checkedId)
             allianceNameSelected = checkedRadioButton.text.toString()
             usernameSelected = null
-            val players: MutableList<Player>? = Game.findPlayersInsideAlliance(checkedRadioButton.text.toString())
+            val players: MutableList<Player>? = Game.findPlayersOutsideAlliance(checkedRadioButton.text.toString())
             playersRadioGroup.removeAllViews()
             players?.forEach { player: Player ->
                 var playerButton = RadioButton(context)
@@ -78,14 +77,14 @@ class KickDialogFragment: DialogFragment() {
                     usernameSelected = checkedRadioButton.text.toString()
                 }
             } else {
-                usernameSelected == null
+                usernameSelected = null
             }
         }
 
-        builder.setView(kickProposalView)
+        builder.setView(joinProposalView)
         builder.setTitle("Select alliance and player to kick")
             .setPositiveButton("Done") { _, _  ->
-                listener.onDialogPositiveClick(KickDialogResult(allianceNameSelected, usernameSelected))
+                listener.onDialogPositiveClick(JoinDialogResult(allianceNameSelected, usernameSelected))
             }
             .setNegativeButton("Cancel") { _, _ ->
                 listener.onDialogNegativeClick(null)

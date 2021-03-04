@@ -13,14 +13,18 @@ import com.example.gossipwars.logic.entities.Alliance
 import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.entities.Player
 import com.example.gossipwars.logic.proposals.ProposalEnum
-import com.example.gossipwars.ui.actions.KickDialogDTO
+import com.example.gossipwars.ui.actions.JoinDialogFragment
+import com.example.gossipwars.ui.actions.JoinDialogResult
+import com.example.gossipwars.ui.actions.KickDialogResult
 import com.example.gossipwars.ui.actions.KickDialogFragment
 import com.example.gossipwars.ui.chat.AddAllianceDialogFragment
 import com.example.gossipwars.ui.chat.AllianceAfterDialog
 import com.google.android.material.snackbar.Snackbar
 
-class InGameActivity : AppCompatActivity(), AddAllianceDialogFragment.AllianceDialogListener,
-                            KickDialogFragment.KickDialogListener {
+class InGameActivity : AppCompatActivity(),
+                        AddAllianceDialogFragment.AllianceDialogListener,
+                        KickDialogFragment.KickDialogListener,
+                        JoinDialogFragment.JoinDialogListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,7 +79,7 @@ class InGameActivity : AppCompatActivity(), AddAllianceDialogFragment.AllianceDi
         // do nothing
     }
 
-    override fun onDialogPositiveClick(dialog: KickDialogDTO?) {
+    override fun onDialogPositiveClick(dialog: KickDialogResult?) {
         dialog?.allianceName?.let { Log.d("DBG", it) }
         dialog?.usernameSelected?.let { Log.d("DBG", it) }
         if (dialog?.allianceName == null || dialog?.usernameSelected == null) {
@@ -91,7 +95,27 @@ class InGameActivity : AppCompatActivity(), AddAllianceDialogFragment.AllianceDi
         }
     }
 
-    override fun onDialogNegativeClick(dialog: KickDialogDTO?) {
+    override fun onDialogNegativeClick(dialog: KickDialogResult?) {
+        // do nothing
+    }
+
+    override fun onDialogPositiveClick(dialog: JoinDialogResult?) {
+        dialog?.allianceName?.let { Log.d("DBG", it) }
+        dialog?.usernameSelected?.let { Log.d("DBG", it) }
+        if (dialog?.allianceName == null || dialog?.usernameSelected == null) {
+            Snackbar.make(findViewById(R.id.fragment_actions_layout), "Please complete all fields",
+                            Snackbar.LENGTH_SHORT).show()
+        } else {
+            val meAsAPlayer = Game.findPlayerByUUID(Game.myId)
+            val alliance: Alliance? = Game.findAllianceByName(dialog.allianceName)
+            val player: Player? = Game.findPlayerByUsername(dialog.usernameSelected)
+            if (alliance != null && player != null) {
+                meAsAPlayer.makeProposal(alliance, player, ProposalEnum.JOIN, 0)
+            }
+        }
+    }
+
+    override fun onDialogNegativeClick(dialog: JoinDialogResult?) {
         // do nothing
     }
 

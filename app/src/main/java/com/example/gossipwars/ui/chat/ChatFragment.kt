@@ -30,7 +30,7 @@ class ChatFragment : Fragment() {
 
         val addChatFab: View = root.findViewById(R.id.add_chat_fab)
         addChatFab.setOnClickListener { view ->
-            fragmentManager?.let { AddAllianceDialogFragment().show(it, "afs")
+            fragmentManager?.let { AddAllianceDialogFragment().show(it, "addAllianceTag")
             }
         }
 

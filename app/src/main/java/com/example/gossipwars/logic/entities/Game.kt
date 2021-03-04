@@ -65,7 +65,13 @@ object Game {
     }
 
     fun playerBelongToAlliance(alliance: Alliance, player: Player): Boolean {
-        return alliance.playersInvolved.find { playerInv -> playerInv.id == player.id } == null
+        return alliance.playersInvolved.any { playerInv -> playerInv.id == player.id }
+    }
+
+    fun findAlliancesForPlayer(playerId: UUID): MutableList<Alliance>? {
+        return alliances.filter { alliance ->
+            alliance.playersInvolved.any { player -> player.id == playerId }
+        }.toMutableList()
     }
 
     fun findPlayersOutsideAlliance(allianceName: String): MutableList<Player> {
