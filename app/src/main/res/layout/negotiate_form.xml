@@ -1,17 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:id="@+id/fragment_negotiate_layout"
     >
 
-    <RadioGroup
-        android:id="@+id/playersToRequestGroup"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/armyRequestTextField"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:hint="@string/enter_desired_increase"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/armyInputText"
+            android:layout_width="match_parent"
+            android:layout_height="59dp"
+            android:inputType="numberDecimal" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:id="@+id/negotiatePlayerText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/select_player"
+        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" >
+        app:layout_constraintTop_toBottomOf="@id/armyRequestTextField" />
+
+    <RadioGroup
+        android:id="@+id/playersToRequestGroup"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toStartOf="@id/dividerArmyRequest"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/negotiatePlayerText">
 
 
     </RadioGroup>
@@ -19,19 +53,33 @@
     <View
         android:id="@+id/dividerArmyRequest"
         android:layout_width="1dp"
-        android:layout_height="729dp"
-        android:layout_marginBottom="16dp"
+        android:layout_height="0dp"
         android:background="?android:attr/listDivider"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/armyRequestTextField" />
+
+    <TextView
+        android:id="@+id/negotiateOptionText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/select_upgrade_option"
+        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+        app:layout_constraintStart_toStartOf="@id/dividerArmyRequest"
+        app:layout_constraintTop_toBottomOf="@id/armyRequestTextField" />
 
     <RadioGroup
         android:id="@+id/armyOptionsGroup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
         app:layout_constraintStart_toStartOf="@id/dividerArmyRequest"
-        app:layout_constraintTop_toTopOf="parent" >
+        app:layout_constraintTop_toBottomOf="@id/negotiateOptionText">
 
 
         <RadioButton
@@ -44,6 +92,7 @@
             android:id="@+id/armyAttackButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:minHeight="48dp"
             android:text="@string/attack" />
 
         <RadioButton
@@ -53,25 +102,5 @@
             android:text="@string/defense" />
 
     </RadioGroup>
-
-
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/armyRequestTextField"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="@string/enter_desired_increase"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/dividerArmyRequest"
-        app:layout_constraintTop_toBottomOf="@id/armyOptionsGroup">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/armyInputText"
-            android:layout_width="match_parent"
-            android:layout_height="59dp"
-            android:inputType="numberDecimal" />
-
-    </com.google.android.material.textfield.TextInputLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

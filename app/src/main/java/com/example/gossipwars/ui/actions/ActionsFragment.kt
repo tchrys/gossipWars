@@ -5,13 +5,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.gossipwars.InGameActivity
 import com.example.gossipwars.R
+import com.example.gossipwars.logic.entities.ChatMessage
+import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.proposals.Proposal
 import com.google.android.material.chip.Chip
 
@@ -28,10 +31,8 @@ class ActionsFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         actionsViewModel = ViewModelProviders.of(this).get(ActionsViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_actions, container, false)
-        val textView: TextView = root.findViewById(R.id.text_actions)
-        actionsViewModel.text.observe(viewLifecycleOwner, Observer {
-            textView.text = it
-        })
+
+
         actionsViewModel.proposals.observe(viewLifecycleOwner, Observer {
             props.clear()
             it.forEach { proposal: Proposal -> props.add(proposal) }
@@ -52,12 +53,20 @@ class ActionsFragment : Fragment() {
 
         val kickChip: Chip = root.findViewById(R.id.kickChip)
         kickChip.setOnClickListener {
-            fragmentManager?.let { KickDialogFragment().show(it, "kickDialogTag") }
+            if (noAllianceForMe()) {
+                showSnackbarForError("You must belong to an alliance to do this action")
+            } else {
+                fragmentManager?.let { KickDialogFragment().show(it, "kickDialogTag") }
+            }
         }
 
         val joinChip: Chip = root.findViewById(R.id.joinChip)
         joinChip.setOnClickListener {
-            fragmentManager?.let { JoinDialogFragment().show(it, "joinDialogTag") }
+            if (noAllianceForMe()) {
+                showSnackbarForError("You must belong to an alliance to do this action")
+            } else {
+                fragmentManager?.let { JoinDialogFragment().show(it, "joinDialogTag") }
+            }
         }
 
         val negotiateChip: Chip = root.findViewById(R.id.negotiateChip)
@@ -67,7 +76,48 @@ class ActionsFragment : Fragment() {
 
         val bonusChip: Chip = root.findViewById(R.id.roundBonus)
         bonusChip.setOnClickListener {
-            fragmentManager?.let { BonusDialogFragment().show(it, "bonusDialogTag") }
+            if (Game.myBonusTaken.value!!) {
+                showSnackbarForError("You've already taken the bonus for this round")
+            } else {
+                fragmentManager?.let { BonusDialogFragment().show(it, "bonusDialogTag") }
+            }
+        }
+
+        val attackChip: Chip = root.findViewById(R.id.attackChip)
+        attackChip.setOnClickListener {
+            if (noAllianceForMe()) {
+                showSnackbarForError("You must belong to an alliance to do this action")
+            } else {
+                // TODO
+            }
+        }
+
+        val defendChip: Chip = root.findViewById(R.id.defendChip)
+        defendChip.setOnClickListener {
+            if (noAllianceForMe()) {
+                showSnackbarForError("You must belong to an alliance to do this action")
+            } else {
+                // TODO
+            }
+        }
+
+        Game.myBonusTaken.observe(viewLifecycleOwner, Observer {
+            if (it) {
+                context?.let { it1 -> ContextCompat.getColor(it1, R.color.disabledChip) }?.let { it2 ->
+                    bonusChip.setTextColor(
+                        it2
+                    )
+                }
+            }
+        })
+
+        if (noAllianceForMe()) {
+            context?.let { ContextCompat.getColor(it, R.color.disabledChip) }?.let {
+                kickChip.setTextColor(it)
+                joinChip.setTextColor(it)
+                attackChip.setTextColor(it)
+                defendChip.setTextColor(it)
+            }
         }
 
         return root
@@ -75,5 +125,11 @@ class ActionsFragment : Fragment() {
 
     fun sendVote(proposal: Proposal, boolean: Boolean) {
 
+    }
+
+    fun noAllianceForMe(): Boolean = Game.findAlliancesForPlayer(Game.myId)?.size == 0
+
+    fun showSnackbarForError(message: String) {
+        (activity as InGameActivity).showSnackBarOnError(R.id.fragment_actions_layout, message)
     }
 }

@@ -13,6 +13,7 @@ import com.example.gossipwars.R
 import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.entities.Player
 import com.example.gossipwars.logic.proposals.ArmyOption
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import java.lang.ClassCastException
 import java.lang.IllegalStateException
@@ -53,9 +54,11 @@ class NegotiateDialogFragment: DialogFragment() {
             playersGroup.addView(playerButton)
         }
         if (playersGroup.childCount == 0) {
-            val dummyButton = RadioButton(context)
-            dummyButton.text = "player1"
-            playersGroup.addView(dummyButton)
+            for (i in 0..7) {
+                val dummyButton = RadioButton(context)
+                dummyButton.text = "player" + i.toString()
+                playersGroup.addView(dummyButton)
+            }
         }
 
         playersGroup.setOnCheckedChangeListener { _, checkedId ->
@@ -79,8 +82,12 @@ class NegotiateDialogFragment: DialogFragment() {
         builder.setView(negotiateView)
         builder.setTitle("Select player to request, option and quantity")
             .setPositiveButton("Done") { _, _ ->
-                val allianceNameInput: TextInputEditText? =  negotiateView.findViewById(R.id.armyInputText)
-                increaseNr = allianceNameInput?.text.toString().toInt()
+                val armyInput: TextInputEditText? =  negotiateView.findViewById(R.id.armyInputText)
+                if (armyInput?.text.toString().isNotEmpty()) {
+                    increaseNr = armyInput?.text.toString().toInt()
+                } else {
+                    increaseNr == -1
+                }
                 listener.onDialogPositiveClick(NegotiateDialogResult(usernameSelected, armyOption, increaseNr))
             }
             .setNegativeButton("Cancel") { _, _ ->

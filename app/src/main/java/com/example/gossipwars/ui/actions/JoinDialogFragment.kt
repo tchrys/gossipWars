@@ -63,9 +63,11 @@ class JoinDialogFragment: DialogFragment() {
                 playersRadioGroup.addView(playerButton)
             }
             if (playersRadioGroup.childCount == 0) {
-                val dummyButton = RadioButton(context)
-                dummyButton.text = "player1"
-                playersRadioGroup.addView(dummyButton)
+                for (i in 0..7) {
+                    val dummyButton = RadioButton(context)
+                    dummyButton.text = "player" + i.toString()
+                    playersRadioGroup.addView(dummyButton)
+                }
             }
             playersRadioGroup.clearCheck()
         }
@@ -82,7 +84,7 @@ class JoinDialogFragment: DialogFragment() {
         }
 
         builder.setView(joinProposalView)
-        builder.setTitle("Select alliance and player to kick")
+        builder.setTitle("Select alliance and player to join")
             .setPositiveButton("Done") { _, _  ->
                 listener.onDialogPositiveClick(JoinDialogResult(allianceNameSelected, usernameSelected))
             }

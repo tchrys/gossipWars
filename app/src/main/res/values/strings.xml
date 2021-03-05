@@ -35,6 +35,10 @@
     <string name="attack">Attack</string>
     <string name="defense">Defense</string>
     <string name="enter_desired_increase">Enter desired increase</string>
+    <string name="enter_alliance_name">Enter alliance name</string>
+    <string name="select_alliance">Select alliance</string>
+    <string name="select_player">Select player</string>
+    <string name="select_upgrade_option">Select upgrade option</string>
 
     <string-array name="game_length_array">
         <item>45s</item>

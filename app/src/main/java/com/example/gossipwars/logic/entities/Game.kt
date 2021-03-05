@@ -1,5 +1,6 @@
 package com.example.gossipwars.logic.entities
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.gossipwars.MainActivity
 import com.example.gossipwars.communication.messages.*
@@ -38,9 +39,11 @@ object Game {
     var endpointToId: MutableMap<String, UUID> = mutableMapOf()
     var idToEndpoint: MutableMap<UUID, String> = mutableMapOf()
     var gameStarted = false
+    var myBonusTaken: MutableLiveData<Boolean> = MutableLiveData<Boolean>()
 
     init {
         regions = Region.initAllRegions()
+        myBonusTaken.value = false
     }
 
     fun findPlayerByUUID(lookupId: UUID): Player {

@@ -16,11 +16,6 @@ class ActionsViewModel : ViewModel() {
 
     val proposals = MutableLiveData<MutableList<Proposal>>()
 
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is actions Fragment"
-    }
-    val text: LiveData<String> = _text
-
     fun addProposal() {
         var alliance = Alliance(UUID.randomUUID())
         alliance.name = "mockall"

@@ -1,10 +1,13 @@
 package com.example.gossipwars
 
+import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
@@ -62,9 +65,8 @@ class InGameActivity : AppCompatActivity(),
     override fun onDialogPositiveClick(dialog: AllianceAfterDialog?) {
         dialog?.firstMemberUsername?.let { Log.d("DBG", it) }
         if (dialog?.allianceName == null || dialog.firstMemberUsername == null
-                                        || dialog.firstMemberUsername?.length == 0) {
-            Snackbar.make(findViewById(R.id.fragment_chat_layout), "You didn't complete all fields",
-                Snackbar.LENGTH_SHORT).show()
+                                        || dialog.allianceName.isEmpty()) {
+            showSnackBarOnError(R.id.fragment_chat_layout, "Please complete all fields")
         } else {
             val alliance: Alliance = Game.addAlliance(Game.findPlayerByUUID(Game.myId), dialog.allianceName)
             Game.findPlayerByUsername(dialog.firstMemberUsername)?.id?.let {
@@ -84,8 +86,7 @@ class InGameActivity : AppCompatActivity(),
         dialog?.allianceName?.let { Log.d("DBG", it) }
         dialog?.usernameSelected?.let { Log.d("DBG", it) }
         if (dialog?.allianceName == null || dialog?.usernameSelected == null) {
-            Snackbar.make(findViewById(R.id.fragment_actions_layout), "Please complete all fields",
-                            Snackbar.LENGTH_SHORT).show()
+            showSnackBarOnError(R.id.fragment_actions_layout, "Please complete all fields")
         } else {
             val meAsAPlayer = Game.findPlayerByUUID(Game.myId)
             val alliance: Alliance? = Game.findAllianceByName(dialog.allianceName)
@@ -104,8 +105,7 @@ class InGameActivity : AppCompatActivity(),
         dialog?.allianceName?.let { Log.d("DBG", it) }
         dialog?.usernameSelected?.let { Log.d("DBG", it) }
         if (dialog?.allianceName == null || dialog?.usernameSelected == null) {
-            Snackbar.make(findViewById(R.id.fragment_actions_layout), "Please complete all fields",
-                            Snackbar.LENGTH_SHORT).show()
+            showSnackBarOnError(R.id.fragment_actions_layout, "Please complete all fields")
         } else {
             val meAsAPlayer = Game.findPlayerByUUID(Game.myId)
             val alliance: Alliance? = Game.findAllianceByName(dialog.allianceName)
@@ -124,9 +124,9 @@ class InGameActivity : AppCompatActivity(),
         dialog?.usernameSelected?.let { Log.d("DBG", it) }
         dialog?.armyOption?.let { Log.d("DBG", it.toString()) }
         dialog?.increase?.let { Log.d("DBG", it.toString()) }
-        if (dialog?.usernameSelected == null || dialog?.armyOption == null || dialog?.increase == null) {
-            Snackbar.make(findViewById(R.id.fragment_negotiate_layout), "Please complete all fields",
-                            Snackbar.LENGTH_SHORT).show()
+        if (dialog?.usernameSelected == null || dialog.armyOption == null ||
+                        dialog.increase == null || dialog.increase == -1) {
+            showSnackBarOnError(R.id.fragment_actions_layout, "Please complete all fields")
         } else {
             val playerSelected: Player? = dialog.usernameSelected.let { Game.findPlayerByUsername(it) }
             if (playerSelected != null) {
@@ -155,10 +155,18 @@ class InGameActivity : AppCompatActivity(),
             ArmyOption.SIZE -> Game.sendArmyAction(ArmyRequestDTO(Game.myId, Game.myId,
                                                                     ArmyOption.SIZE, 5000))
         }
+        Game.myBonusTaken.value = true
     }
 
     override fun onDialogNegativeClick(dialog: ArmyOption?) {
         // do nothing
+    }
+
+    fun showSnackBarOnError(viewId: Int, message: String) {
+        val snackbar = Snackbar.make(findViewById(viewId), message, Snackbar.LENGTH_SHORT)
+        snackbar.setTextColor(ContextCompat.getColor(this, R.color.textError))
+        snackbar.animationMode = Snackbar.ANIMATION_MODE_SLIDE
+        snackbar.show()
     }
 
 }

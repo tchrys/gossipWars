@@ -64,9 +64,11 @@ class KickDialogFragment: DialogFragment() {
                 playersRadioGroup.addView(playerButton)
             }
             if (playersRadioGroup.childCount == 0) {
-                val dummyButton = RadioButton(context)
-                dummyButton.text = "player1"
-                playersRadioGroup.addView(dummyButton)
+                for (i in 0..7) {
+                    val dummyButton = RadioButton(context)
+                    dummyButton.text = "player" + i.toString()
+                    playersRadioGroup.addView(dummyButton)
+                }
             }
             playersRadioGroup.clearCheck()
         }

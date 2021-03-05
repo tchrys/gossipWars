@@ -58,15 +58,15 @@ class AddAllianceDialogFragment : DialogFragment() {
             playerOptionsString = mtl.toTypedArray()
         }
         usernameSelected = playerOptionsString?.get(0).toString()
-        builder.setTitle("Add alliance info")
+        builder.setTitle("Add alliance name and first member")
             .setSingleChoiceItems(playerOptionsString, 0) { _, which ->
                 usernameSelected = playerOptionsString?.get(which).toString()
             }
-            .setPositiveButton("da") { _, _ ->
+            .setPositiveButton("Done") { _, _ ->
                 val allianceNameInput: TextInputEditText? =  inputView.findViewById(R.id.sharedInputText)
                 listener.onDialogPositiveClick(AllianceAfterDialog(usernameSelected, allianceNameInput?.text.toString()))
             }
-            .setNegativeButton("nu") { _, _ ->
+            .setNegativeButton("Cancel") { _, _ ->
                 listener.onDialogNegativeClick(null)
             }
         return builder.create()
