@@ -74,7 +74,7 @@ class InGameActivity : AppCompatActivity(),
                     it
                 )
             }
-            Log.d("DBG", Game.alliances.value?.size.toString())
+            Log.d("DBG", Game.alliances.size.toString())
         }
     }
 

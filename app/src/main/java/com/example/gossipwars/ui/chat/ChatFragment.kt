@@ -39,13 +39,9 @@ class ChatFragment : Fragment() {
         mRecyclerView?.adapter = mAdapter
         mRecyclerView?.layoutManager = LinearLayoutManager(this.activity)
 
-        Game.alliances.observe(viewLifecycleOwner, Observer {
+        Game.allianceNewStructure.observe(viewLifecycleOwner, Observer {
             alliances.clear()
-            it.forEach { alliance: Alliance -> alliances.add(alliance) }
-//            Toast.makeText(context, "s-a notificat " + it.size, Toast.LENGTH_LONG).show()
-            Log.d("DBG", "s-a notificat " + alliances.size)
-//            mAdapter = AlliancesListAdapter(this, alliances)
-//            mRecyclerView?.adapter = mAdapter
+            Game.alliances.forEach { alliance: Alliance -> alliances.add(alliance) }
             mRecyclerView?.adapter?.notifyDataSetChanged()
         })
 
