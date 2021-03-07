@@ -11,21 +11,42 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.gossipwars.InGameActivity
+import com.example.gossipwars.MainActivity
 import com.example.gossipwars.R
+import com.example.gossipwars.logic.entities.Alliance
 import com.example.gossipwars.logic.entities.Game
+import com.example.gossipwars.logic.proposals.Proposal
+import com.example.gossipwars.ui.actions.ProposalListAdapter
 import com.google.android.material.snackbar.Snackbar
 
 class ChatFragment : Fragment() {
 
     private lateinit var chatViewModel: ChatViewModel
+    private var mRecyclerView: RecyclerView? = null
+    private var mAdapter: AlliancesListAdapter? = null
+    private var alliances: ArrayList<Alliance> = ArrayList()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                                 savedInstanceState: Bundle?): View? {
         chatViewModel = ViewModelProviders.of(this).get(ChatViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_chat, container, false)
-        val textView: TextView = root.findViewById(R.id.text_chat)
-        chatViewModel.text.observe(viewLifecycleOwner, Observer {
-            textView.text = it
+
+        mRecyclerView = root.findViewById(R.id.alliances_recyclerview)
+        mAdapter = AlliancesListAdapter(this, alliances)
+        mRecyclerView?.adapter = mAdapter
+        mRecyclerView?.layoutManager = LinearLayoutManager(this.activity)
+
+        Game.alliances.observe(viewLifecycleOwner, Observer {
+            alliances.clear()
+            it.forEach { alliance: Alliance -> alliances.add(alliance) }
+//            Toast.makeText(context, "s-a notificat " + it.size, Toast.LENGTH_LONG).show()
+            Log.d("DBG", "s-a notificat " + alliances.size)
+//            mAdapter = AlliancesListAdapter(this, alliances)
+//            mRecyclerView?.adapter = mAdapter
+            mRecyclerView?.adapter?.notifyDataSetChanged()
         })
 
         val addChatFab: View = root.findViewById(R.id.add_chat_fab)

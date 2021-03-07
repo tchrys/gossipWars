@@ -36,6 +36,7 @@ class ActionsFragment : Fragment() {
         actionsViewModel.proposals.observe(viewLifecycleOwner, Observer {
             props.clear()
             it.forEach { proposal: Proposal -> props.add(proposal) }
+            mRecyclerView?.adapter?.notifyDataSetChanged()
         })
 
 
@@ -48,7 +49,6 @@ class ActionsFragment : Fragment() {
         val button : Button = root.findViewById(R.id.exp_button)
         button.setOnClickListener {
             actionsViewModel.addProposal()
-            mRecyclerView?.adapter?.notifyDataSetChanged()
         }
 
         val kickChip: Chip = root.findViewById(R.id.kickChip)
