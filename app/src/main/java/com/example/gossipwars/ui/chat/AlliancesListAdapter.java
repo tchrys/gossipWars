@@ -32,7 +32,8 @@ public class AlliancesListAdapter extends
             allianceMembersTextView = itemView.findViewById(R.id.allianceMembersTextView);
             this.mAdapter = adapter;
             itemView.setOnClickListener(this);
-            // button.setOnClickListener...
+            itemView.setOnClickListener(view ->
+                    context.enterAllianceChat(alliancesList.get(getLayoutPosition())));
         }
 
         @Override

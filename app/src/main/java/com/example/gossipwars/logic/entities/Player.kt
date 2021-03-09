@@ -6,10 +6,11 @@ import com.example.gossipwars.communication.messages.allianceCommunication.ArmyR
 import com.example.gossipwars.communication.messages.allianceCommunication.JoinKickProposalDTO
 import com.example.gossipwars.logic.actions.Action
 import com.example.gossipwars.logic.proposals.*
+import java.io.Serializable
 import java.util.*
 import kotlin.math.max
 
-data class Player(var username : String, val id : UUID) {
+data class Player(var username : String, val id : UUID): Serializable {
     lateinit var army : Army
     var regionsOccupied : MutableSet<Region> = mutableSetOf()
     var trustInOthers : MutableMap<UUID, Int> = mutableMapOf()

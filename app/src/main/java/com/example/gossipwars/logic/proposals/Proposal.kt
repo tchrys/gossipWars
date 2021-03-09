@@ -7,12 +7,13 @@ import com.example.gossipwars.logic.actions.Action
 import com.example.gossipwars.logic.entities.Alliance
 import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.entities.Player
+import java.io.Serializable
 import java.util.*
 
 abstract class Proposal(open val alliance: Alliance, open val target : Player,
                         open val initiator : Player,
                         open var votes : MutableMap<Player, Boolean> = mutableMapOf(),
-                        open val proposalEnum: ProposalEnum, open val proposalId: UUID) {
+                        open val proposalEnum: ProposalEnum, open val proposalId: UUID): Serializable {
 
     abstract fun allPlayersVoted() : Boolean
     abstract fun voteResult() : Boolean

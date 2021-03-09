@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".ui.messenger.MessengerActivity">
+    <item
+        android:id="@+id/actionQuitAlliance"
+        android:orderInCategory="1"
+        android:title="@string/quit_alliance"
+        app:showAsAction="always" />
+</menu>

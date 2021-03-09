@@ -2,9 +2,10 @@ package com.example.gossipwars.logic.entities
 
 import com.example.gossipwars.communication.messages.actions.AllianceInvitationDTO
 import com.example.gossipwars.logic.proposals.*
+import java.io.Serializable
 import java.util.*
 
-data class Alliance(val id: UUID) {
+data class Alliance(val id: UUID): Serializable {
 
     lateinit var name: String
     var playersInvolved: MutableList<Player> = mutableListOf()

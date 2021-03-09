@@ -1,5 +1,6 @@
 package com.example.gossipwars.ui.chat
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -20,6 +21,7 @@ import com.example.gossipwars.logic.entities.Alliance
 import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.proposals.Proposal
 import com.example.gossipwars.ui.actions.ProposalListAdapter
+import com.example.gossipwars.ui.messenger.MessengerActivity
 import com.google.android.material.snackbar.Snackbar
 
 class ChatFragment : Fragment() {
@@ -56,5 +58,12 @@ class ChatFragment : Fragment() {
             .joinToString(","), Toast.LENGTH_LONG).show()
         })
         return root
+    }
+
+    fun enterAllianceChat(alliance: Alliance) {
+        Toast.makeText(context, alliance.name, Toast.LENGTH_LONG).show()
+        val intent = Intent(context, MessengerActivity::class.java).apply {}
+        intent.putExtra("alliance", alliance)
+        startActivity(intent)
     }
 }
