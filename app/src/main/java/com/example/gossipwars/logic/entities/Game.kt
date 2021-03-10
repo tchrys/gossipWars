@@ -42,6 +42,7 @@ object Game {
     var allianceNewStructure: MutableLiveData<Boolean> = MutableLiveData<Boolean>().apply {
         value = false
     }
+    var messageEmitter: MutableMap<Alliance, MutableLiveData<ChatMessage>> = mutableMapOf()
 
     init {
         regions = Region.initAllRegions()
@@ -101,6 +102,7 @@ object Game {
         val alliance: Alliance = Alliance.initAlliance(player, name)
         alliances.add(alliance)
         allianceNewStructure.value = true
+        messageEmitter[alliance] = MutableLiveData()
         return alliance
     }
 
@@ -260,6 +262,7 @@ object Game {
         alliances.add(alliance)
         alliance.addPlayer(findPlayerByUUID(myId))
         allianceNewStructure.value = true
+        messageEmitter[alliance] = MutableLiveData()
     }
 
     fun sendJoinKickProposalDTO(joinKickProposalDTO: JoinKickProposalDTO) {
@@ -350,11 +353,13 @@ object Game {
             }
         }
         alliance.addMessage(message.convertToEntity())
+        messageEmitter[alliance]?.value = message.convertToEntity()
     }
 
     fun receiveMessage(message: ChatMessageDTO) {
         var alliance: Alliance = findAllianceByUUID(message.allianceId)
         alliance.addMessage(message.convertToEntity())
+        messageEmitter[alliance]?.value = message.convertToEntity()
     }
 
     fun acknowledgeActionEnd(actionsEndDTO: ActionEndDTO) {
