@@ -32,7 +32,7 @@ class MessengerActivity : AppCompatActivity() {
         alliance.messageList.forEach { chatMessage: ChatMessage -> messages.add(chatMessage) }
 
         mRecyclerView = findViewById(R.id.chatMessagesRecyclerView)
-        mAdapter = MessagesListAdapter(this, messages)
+        mAdapter = MessagesListAdapter(this, messages, Game.findPlayerByUUID(Game.myId).username)
         mRecyclerView?.adapter = mAdapter
         mRecyclerView?.layoutManager = LinearLayoutManager(this)
 

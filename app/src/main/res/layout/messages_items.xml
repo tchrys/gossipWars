@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="6dp"
+    android:id="@+id/messageLinearLayout"
+    >
 
     <androidx.cardview.widget.CardView
         android:id="@+id/messageCardView"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" >
+        >
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -23,7 +24,6 @@
                 android:id="@+id/messageAuthor"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="TextView"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="4dp"
                 />
@@ -32,7 +32,6 @@
                 android:id="@+id/messageContent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="TextView"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="4dp"
                 />
@@ -41,13 +40,12 @@
                 android:id="@+id/messageDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="TextView"
                 android:layout_marginTop="2dp"
                 android:layout_marginEnd="4dp"
-                android:gravity="right"
+                android:gravity="end"
                 />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

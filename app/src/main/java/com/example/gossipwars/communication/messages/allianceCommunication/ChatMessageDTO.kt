@@ -5,8 +5,9 @@ import com.example.gossipwars.logic.entities.Game
 import java.io.Serializable
 import java.util.*
 
-class ChatMessageDTO(val allianceId: UUID, val content: String, val sender : UUID) : Serializable {
+class ChatMessageDTO(val allianceId: UUID, val content: String, val sender : UUID,
+                                            val messageDate: Calendar) : Serializable {
 
     fun convertToEntity(): ChatMessage = ChatMessage(Game.findAllianceByUUID(allianceId),
-                                                    content, Game.findPlayerByUUID(sender))
+                                                    content, Game.findPlayerByUUID(sender), messageDate)
 }
