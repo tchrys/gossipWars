@@ -66,5 +66,13 @@
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="quit_alliance">Quit</string>
     <string name="type_your_message">Type your message...</string>
+    <string name="reply">Reply</string>
+    <string name="join_proposals">Join proposals</string>
+    <string name="kick_proposals">Kick proposals</string>
+    <string name="attack_proposals">Attack proposals</string>
+    <string name="defense_proposals">Defense proposals</string>
+    <string name="negotiate_proposals">Negotiate proposals</string>
+    <string name="your_proposals">Your proposals</string>
+    <string name="view">View</string>
 
 </resources>

@@ -26,30 +26,30 @@ class ActionsFragment : Fragment() {
     private var mRecyclerView: RecyclerView? = null
     private var mAdapter: ProposalListAdapter? = null
     private var username : String = "dsf"
-    private var props : ArrayList<Proposal> = ArrayList()
+//    private var props : ArrayList<Proposal> = ArrayList()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         actionsViewModel = ViewModelProviders.of(this).get(ActionsViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_actions, container, false)
 
 
-        actionsViewModel.proposals.observe(viewLifecycleOwner, Observer {
-            props.clear()
-            it.forEach { proposal: Proposal -> props.add(proposal) }
-            mRecyclerView?.adapter?.notifyDataSetChanged()
-        })
+//        actionsViewModel.proposals.observe(viewLifecycleOwner, Observer {
+//            props.clear()
+//            it.forEach { proposal: Proposal -> props.add(proposal) }
+//            mRecyclerView?.adapter?.notifyDataSetChanged()
+//        })
 
 
-        mRecyclerView = root.findViewById(R.id.actions_recyclerview)
-        mAdapter = ProposalListAdapter(this, props, username)
-        mRecyclerView?.adapter = mAdapter
-        mRecyclerView?.layoutManager = LinearLayoutManager(this.activity)
+//        mRecyclerView = root.findViewById(R.id.actions_recyclerview)
+//        mAdapter = ProposalListAdapter(this, props, username)
+//        mRecyclerView?.adapter = mAdapter
+//        mRecyclerView?.layoutManager = LinearLayoutManager(this.activity)
 
 
-        val button : Button = root.findViewById(R.id.exp_button)
-        button.setOnClickListener {
-            actionsViewModel.addProposal()
-        }
+//        val button : Button = root.findViewById(R.id.exp_button)
+//        button.setOnClickListener {
+//            actionsViewModel.addProposal()
+//        }
 
         val kickChip: Chip = root.findViewById(R.id.kickChip)
         kickChip.setOnClickListener {

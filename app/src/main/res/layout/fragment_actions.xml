@@ -121,29 +121,304 @@
 
     <View
         android:id="@+id/actionsDivider"
-        android:layout_width="409dp"
+        android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="?android:attr/listDivider"
         app:layout_constraintTop_toBottomOf="@id/actionsChipGroup"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <Button
-        android:id="@+id/exp_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Button"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/actionsDivider" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/actions_recyclerview"
-        android:layout_width="0dp"
+    <GridLayout
+        android:id="@+id/gridLayout"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/actionsDivider"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/actionsDivider" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_margin="20dp"
+        android:columnCount="2"
+        android:rowCount="3">
+
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/joinCard"
+            app:cardCornerRadius="30dp"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:scaleType="center"
+                    app:layout_constraintBottom_toTopOf="@id/joinCardText"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_chip_join" />
+
+
+                <TextView
+                    android:id="@+id/joinCardText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/join_proposals"
+                    app:layout_constraintBottom_toTopOf="@id/joinCardReply"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="4dp"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/joinCardReply"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:gravity="end"
+                    android:text="@string/reply"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    style="?attr/borderlessButtonStyle" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/kickCard"
+            app:cardCornerRadius="30dp"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:scaleType="center"
+                    app:layout_constraintBottom_toTopOf="@id/kickCardText"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_chip_kick" />
+
+
+                <TextView
+                    android:id="@+id/kickCardText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/kick_proposals"
+                    app:layout_constraintBottom_toTopOf="@id/kickCardReply"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="4dp"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/kickCardReply"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:gravity="end"
+                    android:text="@string/reply"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    style="?attr/borderlessButtonStyle" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.cardview.widget.CardView>
+
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/attackCard"
+            app:cardCornerRadius="30dp"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:scaleType="center"
+                    app:layout_constraintBottom_toTopOf="@id/attackCardText"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_chip_attack" />
+
+
+                <TextView
+                    android:id="@+id/attackCardText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/attack_proposals"
+                    app:layout_constraintBottom_toTopOf="@id/attackCardReply"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="4dp"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/attackCardReply"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:gravity="end"
+                    android:text="@string/reply"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    style="?attr/borderlessButtonStyle" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/defendCard"
+            app:cardCornerRadius="30dp"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:scaleType="center"
+                    app:layout_constraintBottom_toTopOf="@id/defendCardText"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_chip_defend" />
+
+
+                <TextView
+                    android:id="@+id/defendCardText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/defense_proposals"
+                    app:layout_constraintBottom_toTopOf="@id/defendCardReply"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="4dp"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/defendCardReply"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:gravity="end"
+                    android:text="@string/reply"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    style="?attr/borderlessButtonStyle" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/negotiateCard"
+            app:cardCornerRadius="30dp"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:scaleType="center"
+                    app:layout_constraintBottom_toTopOf="@id/negotiateCardText"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_chip_negotiate" />
+
+
+                <TextView
+                    android:id="@+id/negotiateCardText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/negotiate_proposals"
+                    app:layout_constraintBottom_toTopOf="@id/negotiateCardReply"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="4dp"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/negotiateCardReply"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:gravity="end"
+                    android:text="@string/reply"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    style="?attr/borderlessButtonStyle" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/yourRequestsCard"
+            app:cardCornerRadius="30dp"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:scaleType="center"
+                    app:layout_constraintBottom_toTopOf="@id/yourRequestsCardText"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_chip_join" />
+
+
+                <TextView
+                    android:id="@+id/yourRequestsCardText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/your_proposals"
+                    app:layout_constraintBottom_toTopOf="@id/yourRequestsCardReply"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="4dp"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/yourRequestsCardReply"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:gravity="end"
+                    android:text="@string/view"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    style="?attr/borderlessButtonStyle" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.cardview.widget.CardView>
+
+
+    </GridLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
