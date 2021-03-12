@@ -219,6 +219,7 @@ class MainActivity : AppCompatActivity() {
                 gameJoined = myRoom;
                 mRecyclerView?.adapter?.notifyDataSetChanged()
                 sendRoomPayload(myRoom)
+                myRoomInput.editText?.setText("")
             }
         }
     }

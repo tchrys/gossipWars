@@ -4,13 +4,14 @@ import com.example.gossipwars.communication.messages.actions.AllianceInvitationD
 import com.example.gossipwars.logic.proposals.*
 import java.io.Serializable
 import java.util.*
+import kotlin.collections.ArrayList
 
 data class Alliance(val id: UUID): Serializable {
 
     lateinit var name: String
     var playersInvolved: MutableList<Player> = mutableListOf()
     lateinit var founderId: UUID;
-    val messageList: MutableList<ChatMessage> = mutableListOf()
+    val messageList: ArrayList<ChatMessage> = ArrayList()
     val proposalsList : MutableList<Proposal> = mutableListOf()
 
 
@@ -25,7 +26,14 @@ data class Alliance(val id: UUID): Serializable {
     }
 
     fun addMessage(message : ChatMessage) {
-        messageList.add(message)
+        var idx = 0
+        while (idx < messageList.size) {
+            if (messageList[idx].messageDate > message.messageDate) {
+                break
+            }
+            idx++
+        }
+        messageList.add(idx, message)
     }
 
     fun addProposal(targetPlayer: Player, initiator: Player, proposalId: UUID,

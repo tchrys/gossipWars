@@ -43,7 +43,7 @@ class ChatFragment : Fragment() {
 
         Game.allianceNewStructure.observe(viewLifecycleOwner, Observer {
             alliances.clear()
-            Game.alliances.forEach { alliance: Alliance -> alliances.add(alliance) }
+            Game.findAlliancesForPlayer(Game.myId)?.forEach { alliance: Alliance -> alliances.add(alliance) }
             mRecyclerView?.adapter?.notifyDataSetChanged()
         })
 
@@ -63,7 +63,7 @@ class ChatFragment : Fragment() {
     fun enterAllianceChat(alliance: Alliance) {
         Toast.makeText(context, alliance.name, Toast.LENGTH_LONG).show()
         val intent = Intent(context, MessengerActivity::class.java).apply {}
-        intent.putExtra("alliance", alliance)
+        intent.putExtra("alliance", alliance.id)
         startActivity(intent)
     }
 }

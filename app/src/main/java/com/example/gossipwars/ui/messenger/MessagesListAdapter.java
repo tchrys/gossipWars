@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
@@ -16,9 +17,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.gossipwars.R;
 import com.example.gossipwars.logic.entities.ChatMessage;
+import com.example.gossipwars.logic.entities.Game;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.UUID;
 
 public class MessagesListAdapter extends RecyclerView.Adapter<MessagesListAdapter.MessageViewHolder> {
     private MessengerActivity context;
@@ -48,9 +51,6 @@ public class MessagesListAdapter extends RecyclerView.Adapter<MessagesListAdapte
         @Override
         public void onClick(View view) {
             // get the position of the view that was clicked
-            int mPosition = getLayoutPosition();
-            ChatMessage elem = messagesList.get(mPosition);
-            mAdapter.notifyDataSetChanged();
         }
     }
 
@@ -66,40 +66,50 @@ public class MessagesListAdapter extends RecyclerView.Adapter<MessagesListAdapte
     @Override
     public MessageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         // inflate an item view
+        Log.d("DBG", "on create view holder");
         View mItemView = mInflater.inflate(R.layout.messages_items, parent, false);
         return new MessageViewHolder(mItemView, this);
     }
 
     @Override
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
-        // retrieve the data for that position
         ChatMessage chatMessage = messagesList.get(position);
+        UUID senderId = chatMessage.getSender().getId();
         holder.messageAuthor.setText(chatMessage.getSender().getUsername());
         holder.messageContent.setText(chatMessage.getContent());
         String msgDate = String.valueOf(chatMessage.getMessageDate().get(Calendar.HOUR_OF_DAY));
         msgDate += ":";
-        msgDate += String.valueOf(chatMessage.getMessageDate().get(Calendar.MINUTE));
+        String messageMinutes = String.valueOf(chatMessage.getMessageDate().get(Calendar.MINUTE));
+        msgDate += messageMinutes.length() == 1 ? "0" + messageMinutes : messageMinutes;
         holder.messageDate.setText(msgDate);
 
         int displayWidth = context.getResources().getDisplayMetrics().widthPixels;
         ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) holder.cardView.getLayoutParams();
         holder.cardView.setMinimumWidth(displayWidth / 6);
 
-        if (chatMessage.getSender().getUsername().equals(this.myUsername)) {
-            holder.cardView.setCardBackgroundColor(context.getResources().getColor(R.color.colorAccent));
+//        if (chatMessage.getMessageDate().get(Calendar.MILLISECOND) % 2 == 1) {
+//            Log.d("DBG", chatMessage.getContent() + " e pe random");
+//            senderId = UUID.randomUUID();
+//        }
+
+        if (senderId.equals(Game.myId)) {
+            Log.d("DBG", chatMessage.getContent() + " e verde");
+            holder.cardView.setCardBackgroundColor(context.getResources().getColor(R.color.light_green));
             holder.messageLinearLayout.setGravity(Gravity.END);
             layoutParams.setMarginStart(displayWidth / 4);
+            layoutParams.setMarginEnd(0);
             holder.cardView.requestLayout();
             holder.messageAuthor.setVisibility(View.GONE);
         } else {
+            holder.cardView.setCardBackgroundColor(context.getResources().getColor(R.color.light_blue));
             holder.messageLinearLayout.setGravity(Gravity.START);
+            layoutParams.setMarginStart(0);
             layoutParams.setMarginEnd(displayWidth / 4);
-            holder.cardView.requestLayout();
-            if (position > 0 && messagesList.get(position - 1).getSender().getUsername().equals(this.myUsername)) {
+            if (position > 0 && messagesList.get(position - 1).getSender().getId().equals(senderId)) {
                 holder.messageAuthor.setVisibility(View.GONE);
                 layoutParams.setMarginStart(50);
             }
-
+            holder.cardView.requestLayout();
         }
     }
 
