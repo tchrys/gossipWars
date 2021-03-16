@@ -28,7 +28,9 @@ class InGameActivity : AppCompatActivity(),
                         KickDialogFragment.KickDialogListener,
                         JoinDialogFragment.JoinDialogListener,
                         NegotiateDialogFragment.NegotiateDialogListener,
-                        BonusDialogFragment.BonusDialogListener {
+                        BonusDialogFragment.BonusDialogListener,
+                        AttackDialogFragment.AttackDialogListener,
+                        DefendDialogFragment.DefendDialogListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -167,6 +169,26 @@ class InGameActivity : AppCompatActivity(),
         snackbar.setTextColor(ContextCompat.getColor(this, R.color.textError))
         snackbar.animationMode = Snackbar.ANIMATION_MODE_SLIDE
         snackbar.show()
+    }
+
+    override fun onDialogPositiveClick(dialog: AttackDialogResult?) {
+        dialog?.allianceName?.let { Log.d("DBG", it) }
+        dialog?.regionName?.let { Log.d("DBG", it) }
+        // TODO
+    }
+
+    override fun onDialogNegativeClick(dialog: AttackDialogResult?) {
+        // do nothing
+    }
+
+    override fun onDialogPositiveClick(dialog: DefendDialogResult?) {
+        dialog?.allianceName?.let { Log.d("DBG", it) }
+        dialog?.regionName?.let { Log.d("DBG", it) }
+        // TODO
+    }
+
+    override fun onDialogNegativeClick(dialog: DefendDialogResult?) {
+        // do nothing
     }
 
 }

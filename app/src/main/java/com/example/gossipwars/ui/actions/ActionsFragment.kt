@@ -88,7 +88,7 @@ class ActionsFragment : Fragment() {
             if (noAllianceForMe()) {
                 showSnackbarForError("You must belong to an alliance to do this action")
             } else {
-                // TODO
+                fragmentManager?.let { AttackDialogFragment().show(it, "attackDialogTag") }
             }
         }
 
@@ -97,7 +97,7 @@ class ActionsFragment : Fragment() {
             if (noAllianceForMe()) {
                 showSnackbarForError("You must belong to an alliance to do this action")
             } else {
-                // TODO
+                fragmentManager?.let { DefendDialogFragment().show(it, "defendDialogTag") }
             }
         }
 

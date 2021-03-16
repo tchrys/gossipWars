@@ -74,5 +74,8 @@
     <string name="negotiate_proposals">Negotiate proposals</string>
     <string name="your_proposals">Your proposals</string>
     <string name="view">View</string>
+    <string name="select_alliance_for_help">Select alliance for help</string>
+    <string name="select_region_to_attack">Select region to attack</string>
+    <string name="select_region_to_defend">Select region to defend</string>
 
 </resources>

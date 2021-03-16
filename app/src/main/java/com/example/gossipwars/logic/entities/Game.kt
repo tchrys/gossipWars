@@ -93,6 +93,14 @@ object Game {
         return answer
     }
 
+    fun findAllRegions(): List<Region> = regions.filter { region -> region.occupiedBy != null }
+
+    fun findAttackableRegions(): List<Region> =
+        regions.filter { region -> region.occupiedBy != null && region.occupiedBy!!.id != myId }
+
+    fun findRegionByName(regionName: String): Region? =
+        regions.find { region -> region.name == regionName }
+
     fun iAmTheHost(): Boolean {
         var meAsAPlayer = findPlayerByUUID(myId)
         return roomInfo?.username == meAsAPlayer.username
@@ -176,6 +184,9 @@ object Game {
         val streamPayload = Payload.zza(data, MessageCode.PLAYER_INFO.toLong())
         for (playerEndpoint in mainActivity.peers) {
             Nearby.getConnectionsClient(mainActivity).sendPayload(playerEndpoint, streamPayload)
+        }
+        if (mainActivity.peers.size == 0) {
+            sendOrderPayload()
         }
     }
 
