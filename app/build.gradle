@@ -54,4 +54,5 @@ dependencies {
     implementation 'com.google.android:flexbox:2.0.1'
     implementation 'com.google.android.gms:play-services-nearby:17.0.0'
     implementation 'org.apache.commons:commons-lang3:3.6'
+    implementation 'com.github.tarek360.RichPath:animator:0.1.1'
 }
