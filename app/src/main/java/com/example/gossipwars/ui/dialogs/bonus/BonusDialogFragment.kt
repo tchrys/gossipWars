@@ -1,4 +1,4 @@
-package com.example.gossipwars.ui.actions
+package com.example.gossipwars.ui.dialogs.bonus
 
 import android.app.AlertDialog
 import android.app.Dialog

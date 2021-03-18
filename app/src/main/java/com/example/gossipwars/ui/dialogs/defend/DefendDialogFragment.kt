@@ -1,4 +1,4 @@
-package com.example.gossipwars.ui.actions
+package com.example.gossipwars.ui.dialogs.defend
 
 import android.app.AlertDialog
 import android.app.Dialog
@@ -79,7 +79,12 @@ class DefendDialogFragment: DialogFragment() {
         builder.setView(defendProposalView)
         builder.setTitle("Select alliance and region")
             .setPositiveButton("Done") { _, _ ->
-                listener.onDialogPositiveClick(DefendDialogResult(allianceNameSelected, regionNameSelected))
+                listener.onDialogPositiveClick(
+                    DefendDialogResult(
+                        allianceNameSelected,
+                        regionNameSelected
+                    )
+                )
             }
             .setNegativeButton("Cancel") { _, _ ->
                 listener.onDialogNegativeClick(null)

@@ -4,18 +4,21 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gossipwars.InGameActivity
 import com.example.gossipwars.R
-import com.example.gossipwars.logic.entities.ChatMessage
 import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.proposals.Proposal
+import com.example.gossipwars.ui.dialogs.attack.AttackDialogFragment
+import com.example.gossipwars.ui.dialogs.bonus.BonusDialogFragment
+import com.example.gossipwars.ui.dialogs.defend.DefendDialogFragment
+import com.example.gossipwars.ui.dialogs.join.JoinDialogFragment
+import com.example.gossipwars.ui.dialogs.kick.KickDialogFragment
+import com.example.gossipwars.ui.dialogs.negotiate.NegotiateDialogFragment
 import com.google.android.material.chip.Chip
 
 
@@ -56,7 +59,8 @@ class ActionsFragment : Fragment() {
             if (noAllianceForMe()) {
                 showSnackbarForError("You must belong to an alliance to do this action")
             } else {
-                fragmentManager?.let { KickDialogFragment().show(it, "kickDialogTag") }
+                fragmentManager?.let { KickDialogFragment()
+                    .show(it, "kickDialogTag") }
             }
         }
 
@@ -65,13 +69,15 @@ class ActionsFragment : Fragment() {
             if (noAllianceForMe()) {
                 showSnackbarForError("You must belong to an alliance to do this action")
             } else {
-                fragmentManager?.let { JoinDialogFragment().show(it, "joinDialogTag") }
+                fragmentManager?.let { JoinDialogFragment()
+                    .show(it, "joinDialogTag") }
             }
         }
 
         val negotiateChip: Chip = root.findViewById(R.id.negotiateChip)
         negotiateChip.setOnClickListener {
-            fragmentManager?.let { NegotiateDialogFragment().show(it, "negotiateDialogTag") }
+            fragmentManager?.let { NegotiateDialogFragment()
+                .show(it, "negotiateDialogTag") }
         }
 
         val bonusChip: Chip = root.findViewById(R.id.roundBonus)
@@ -79,7 +85,8 @@ class ActionsFragment : Fragment() {
             if (Game.myBonusTaken.value!!) {
                 showSnackbarForError("You've already taken the bonus for this round")
             } else {
-                fragmentManager?.let { BonusDialogFragment().show(it, "bonusDialogTag") }
+                fragmentManager?.let { BonusDialogFragment()
+                    .show(it, "bonusDialogTag") }
             }
         }
 
@@ -88,7 +95,8 @@ class ActionsFragment : Fragment() {
             if (noAllianceForMe()) {
                 showSnackbarForError("You must belong to an alliance to do this action")
             } else {
-                fragmentManager?.let { AttackDialogFragment().show(it, "attackDialogTag") }
+                fragmentManager?.let { AttackDialogFragment()
+                    .show(it, "attackDialogTag") }
             }
         }
 
@@ -97,7 +105,8 @@ class ActionsFragment : Fragment() {
             if (noAllianceForMe()) {
                 showSnackbarForError("You must belong to an alliance to do this action")
             } else {
-                fragmentManager?.let { DefendDialogFragment().show(it, "defendDialogTag") }
+                fragmentManager?.let { DefendDialogFragment()
+                    .show(it, "defendDialogTag") }
             }
         }
 

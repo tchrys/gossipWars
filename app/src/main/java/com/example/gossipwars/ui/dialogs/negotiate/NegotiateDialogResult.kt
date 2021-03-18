@@ -1,4 +1,4 @@
-package com.example.gossipwars.ui.actions
+package com.example.gossipwars.ui.dialogs.negotiate
 
 import com.example.gossipwars.logic.proposals.ArmyOption
 

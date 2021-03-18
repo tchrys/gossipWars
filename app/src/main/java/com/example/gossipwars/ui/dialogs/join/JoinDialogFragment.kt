@@ -1,4 +1,4 @@
-package com.example.gossipwars.ui.actions
+package com.example.gossipwars.ui.dialogs.join
 
 import android.app.AlertDialog
 import android.app.Dialog
@@ -86,7 +86,12 @@ class JoinDialogFragment: DialogFragment() {
         builder.setView(joinProposalView)
         builder.setTitle("Select alliance and player to join")
             .setPositiveButton("Done") { _, _  ->
-                listener.onDialogPositiveClick(JoinDialogResult(allianceNameSelected, usernameSelected))
+                listener.onDialogPositiveClick(
+                    JoinDialogResult(
+                        allianceNameSelected,
+                        usernameSelected
+                    )
+                )
             }
             .setNegativeButton("Cancel") { _, _ ->
                 listener.onDialogNegativeClick(null)

@@ -1,9 +1,7 @@
 package com.example.gossipwars
 
-import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.Toast
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
@@ -18,9 +16,21 @@ import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.entities.Player
 import com.example.gossipwars.logic.proposals.ArmyOption
 import com.example.gossipwars.logic.proposals.ProposalEnum
-import com.example.gossipwars.ui.actions.*
 import com.example.gossipwars.ui.chat.AddAllianceDialogFragment
 import com.example.gossipwars.ui.chat.AllianceAfterDialog
+import com.example.gossipwars.ui.dialogs.attack.AttackDialogFragment
+import com.example.gossipwars.ui.dialogs.attack.AttackDialogResult
+import com.example.gossipwars.ui.dialogs.bonus.BonusDialogFragment
+import com.example.gossipwars.ui.dialogs.defend.DefendDialogFragment
+import com.example.gossipwars.ui.dialogs.defend.DefendDialogResult
+import com.example.gossipwars.ui.dialogs.join.JoinDialogFragment
+import com.example.gossipwars.ui.dialogs.join.JoinDialogResult
+import com.example.gossipwars.ui.dialogs.kick.KickDialogFragment
+import com.example.gossipwars.ui.dialogs.kick.KickDialogResult
+import com.example.gossipwars.ui.dialogs.negotiate.NegotiateDialogFragment
+import com.example.gossipwars.ui.dialogs.negotiate.NegotiateDialogResult
+import com.example.gossipwars.ui.dialogs.region.RegionDialogFragment
+import com.example.gossipwars.ui.dialogs.region.RegionDialogResult
 import com.google.android.material.snackbar.Snackbar
 
 class InGameActivity : AppCompatActivity(),
@@ -30,7 +40,8 @@ class InGameActivity : AppCompatActivity(),
                         NegotiateDialogFragment.NegotiateDialogListener,
                         BonusDialogFragment.BonusDialogListener,
                         AttackDialogFragment.AttackDialogListener,
-                        DefendDialogFragment.DefendDialogListener {
+                        DefendDialogFragment.DefendDialogListener,
+                        RegionDialogFragment.RegionDialogListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -188,6 +199,16 @@ class InGameActivity : AppCompatActivity(),
     }
 
     override fun onDialogNegativeClick(dialog: DefendDialogResult?) {
+        // do nothing
+    }
+
+    override fun onDialogPositiveClick(dialog: RegionDialogResult?) {
+        dialog?.regionFrom.let { Log.d("DBG", "From " + it) }
+        dialog?.regionTo.let { Log.d("DBG", "To " + it) }
+        Log.d("DBG", dialog?.size.toString())
+    }
+
+    override fun onDialogNegativeClick(dialog: RegionDialogResult?) {
         // do nothing
     }
 

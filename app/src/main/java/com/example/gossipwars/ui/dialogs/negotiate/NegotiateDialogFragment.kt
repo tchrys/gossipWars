@@ -1,10 +1,9 @@
-package com.example.gossipwars.ui.actions
+package com.example.gossipwars.ui.dialogs.negotiate
 
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.RadioButton
 import android.widget.RadioGroup
@@ -13,7 +12,6 @@ import com.example.gossipwars.R
 import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.entities.Player
 import com.example.gossipwars.logic.proposals.ArmyOption
-import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import java.lang.ClassCastException
 import java.lang.IllegalStateException
@@ -88,7 +86,13 @@ class NegotiateDialogFragment: DialogFragment() {
                 } else {
                     increaseNr == -1
                 }
-                listener.onDialogPositiveClick(NegotiateDialogResult(usernameSelected, armyOption, increaseNr))
+                listener.onDialogPositiveClick(
+                    NegotiateDialogResult(
+                        usernameSelected,
+                        armyOption,
+                        increaseNr
+                    )
+                )
             }
             .setNegativeButton("Cancel") { _, _ ->
                 listener.onDialogNegativeClick(null)

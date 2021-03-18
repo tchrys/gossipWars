@@ -1,4 +1,4 @@
-package com.example.gossipwars.ui.actions
+package com.example.gossipwars.ui.dialogs.kick
 
 import android.app.AlertDialog
 import android.app.Dialog
@@ -87,7 +87,12 @@ class KickDialogFragment: DialogFragment() {
         builder.setView(kickProposalView)
         builder.setTitle("Select alliance and player to kick")
             .setPositiveButton("Done") { _, _  ->
-                listener.onDialogPositiveClick(KickDialogResult(allianceNameSelected, usernameSelected))
+                listener.onDialogPositiveClick(
+                    KickDialogResult(
+                        allianceNameSelected,
+                        usernameSelected
+                    )
+                )
             }
             .setNegativeButton("Cancel") { _, _ ->
                 listener.onDialogNegativeClick(null)

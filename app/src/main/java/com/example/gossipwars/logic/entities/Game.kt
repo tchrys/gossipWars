@@ -9,6 +9,7 @@ import com.example.gossipwars.communication.messages.gameInit.PlayerDTO
 import com.example.gossipwars.communication.messages.gameInit.PlayerWithOrderDTO
 import com.example.gossipwars.communication.messages.gameInit.PlayersOrderDTO
 import com.example.gossipwars.communication.messages.gameInit.RoomInfoDTO
+import com.example.gossipwars.communication.messages.info.RegionPlayerInfo
 import com.example.gossipwars.logic.actions.StrategyAction
 import com.example.gossipwars.logic.actions.TroopsAction
 import com.example.gossipwars.logic.proposals.ArmyRequest
@@ -98,8 +99,31 @@ object Game {
     fun findAttackableRegions(): List<Region> =
         regions.filter { region -> region.occupiedBy != null && region.occupiedBy!!.id != myId }
 
+    fun iCanAttackThisRegion(regionName: String): Boolean {
+        val region: Region = findRegionByName(regionName)!!
+        val meAsAPlayer: Player = findPlayerByUUID(myId)
+        if (region.occupiedBy == null || region.occupiedBy!!.id == myId
+                        || !meAsAPlayer.army.sizePerRegion.containsKey(region.id))
+            return false
+        return true
+    }
+
+    fun soldiersForRegion(regionName: String, playerId: UUID): Int? {
+        val region: Region = findRegionByName(regionName)!!
+        val player = findPlayerByUUID(playerId)
+        return player.army.sizePerRegion[region.id]
+    }
+
     fun findRegionByName(regionName: String): Region? =
         regions.find { region -> region.name == regionName }
+
+    fun findRegionPopulation(regionName: String): List<RegionPlayerInfo>? {
+        val region: Region = findRegionByName(regionName)!!
+        return players.value?.
+            filter { player: Player -> player.army.sizePerRegion.containsKey(region.id) }
+            ?.map { player -> RegionPlayerInfo(player.username,
+                                player.army.sizePerRegion[region.id]!!, regionName) }
+    }
 
     fun iAmTheHost(): Boolean {
         var meAsAPlayer = findPlayerByUUID(myId)

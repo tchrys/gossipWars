@@ -32,7 +32,6 @@
     <string name="negotiate_chip">Negotiate</string>
     <string name="round_bonus">Round bonus</string>
     <string name="army_size">Army size</string>
-    <string name="attack">Attack</string>
     <string name="defense">Defense</string>
     <string name="enter_desired_increase">Enter desired increase</string>
     <string name="enter_alliance_name">Enter alliance name</string>
@@ -65,7 +64,7 @@
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="quit_alliance">Quit</string>
-    <string name="type_your_message">Type your message...</string>
+    <string name="type_your_message">Type your message…</string>
     <string name="reply">Reply</string>
     <string name="join_proposals">Join proposals</string>
     <string name="kick_proposals">Kick proposals</string>
@@ -77,5 +76,11 @@
     <string name="select_alliance_for_help">Select alliance for help</string>
     <string name="select_region_to_attack">Select region to attack</string>
     <string name="select_region_to_defend">Select region to defend</string>
+    <string name="region_info_helper">You can move troops to this region from a neighbor region selected by below if you want. Select done if you want this action or close otherwise.</string>
+    <string name="no_soldiers_text">You have no soldiers in this region</string>
+    <string name="attack_this_region">You can attack this region with your soldiers that are already there</string>
+    <string name="attack">Attack</string>
+    <string name="how_many_soldiers_to_move">How many soldiers to move?</string>
+    <string name="cant_attack">You can\'t attack this region</string>
 
 </resources>
