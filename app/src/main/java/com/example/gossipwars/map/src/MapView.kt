@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
+import android.util.Log
 import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
@@ -11,7 +12,9 @@ import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
+import androidx.lifecycle.MutableLiveData
 import com.example.gossipwars.R
+import com.example.gossipwars.ui.map.MapFragment
 import com.richpath.RichPath
 import com.richpath.RichPathView
 import com.richpathanimator.RichPathAnimator
@@ -45,6 +48,7 @@ class MapView @JvmOverloads constructor(
     private val paint = Paint()
     private lateinit var surfaceView: SurfaceView
     private lateinit var gameMapPath: RichPathView
+    var provinceClicked: MutableLiveData<String> = MutableLiveData()
 
     // give list of selected provinces
     var selectedProvinces: MutableList<Province> = mutableListOf()
@@ -177,6 +181,7 @@ class MapView @JvmOverloads constructor(
                 deActivateProvince(it, withAnimate)
             } else {
                 // activate province
+                provinceClicked.value = provincePath.name
                 RichPathAnimator.animate(it)
                     .interpolator(AccelerateDecelerateInterpolator())
                     .duration(if (withAnimate) mapAnimationDuration else 0)

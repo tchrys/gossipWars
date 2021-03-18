@@ -18,7 +18,7 @@
         app:imProvinceActiveBackgroundColor="#03A9F4"
         app:imProvinceStrokeColor="#039BE5"
         app:imProvinceSelectByClick="true"
-        app:imProvinceMultiSelect="true"
+        app:imProvinceMultiSelect="false"
         app:imMapAppearWithAnimation="true"
         />
 
