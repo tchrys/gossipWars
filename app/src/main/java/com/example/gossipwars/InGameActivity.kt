@@ -16,6 +16,8 @@ import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.entities.Player
 import com.example.gossipwars.logic.proposals.ArmyOption
 import com.example.gossipwars.logic.proposals.ProposalEnum
+import com.example.gossipwars.ui.actions.VoteProposalsDialog
+import com.example.gossipwars.ui.actions.VoteProposalsResult
 import com.example.gossipwars.ui.chat.AddAllianceDialogFragment
 import com.example.gossipwars.ui.chat.AllianceAfterDialog
 import com.example.gossipwars.ui.dialogs.attack.AttackDialogFragment
@@ -41,7 +43,8 @@ class InGameActivity : AppCompatActivity(),
                         BonusDialogFragment.BonusDialogListener,
                         AttackDialogFragment.AttackDialogListener,
                         DefendDialogFragment.DefendDialogListener,
-                        RegionDialogFragment.RegionDialogListener {
+                        RegionDialogFragment.RegionDialogListener,
+                        VoteProposalsDialog.VoteDialogListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -209,6 +212,14 @@ class InGameActivity : AppCompatActivity(),
     }
 
     override fun onDialogNegativeClick(dialog: RegionDialogResult?) {
+        // do nothing
+    }
+
+    override fun onDialogPositiveClick(dialog: VoteProposalsResult?) {
+        Log.d("DBG", dialog?.responseList.toString())
+    }
+
+    override fun onDialogNegativeClick(dialog: VoteProposalsResult?) {
         // do nothing
     }
 

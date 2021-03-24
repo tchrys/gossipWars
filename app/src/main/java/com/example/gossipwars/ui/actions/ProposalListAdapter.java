@@ -17,7 +17,7 @@ import java.util.ArrayList;
 
 public class ProposalListAdapter extends
         RecyclerView.Adapter<ProposalListAdapter.ProposalViewHolder> {
-    private ActionsFragment context;
+    private VoteProposalsDialog context;
     private final ArrayList<Proposal> proposalsList;
     private final LayoutInflater mInflater;
     private final String username;
@@ -55,7 +55,7 @@ public class ProposalListAdapter extends
         }
     }
 
-    public ProposalListAdapter(ActionsFragment context, ArrayList<Proposal> proposalsList, String username) {
+    public ProposalListAdapter(VoteProposalsDialog context, ArrayList<Proposal> proposalsList, String username) {
         this.context = context;
         mInflater = LayoutInflater.from(context.getActivity());
         this.proposalsList = proposalsList;

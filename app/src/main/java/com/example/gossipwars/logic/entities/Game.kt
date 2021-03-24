@@ -44,6 +44,12 @@ object Game {
         value = false
     }
     var messageEmitter: MutableMap<Alliance, MutableLiveData<ChatMessage>> = mutableMapOf()
+    var joinPropsNo: MutableLiveData<Int> = MutableLiveData<Int>().apply { value = 0 }
+    var kickPropsNo: MutableLiveData<Int> = MutableLiveData<Int>().apply { value = 0 }
+    var attackPropsNo: MutableLiveData<Int> = MutableLiveData<Int>().apply { value = 0 }
+    var defensePropsNo: MutableLiveData<Int> = MutableLiveData<Int>().apply { value = 0 }
+    var negotiatePropsNo: MutableLiveData<Int> = MutableLiveData<Int>().apply { value = 0 }
+    var myPropsNo: MutableLiveData<Int> = MutableLiveData<Int>().apply { value = 0 }
 
     init {
         regions = Region.initAllRegions()
@@ -80,6 +86,16 @@ object Game {
             alliance.playersInvolved.any { player -> player.id == playerId }
         }.toMutableList()
     }
+
+    fun findAllProposals(): List<Proposal>? = findAlliancesForPlayer(myId)?.
+                                flatMap { alliance -> alliance.proposalsList }
+
+    fun findAllPropsFromCategory(proposalEnum: ProposalEnum): List<Proposal>? =
+        findAllProposals()?.filter { proposal ->
+                    proposal.proposalEnum == proposalEnum && proposal.initiator.id != myId }
+
+    fun findMyProposals(): List<Proposal>? =
+                findAllProposals()?.filter { proposal -> proposal.initiator.id == myId }
 
     fun findPlayersOutsideAlliance(allianceName: String): MutableList<Player> {
         var answer = mutableListOf<Player>()
@@ -315,6 +331,7 @@ object Game {
                     .sendPayload(it, streamPayload)
             }
         }
+        myPropsNo.value = myPropsNo.value?.plus(1)
     }
 
     fun receiveJoinKickProposalDTO(joinKickProposalDTO: JoinKickProposalDTO) {
@@ -323,6 +340,10 @@ object Game {
         var initiator: Player = findPlayerByUUID(joinKickProposalDTO.initiator)
         alliance.addProposal(targetPlayer, initiator, joinKickProposalDTO.proposalId,
                                     joinKickProposalDTO.proposalEnum, 0)
+        if (joinKickProposalDTO.proposalEnum == ProposalEnum.JOIN)
+            joinPropsNo.value = joinPropsNo.value?.plus(1)
+        else
+            kickPropsNo.value = kickPropsNo.value?.plus(1)
     }
 
     fun sendMembersAction(membersAction: MembersActionDTO) {
@@ -441,6 +462,10 @@ object Game {
                              findPlayerByUUID(strategyProposalDTO.initiator),
                              strategyProposalDTO.proposalId, strategyProposalDTO.proposalEnum,
                              strategyProposalDTO.targetRegion)
+        if (strategyProposalDTO.proposalEnum == ProposalEnum.ATTACK)
+            attackPropsNo.value = attackPropsNo.value?.plus(1)
+        else
+            defensePropsNo.value = defensePropsNo.value?.plus(1)
     }
 
     fun sendStrategyProposal(strategyProposalDTO: StrategyProposalDTO) {
@@ -454,6 +479,7 @@ object Game {
                 Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
             }
         }
+        myPropsNo.value = myPropsNo.value?.plus(1)
     }
 
     fun receiveTroopsAction(troopsActionDTO: TroopsActionDTO) {
@@ -476,6 +502,7 @@ object Game {
     fun receiveArmyRequest(armyRequestDTO: ArmyRequestDTO) {
         var meAsAPlayer = findPlayerByUUID(armyRequestDTO.approverId)
         meAsAPlayer.armyRequestReceived.add(armyRequestDTO.convertToEntity())
+        negotiatePropsNo.value = negotiatePropsNo.value?.plus(1)
     }
 
     fun sendArmyRequest(armyRequestDTO: ArmyRequestDTO) {
