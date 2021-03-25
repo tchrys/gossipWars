@@ -11,9 +11,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.gossipwars.communication.messages.allianceCommunication.ArmyRequestDTO
-import com.example.gossipwars.logic.entities.Alliance
-import com.example.gossipwars.logic.entities.Game
-import com.example.gossipwars.logic.entities.Player
+import com.example.gossipwars.logic.entities.*
 import com.example.gossipwars.logic.proposals.ArmyOption
 import com.example.gossipwars.logic.proposals.ProposalEnum
 import com.example.gossipwars.ui.actions.VoteProposalsDialog
@@ -50,7 +48,6 @@ class InGameActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_in_game)
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
-
         val navController = findNavController(R.id.nav_host_fragment)
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
@@ -62,89 +59,54 @@ class InGameActivity : AppCompatActivity(),
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
-
-        // parent to get main activity
-
         Game.sendMyInfo()
-
-        Toast.makeText(this, Game.roomInfo?.roomName, Toast.LENGTH_LONG).show()
-
-//        while (!Game.gameStarted) {
-//
-//        }
-//
-//        Toast.makeText(this, Game.players.map { player -> player.username }
-//            .joinToString(","), Toast.LENGTH_LONG).show()
 
     }
 
-    override fun onDialogPositiveClick(dialog: AllianceAfterDialog?) {
-        dialog?.firstMemberUsername?.let { Log.d("DBG", it) }
-        if (dialog?.allianceName == null || dialog.firstMemberUsername == null
-                                        || dialog.allianceName.isEmpty()) {
+    override fun onDialogPositiveClick(dialog: AllianceAfterDialog) {
+        if (dialog.allianceName.isNullOrEmpty() || dialog.firstMemberUsername == null) {
             showSnackBarOnError(R.id.fragment_chat_layout, "Please complete all fields")
         } else {
-            val alliance: Alliance = Game.addAlliance(Game.findPlayerByUUID(Game.myId), dialog.allianceName)
-            Game.findPlayerByUsername(dialog.firstMemberUsername)?.id?.let {
+            val alliance: Alliance = Game.addAlliance(GameHelper.findPlayerByUUID(Game.myId), dialog.allianceName)
+            GameHelper.findPlayerByUsername(dialog.firstMemberUsername)?.id?.let {
                 Game.sendAllianceDTO(alliance.convertToDTO(),
                     it
                 )
             }
-            Log.d("DBG", Game.alliances.size.toString())
         }
     }
 
-    override fun onDialogNegativeClick(dialog: AllianceAfterDialog?) {
-        // do nothing
-    }
-
-    override fun onDialogPositiveClick(dialog: KickDialogResult?) {
-        dialog?.allianceName?.let { Log.d("DBG", it) }
-        dialog?.usernameSelected?.let { Log.d("DBG", it) }
-        if (dialog?.allianceName == null || dialog?.usernameSelected == null) {
+    override fun onDialogPositiveClick(dialog: KickDialogResult) {
+        if (dialog.allianceName == null || dialog.usernameSelected == null) {
             showSnackBarOnError(R.id.fragment_actions_layout, "Please complete all fields")
         } else {
-            val meAsAPlayer = Game.findPlayerByUUID(Game.myId)
-            val alliance: Alliance? = Game.findAllianceByName(dialog.allianceName)
-            val player: Player? = Game.findPlayerByUsername(dialog.usernameSelected)
-            if (alliance != null && player != null) {
-                meAsAPlayer.makeProposal(alliance, player, ProposalEnum.KICK, 0)
-            }
+            onMemberProposalSent(dialog.allianceName, dialog.usernameSelected, ProposalEnum.KICK)
         }
     }
 
-    override fun onDialogNegativeClick(dialog: KickDialogResult?) {
-        // do nothing
-    }
-
-    override fun onDialogPositiveClick(dialog: JoinDialogResult?) {
-        dialog?.allianceName?.let { Log.d("DBG", it) }
-        dialog?.usernameSelected?.let { Log.d("DBG", it) }
-        if (dialog?.allianceName == null || dialog?.usernameSelected == null) {
+    override fun onDialogPositiveClick(dialog: JoinDialogResult) {
+        if (dialog.allianceName == null || dialog.usernameSelected == null) {
             showSnackBarOnError(R.id.fragment_actions_layout, "Please complete all fields")
         } else {
-            val meAsAPlayer = Game.findPlayerByUUID(Game.myId)
-            val alliance: Alliance? = Game.findAllianceByName(dialog.allianceName)
-            val player: Player? = Game.findPlayerByUsername(dialog.usernameSelected)
-            if (alliance != null && player != null) {
-                meAsAPlayer.makeProposal(alliance, player, ProposalEnum.JOIN, 0)
-            }
+            onMemberProposalSent(dialog.allianceName, dialog.usernameSelected, ProposalEnum.JOIN)
         }
     }
 
-    override fun onDialogNegativeClick(dialog: JoinDialogResult?) {
-        // do nothing
+    private fun onMemberProposalSent(allianceName: String, usernameSelected: String, propEnum: ProposalEnum) {
+        val meAsAPlayer = GameHelper.findPlayerByUUID(Game.myId)
+        val alliance: Alliance? = GameHelper.findAllianceByName(allianceName)
+        val player: Player? = GameHelper.findPlayerByUsername(usernameSelected)
+        if (alliance != null && player != null) {
+            meAsAPlayer.makeProposal(alliance, player, propEnum, 0)
+        }
     }
 
-    override fun onDialogPositiveClick(dialog: NegotiateDialogResult?) {
-        dialog?.usernameSelected?.let { Log.d("DBG", it) }
-        dialog?.armyOption?.let { Log.d("DBG", it.toString()) }
-        dialog?.increase?.let { Log.d("DBG", it.toString()) }
-        if (dialog?.usernameSelected == null || dialog.armyOption == null ||
+    override fun onDialogPositiveClick(dialog: NegotiateDialogResult) {
+        if (dialog.usernameSelected == null || dialog.armyOption == null ||
                         dialog.increase == null || dialog.increase == -1) {
             showSnackBarOnError(R.id.fragment_actions_layout, "Please complete all fields")
         } else {
-            val playerSelected: Player? = dialog.usernameSelected.let { Game.findPlayerByUsername(it) }
+            val playerSelected: Player? = dialog.usernameSelected.let { GameHelper.findPlayerByUsername(it) }
             if (playerSelected != null) {
                 when(dialog.armyOption) {
                     ArmyOption.SIZE -> Game.sendArmyRequest(ArmyRequestDTO(Game.myId,
@@ -157,12 +119,7 @@ class InGameActivity : AppCompatActivity(),
 
     }
 
-    override fun onDialogNegativeClick(dialog: NegotiateDialogResult?) {
-        // do nothing
-    }
-
     override fun onDialogPositiveClick(dialog: ArmyOption?) {
-        dialog?.let { Log.d("DBG", it.toString()) }
         when(dialog) {
             ArmyOption.ATTACK -> Game.sendArmyAction(ArmyRequestDTO(Game.myId, Game.myId,
                                                                     ArmyOption.ATTACK, 5))
@@ -171,11 +128,41 @@ class InGameActivity : AppCompatActivity(),
             ArmyOption.SIZE -> Game.sendArmyAction(ArmyRequestDTO(Game.myId, Game.myId,
                                                                     ArmyOption.SIZE, 5000))
         }
-        Game.myBonusTaken.value = true
+        Notifications.myBonusTaken.value = true
     }
 
-    override fun onDialogNegativeClick(dialog: ArmyOption?) {
-        // do nothing
+    override fun onDialogPositiveClick(dialog: AttackDialogResult) {
+        if (dialog.allianceName == null || dialog.regionName == null) {
+            showSnackBarOnError(R.id.fragment_actions_layout, "Please complete all fields")
+        } else {
+            onStrategyProposalSent(dialog.allianceName, dialog.regionName, ProposalEnum.ATTACK)
+        }
+    }
+
+    override fun onDialogPositiveClick(dialog: DefendDialogResult) {
+        if (dialog.allianceName == null || dialog.regionName == null) {
+            showSnackBarOnError(R.id.fragment_actions_layout, "Please complete all fields")
+        } else {
+            onStrategyProposalSent(dialog.allianceName, dialog.regionName, ProposalEnum.DEFEND)
+        }
+    }
+
+    private fun onStrategyProposalSent(allianceName: String, regionName: String, propEnum: ProposalEnum) {
+        val meAsAPlayer = GameHelper.findPlayerByUUID(Game.myId)
+        val alliance: Alliance? = GameHelper.findAllianceByName(allianceName)
+        val region: Region? = GameHelper.findRegionByName(regionName)
+        val target: Player? = region?.occupiedBy
+        if (alliance != null && target != null) {
+            meAsAPlayer.makeProposal(alliance, target, propEnum, region.id)
+        }
+    }
+
+    override fun onDialogPositiveClick(dialog: RegionDialogResult) {
+        // TODO
+    }
+
+    override fun onDialogPositiveClick(dialog: VoteProposalsResult) {
+        // TODO
     }
 
     fun showSnackBarOnError(viewId: Int, message: String) {
@@ -183,44 +170,6 @@ class InGameActivity : AppCompatActivity(),
         snackbar.setTextColor(ContextCompat.getColor(this, R.color.textError))
         snackbar.animationMode = Snackbar.ANIMATION_MODE_SLIDE
         snackbar.show()
-    }
-
-    override fun onDialogPositiveClick(dialog: AttackDialogResult?) {
-        dialog?.allianceName?.let { Log.d("DBG", it) }
-        dialog?.regionName?.let { Log.d("DBG", it) }
-        // TODO
-    }
-
-    override fun onDialogNegativeClick(dialog: AttackDialogResult?) {
-        // do nothing
-    }
-
-    override fun onDialogPositiveClick(dialog: DefendDialogResult?) {
-        dialog?.allianceName?.let { Log.d("DBG", it) }
-        dialog?.regionName?.let { Log.d("DBG", it) }
-        // TODO
-    }
-
-    override fun onDialogNegativeClick(dialog: DefendDialogResult?) {
-        // do nothing
-    }
-
-    override fun onDialogPositiveClick(dialog: RegionDialogResult?) {
-        dialog?.regionFrom.let { Log.d("DBG", "From " + it) }
-        dialog?.regionTo.let { Log.d("DBG", "To " + it) }
-        Log.d("DBG", dialog?.size.toString())
-    }
-
-    override fun onDialogNegativeClick(dialog: RegionDialogResult?) {
-        // do nothing
-    }
-
-    override fun onDialogPositiveClick(dialog: VoteProposalsResult?) {
-        Log.d("DBG", dialog?.responseList.toString())
-    }
-
-    override fun onDialogNegativeClick(dialog: VoteProposalsResult?) {
-        // do nothing
     }
 
 }

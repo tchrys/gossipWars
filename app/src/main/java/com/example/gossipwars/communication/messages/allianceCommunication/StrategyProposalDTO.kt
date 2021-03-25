@@ -12,9 +12,9 @@ class StrategyProposalDTO(val allianceId: UUID, val target: UUID, val initiator:
 
     fun convertToEntity(): StrategyProposal =
         StrategyProposal(
-            alliance = Game.findAllianceByUUID(allianceId),
-            initiator = Game.findPlayerByUUID(initiator),
-            target = Game.findPlayerByUUID(target),
+            alliance = GameHelper.findAllianceByUUID(allianceId),
+            initiator = GameHelper.findPlayerByUUID(initiator),
+            target = GameHelper.findPlayerByUUID(target),
             proposalId = proposalId,
             proposalEnum = proposalEnum,
             targetRegion = targetRegion

@@ -82,5 +82,6 @@
     <string name="attack">Attack</string>
     <string name="how_many_soldiers_to_move">How many soldiers to move?</string>
     <string name="cant_attack">You can\'t attack this region</string>
+    <string name="please_enter_your_username">Please enter your username</string>
 
 </resources>

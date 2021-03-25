@@ -11,6 +11,7 @@ import androidx.fragment.app.DialogFragment
 import com.example.gossipwars.R
 import com.example.gossipwars.communication.messages.actions.AllianceInvitationDTO
 import com.example.gossipwars.logic.entities.Game
+import com.example.gossipwars.logic.entities.GameHelper
 import com.example.gossipwars.logic.entities.Player
 import java.lang.IllegalStateException
 
@@ -20,8 +21,7 @@ class JoinDialogFragment: DialogFragment() {
     var allianceNameSelected: String? = null
 
     interface JoinDialogListener {
-        fun onDialogPositiveClick(dialog: JoinDialogResult?)
-        fun onDialogNegativeClick(dialog: JoinDialogResult?)
+        fun onDialogPositiveClick(dialog: JoinDialogResult)
     }
 
     override fun onAttach(context: Context) {
@@ -43,7 +43,7 @@ class JoinDialogFragment: DialogFragment() {
         val allianceRadioGroup: RadioGroup = joinProposalView.findViewById(R.id.allianceJoinRadioGroup)
         val playersRadioGroup: RadioGroup = joinProposalView.findViewById(R.id.playersJoinRadioGroup)
 
-        val alliances: List<AllianceInvitationDTO>? = Game.findAlliancesForPlayer(Game.myId)?.
+        val alliances: List<AllianceInvitationDTO>? = GameHelper.findAlliancesForPlayer(Game.myId)?.
                                                         map { alliance -> alliance.convertToDTO() }
         alliances?.forEach { allianceInvitationDTO: AllianceInvitationDTO ->
             var allianceButton = RadioButton(context)
@@ -55,7 +55,7 @@ class JoinDialogFragment: DialogFragment() {
             val checkedRadioButton = allianceRadioGroup.findViewById<RadioButton>(checkedId)
             allianceNameSelected = checkedRadioButton.text.toString()
             usernameSelected = null
-            val players: MutableList<Player>? = Game.findPlayersOutsideAlliance(checkedRadioButton.text.toString())
+            val players: MutableList<Player>? = GameHelper.findPlayersOutsideAlliance(checkedRadioButton.text.toString())
             playersRadioGroup.removeAllViews()
             players?.forEach { player: Player ->
                 var playerButton = RadioButton(context)
@@ -93,9 +93,7 @@ class JoinDialogFragment: DialogFragment() {
                     )
                 )
             }
-            .setNegativeButton("Cancel") { _, _ ->
-                listener.onDialogNegativeClick(null)
-            }
+            .setNegativeButton("Cancel") { _, _ -> }
         return builder.create()
     }
 

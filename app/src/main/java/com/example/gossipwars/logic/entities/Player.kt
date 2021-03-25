@@ -1,9 +1,5 @@
 package com.example.gossipwars.logic.entities
 
-import android.os.Build
-import androidx.annotation.RequiresApi
-import com.example.gossipwars.communication.messages.allianceCommunication.ArmyRequestDTO
-import com.example.gossipwars.communication.messages.allianceCommunication.JoinKickProposalDTO
 import com.example.gossipwars.logic.actions.Action
 import com.example.gossipwars.logic.proposals.*
 import java.io.Serializable

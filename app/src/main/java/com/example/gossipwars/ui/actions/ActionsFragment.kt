@@ -14,9 +14,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gossipwars.InGameActivity
 import com.example.gossipwars.R
-import com.example.gossipwars.logic.entities.Alliance
-import com.example.gossipwars.logic.entities.Game
-import com.example.gossipwars.logic.entities.Player
+import com.example.gossipwars.logic.entities.*
 import com.example.gossipwars.logic.proposals.JoinProposal
 import com.example.gossipwars.logic.proposals.KickProposal
 import com.example.gossipwars.logic.proposals.Proposal
@@ -35,14 +33,32 @@ import kotlin.collections.ArrayList
 class ActionsFragment : Fragment() {
 
     private lateinit var actionsViewModel: ActionsViewModel
-
-    private var mRecyclerView: RecyclerView? = null
-    private var mAdapter: ProposalListAdapter? = null
     private var username: String = "dsf"
-    private var joinProps : List<Proposal>? = null
-    private var kickProps : List<Proposal>? = null
-    private var attackProps : List<Proposal>? = null
-    private var defendProps : List<Proposal>? = null
+    private var joinProps: List<Proposal>? = null
+    private var kickProps: List<Proposal>? = null
+    private var attackProps: List<Proposal>? = null
+    private var defendProps: List<Proposal>? = null
+
+    private lateinit var kickChip: Chip
+    private lateinit var joinChip: Chip
+    private lateinit var negotiateChip: Chip
+    private lateinit var bonusChip: Chip
+    private lateinit var attackChip: Chip
+    private lateinit var defendChip: Chip
+
+    private lateinit var joinCardText: TextView
+    private lateinit var kickCardText: TextView
+    private lateinit var attackCardText: TextView
+    private lateinit var defendCardText: TextView
+    private lateinit var negotiateCardText: TextView
+    private lateinit var yourRequestsText: TextView
+
+    private lateinit var joinCardReply: Button
+    private lateinit var kickCardReply: Button
+    private lateinit var attackCardReply: Button
+    private lateinit var defendCardReply: Button
+    private lateinit var negotiateCardReply: Button
+    private lateinit var yourRequestsReply: Button
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -51,29 +67,59 @@ class ActionsFragment : Fragment() {
     ): View? {
         actionsViewModel = ViewModelProviders.of(this).get(ActionsViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_actions, container, false)
-        val kickChip: Chip = root.findViewById(R.id.kickChip)
-        val joinChip: Chip = root.findViewById(R.id.joinChip)
-        val negotiateChip: Chip = root.findViewById(R.id.negotiateChip)
-        val bonusChip: Chip = root.findViewById(R.id.roundBonus)
-        val attackChip: Chip = root.findViewById(R.id.attackChip)
-        val defendChip: Chip = root.findViewById(R.id.defendChip)
+        kickChip = root.findViewById(R.id.kickChip)
+        joinChip = root.findViewById(R.id.joinChip)
+        negotiateChip = root.findViewById(R.id.negotiateChip)
+        bonusChip = root.findViewById(R.id.roundBonus)
+        attackChip = root.findViewById(R.id.attackChip)
+        defendChip = root.findViewById(R.id.defendChip)
 
-        val joinCardText: TextView = root.findViewById(R.id.joinCardText)
-        val joinCardReply: Button = root.findViewById(R.id.joinCardReply)
-        val kickCardText: TextView = root.findViewById(R.id.kickCardText)
-        val kickCardReply: Button = root.findViewById(R.id.kickCardReply)
-        val attackCardText: TextView = root.findViewById(R.id.attackCardText)
-        val attackCardReply: Button = root.findViewById(R.id.attackCardReply)
-        val defendCardText: TextView = root.findViewById(R.id.defendCardText)
-        val defendCardReply: Button = root.findViewById(R.id.defendCardReply)
-        val negotiateCardText: TextView = root.findViewById(R.id.negotiateCardText)
-        val negotiateCardReply: Button = root.findViewById(R.id.negotiateCardReply)
-        val yourRequestsText: TextView = root.findViewById(R.id.yourRequestsCardText)
-        val yourRequestsReply: Button = root.findViewById(R.id.yourRequestsCardReply)
+        joinCardText = root.findViewById(R.id.joinCardText)
+        kickCardText = root.findViewById(R.id.kickCardText)
+        attackCardText = root.findViewById(R.id.attackCardText)
+        defendCardText = root.findViewById(R.id.defendCardText)
+        negotiateCardText = root.findViewById(R.id.negotiateCardText)
+        yourRequestsText = root.findViewById(R.id.yourRequestsCardText)
 
+        joinCardReply= root.findViewById(R.id.joinCardReply)
+        kickCardReply = root.findViewById(R.id.kickCardReply)
+        attackCardReply = root.findViewById(R.id.attackCardReply)
+        defendCardReply = root.findViewById(R.id.defendCardReply)
+        negotiateCardReply = root.findViewById(R.id.negotiateCardReply)
+        yourRequestsReply = root.findViewById(R.id.yourRequestsCardReply)
 
+        kickChipSetup()
+        joinChipSetup()
+        attackChipSetup()
+        defendChipSetup()
+        bonusChipSetup()
+        negotiateChipSetup()
+
+        joinReplySetup()
+        kickReplySetup()
+        attackReplySetup()
+        defendReplySetup()
+        yourRequestsSetup()
+
+        subscribeToJoinProps()
+        subscribeToKickProps()
+        subscribeToAttackProps()
+        subscribeToDefenseProps()
+        subscribeToMyProps()
+        subscribeToChipStateEvents()
+
+        // TODO negotiate props
+
+        return root
+    }
+
+    fun sendVote(proposal: Proposal, boolean: Boolean) {
+
+    }
+
+    private fun kickChipSetup() {
         kickChip.setOnClickListener {
-            if (noAllianceForMe()) {
+            if (Notifications.alliancesNoForMe.value!! == 0) {
                 showSnackbarForError("You must belong to an alliance to do this action")
             } else {
                 fragmentManager?.let {
@@ -82,10 +128,11 @@ class ActionsFragment : Fragment() {
                 }
             }
         }
+    }
 
-
+    private fun joinChipSetup() {
         joinChip.setOnClickListener {
-            if (noAllianceForMe()) {
+            if (Notifications.alliancesNoForMe.value!! == 0) {
                 showSnackbarForError("You must belong to an alliance to do this action")
             } else {
                 fragmentManager?.let {
@@ -94,30 +141,11 @@ class ActionsFragment : Fragment() {
                 }
             }
         }
+    }
 
-
-        negotiateChip.setOnClickListener {
-            fragmentManager?.let {
-                NegotiateDialogFragment()
-                    .show(it, "negotiateDialogTag")
-            }
-        }
-
-
-        bonusChip.setOnClickListener {
-            if (Game.myBonusTaken.value!!) {
-                showSnackbarForError("You've already taken the bonus for this round")
-            } else {
-                fragmentManager?.let {
-                    BonusDialogFragment()
-                        .show(it, "bonusDialogTag")
-                }
-            }
-        }
-
-
+    private fun attackChipSetup() {
         attackChip.setOnClickListener {
-            if (noAllianceForMe()) {
+            if (Notifications.alliancesNoForMe.value!! == 0) {
                 showSnackbarForError("You must belong to an alliance to do this action")
             } else {
                 fragmentManager?.let {
@@ -126,10 +154,11 @@ class ActionsFragment : Fragment() {
                 }
             }
         }
+    }
 
-
+    private fun defendChipSetup() {
         defendChip.setOnClickListener {
-            if (noAllianceForMe()) {
+            if (Notifications.alliancesNoForMe.value!! == 0) {
                 showSnackbarForError("You must belong to an alliance to do this action")
             } else {
                 fragmentManager?.let {
@@ -138,18 +167,42 @@ class ActionsFragment : Fragment() {
                 }
             }
         }
+    }
 
-        Game.joinPropsNo.observe(viewLifecycleOwner, Observer {
-            joinCardText.text = getString(R.string.join_proposals, it)
-            joinProps = Game.findAllPropsFromCategory(ProposalEnum.JOIN)
-        })
+    private fun negotiateChipSetup() {
+        negotiateChip.setOnClickListener {
+            fragmentManager?.let {
+                NegotiateDialogFragment()
+                    .show(it, "negotiateDialogTag")
+            }
+        }
+    }
+
+    private fun bonusChipSetup() {
+        bonusChip.setOnClickListener {
+            if (Notifications.myBonusTaken.value!!) {
+                showSnackbarForError("You've already taken the bonus for this round")
+            } else {
+                fragmentManager?.let {
+                    BonusDialogFragment()
+                        .show(it, "bonusDialogTag")
+                }
+            }
+        }
+    }
+
+    private fun joinReplySetup() {
         joinCardReply.setOnClickListener {
             if (!joinProps.isNullOrEmpty()) {
-                fragmentManager?.let { VoteProposalsDialog("Join proposals",
-                    joinProps as ArrayList<Proposal>, username).show(it, "joinVotesDialog") }
+                fragmentManager?.let {
+                    VoteProposalsDialog(
+                        "Join proposals",
+                        joinProps as ArrayList<Proposal>, username
+                    ).show(it, "joinVotesDialog")
+                }
             } else {
                 // just for debug
-                var props: ArrayList<Proposal> = arrayListOf()
+                val props: ArrayList<Proposal> = arrayListOf()
                 for (i in 0..3) {
                     val alliance = Alliance(UUID.randomUUID())
                     alliance.name = "all" + i.toString()
@@ -168,62 +221,103 @@ class ActionsFragment : Fragment() {
                 }
             }
         }
+    }
 
-        Game.kickPropsNo.observe(viewLifecycleOwner, Observer {
-            kickCardText.text = getString(R.string.kick_proposals, it)
-            kickProps = Game.findAllPropsFromCategory(ProposalEnum.KICK)
-        })
+    private fun kickReplySetup() {
         kickCardReply.setOnClickListener {
             if (!kickProps.isNullOrEmpty()) {
-                fragmentManager?.let { VoteProposalsDialog("Kick proposals",
-                        kickProps as ArrayList<Proposal>, username).show(it, "kickVotesDialog") }
+                fragmentManager?.let {
+                    VoteProposalsDialog(
+                        "Kick proposals",
+                        kickProps as ArrayList<Proposal>, username
+                    ).show(it, "kickVotesDialog")
+                }
             } else {
                 showSnackbarForError("There are no kick proposals yet")
             }
         }
+    }
 
-        Game.attackPropsNo.observe(viewLifecycleOwner, Observer {
-            attackCardText.text = getString(R.string.attack_proposals, it)
-            attackProps = Game.findAllPropsFromCategory(ProposalEnum.ATTACK)
-        })
+    private fun attackReplySetup() {
         attackCardReply.setOnClickListener {
             if (!attackProps.isNullOrEmpty()) {
-                fragmentManager?.let { VoteProposalsDialog("Attack proposals",
-                    attackProps as ArrayList<Proposal>, username).show(it, "attackVotesDialog") }
+                fragmentManager?.let {
+                    VoteProposalsDialog(
+                        "Attack proposals",
+                        attackProps as ArrayList<Proposal>, username
+                    ).show(it, "attackVotesDialog")
+                }
             } else {
                 showSnackbarForError("There are no attack proposals yet")
             }
         }
+    }
 
-        Game.defensePropsNo.observe(viewLifecycleOwner, Observer {
-            defendCardText.text = getString(R.string.defense_proposals, it)
-            defendProps = Game.findAllPropsFromCategory(ProposalEnum.DEFEND)
-        })
+    private fun defendReplySetup() {
         defendCardReply.setOnClickListener {
             if (!defendProps.isNullOrEmpty()) {
-                fragmentManager?.let { VoteProposalsDialog("Defense proposals",
-                    defendProps as ArrayList<Proposal>, username).show(it, "defendVotesDialog") }
+                fragmentManager?.let {
+                    VoteProposalsDialog(
+                        "Defense proposals",
+                        defendProps as ArrayList<Proposal>, username
+                    ).show(it, "defendVotesDialog")
+                }
             } else {
                 showSnackbarForError("There are no defense proposals yet")
             }
         }
+    }
 
-        // TODO negotiate props
-
-        Game.myPropsNo.observe(viewLifecycleOwner, Observer {
-            yourRequestsText.text = getString(R.string.your_proposals, it)
-        })
+    private fun yourRequestsSetup() {
         yourRequestsReply.setOnClickListener {
-            if (Game.myPropsNo.value!! > 0) {
-                fragmentManager?.let { VoteProposalsDialog("Your requests",
-                    Game.findMyProposals() as ArrayList<Proposal>, username).show(it, "yourReqDialog") }
+            if (Notifications.myPropsNo.value!! > 0) {
+                fragmentManager?.let {
+                    VoteProposalsDialog(
+                        "Your requests",
+                        GameHelper.findMyProposals() as ArrayList<Proposal>, username
+                    ).show(it, "yourReqDialog")
+                }
             } else {
                 showSnackbarForError("You have made no proposals yet")
             }
         }
+    }
 
+    private fun subscribeToJoinProps() {
+        Notifications.joinPropsNo.observe(viewLifecycleOwner, Observer {
+            joinCardText.text = getString(R.string.join_proposals, it)
+            joinProps = GameHelper.findAllPropsFromCategory(ProposalEnum.JOIN)
+        })
+    }
 
-        Game.myBonusTaken.observe(viewLifecycleOwner, Observer {
+    private fun subscribeToKickProps() {
+        Notifications.kickPropsNo.observe(viewLifecycleOwner, Observer {
+            kickCardText.text = getString(R.string.kick_proposals, it)
+            kickProps = GameHelper.findAllPropsFromCategory(ProposalEnum.KICK)
+        })
+    }
+
+    private fun subscribeToAttackProps() {
+        Notifications.attackPropsNo.observe(viewLifecycleOwner, Observer {
+            attackCardText.text = getString(R.string.attack_proposals, it)
+            attackProps = GameHelper.findAllPropsFromCategory(ProposalEnum.ATTACK)
+        })
+    }
+
+    private fun subscribeToDefenseProps() {
+        Notifications.defensePropsNo.observe(viewLifecycleOwner, Observer {
+            defendCardText.text = getString(R.string.defense_proposals, it)
+            defendProps = GameHelper.findAllPropsFromCategory(ProposalEnum.DEFEND)
+        })
+    }
+
+    private fun subscribeToMyProps() {
+        Notifications.myPropsNo.observe(viewLifecycleOwner, Observer {
+            yourRequestsText.text = getString(R.string.your_proposals, it)
+        })
+    }
+    private fun subscribeToChipStateEvents() {
+        Notifications.myBonusTaken.observe(viewLifecycleOwner, Observer {
             if (it) {
                 context?.let { it1 -> ContextCompat.getColor(it1, R.color.disabledChip) }
                     ?.let { it2 ->
@@ -234,25 +328,19 @@ class ActionsFragment : Fragment() {
             }
         })
 
-        if (noAllianceForMe()) {
-            context?.let { ContextCompat.getColor(it, R.color.disabledChip) }?.let {
-                kickChip.setTextColor(it)
-                joinChip.setTextColor(it)
-                attackChip.setTextColor(it)
-                defendChip.setTextColor(it)
+        Notifications.alliancesNoForMe.observe(viewLifecycleOwner, Observer { value ->
+            if (value == 0) {
+                context?.let { ContextCompat.getColor(it, R.color.disabledChip) }?.let {
+                    kickChip.setTextColor(it)
+                    joinChip.setTextColor(it)
+                    attackChip.setTextColor(it)
+                    defendChip.setTextColor(it)
+                }
             }
-        }
-
-        return root
+        })
     }
 
-    fun sendVote(proposal: Proposal, boolean: Boolean) {
-
-    }
-
-    fun noAllianceForMe(): Boolean = Game.findAlliancesForPlayer(Game.myId)?.size == 0
-
-    fun showSnackbarForError(message: String) {
+    private fun showSnackbarForError(message: String) {
         (activity as InGameActivity).showSnackBarOnError(R.id.fragment_actions_layout, message)
     }
 }

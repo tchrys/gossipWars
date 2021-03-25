@@ -17,7 +17,7 @@ data class Alliance(val id: UUID): Serializable {
 
     companion object Factory {
         fun initAlliance(player : Player, name : String) : Alliance {
-            var alliance = Alliance(UUID.randomUUID())
+            val alliance = Alliance(UUID.randomUUID())
             alliance.addPlayer(player)
             alliance.name = name
             alliance.founderId = player.id
@@ -38,7 +38,7 @@ data class Alliance(val id: UUID): Serializable {
 
     fun addProposal(targetPlayer: Player, initiator: Player, proposalId: UUID,
                     proposalEnum: ProposalEnum, targetRegion: Int) {
-        var proposal: Proposal = when(proposalEnum) {
+        val proposal: Proposal = when(proposalEnum) {
             ProposalEnum.JOIN -> JoinProposal(alliance = this, proposalId = proposalId, initiator = initiator,
                                                     target = targetPlayer, proposalEnum = proposalEnum)
             ProposalEnum.KICK -> KickProposal(alliance = this, proposalId = proposalId, initiator = initiator,

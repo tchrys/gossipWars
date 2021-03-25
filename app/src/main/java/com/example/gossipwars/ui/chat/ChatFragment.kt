@@ -19,6 +19,8 @@ import com.example.gossipwars.MainActivity
 import com.example.gossipwars.R
 import com.example.gossipwars.logic.entities.Alliance
 import com.example.gossipwars.logic.entities.Game
+import com.example.gossipwars.logic.entities.GameHelper
+import com.example.gossipwars.logic.entities.Notifications
 import com.example.gossipwars.logic.proposals.Proposal
 import com.example.gossipwars.ui.actions.ProposalListAdapter
 import com.example.gossipwars.ui.messenger.MessengerActivity
@@ -41,21 +43,21 @@ class ChatFragment : Fragment() {
         mRecyclerView?.adapter = mAdapter
         mRecyclerView?.layoutManager = LinearLayoutManager(this.activity)
 
-        Game.allianceNewStructure.observe(viewLifecycleOwner, Observer {
+        Notifications.allianceNewStructure.observe(viewLifecycleOwner, Observer {
             alliances.clear()
-            Game.findAlliancesForPlayer(Game.myId)?.forEach { alliance: Alliance -> alliances.add(alliance) }
+            GameHelper.findAlliancesForPlayer(Game.myId)?.forEach { alliance: Alliance -> alliances.add(alliance) }
             mRecyclerView?.adapter?.notifyDataSetChanged()
         })
 
         val addChatFab: View = root.findViewById(R.id.add_chat_fab)
-        addChatFab.setOnClickListener { view ->
+        addChatFab.setOnClickListener {
             fragmentManager?.let { AddAllianceDialogFragment().show(it, "addAllianceTag")
             }
         }
 
         Game.players.observe(viewLifecycleOwner, Observer {
-            Toast.makeText(context, it.map { player -> player.username }
-            .joinToString(","), Toast.LENGTH_LONG).show()
+            Toast.makeText(context, it.joinToString(",") { player -> player.username },
+                                Toast.LENGTH_LONG).show()
         })
         return root
     }

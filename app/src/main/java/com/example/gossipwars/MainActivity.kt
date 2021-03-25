@@ -11,6 +11,7 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gossipwars.communication.components.NearbyConnectionsLogic
@@ -29,6 +30,7 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
 
     var username : String? = null;
+    var usernameSelected: MutableLiveData<Boolean> = MutableLiveData<Boolean>().apply { value = false }
     var acceptedUsers = mutableSetOf<String>()
     var peers = mutableSetOf<String>()
     private val roomsList = LinkedList<RoomInfoDTO>()
@@ -142,8 +144,9 @@ class MainActivity : AppCompatActivity() {
         username = sharedPref.getString("username", "")
         if (username.orEmpty().isNotEmpty()) {
             usernameText.text = getString(R.string.username_message) + username;
+            usernameSelected.value = true
         } else {
-            usernameText.text = "Please enter your username"
+            usernameText.text = getString(R.string.please_enter_your_username)
         }
         usernameInput.placeholderText = username;
 
@@ -156,6 +159,7 @@ class MainActivity : AppCompatActivity() {
                 apply()
             }
             usernameText.text = getString(R.string.username_message) + usernameInput.editText?.text.toString()
+            usernameSelected.value = true
         }
 
         // length spinner block
@@ -188,17 +192,21 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        var myRoomInput = findViewById<TextInputLayout>(R.id.lobbyNameTextField)
+        val myRoomInput = findViewById<TextInputLayout>(R.id.lobbyNameTextField)
         // recycler view block
-        if (!username.isNullOrEmpty()) {
-            val me = Player(username!!, UUID.randomUUID())
-            Game.myId = me.id
-            Game.players.value?.add(me)
-            mRecyclerView = findViewById(R.id.recyclerview)
-            mAdapter = RoomListAdapter(this, roomsList, username.orEmpty())
-            mRecyclerView?.setAdapter(mAdapter)
-            mRecyclerView?.setLayoutManager(LinearLayoutManager(this))
-        }
+        var roomListInitialized = false
+        usernameSelected.observe(this, androidx.lifecycle.Observer {
+            if (it && !roomListInitialized) {
+                roomListInitialized = true
+                val me = Player(username!!, UUID.randomUUID())
+                Game.myId = me.id
+                Game.players.value?.add(me)
+                mRecyclerView = findViewById(R.id.recyclerview)
+                mAdapter = RoomListAdapter(this, roomsList, username.orEmpty())
+                mRecyclerView?.setAdapter(mAdapter)
+                mRecyclerView?.setLayoutManager(LinearLayoutManager(this))
+            }
+        })
 
         // create room block
         val createRoomButton = findViewById<Button>(R.id.createRoomButton)
@@ -209,7 +217,7 @@ class MainActivity : AppCompatActivity() {
             else if (myRoomInput.editText?.text.isNullOrEmpty()) {
                 Snackbar.make(findViewById(R.id.main_layout), "No room name", Snackbar.LENGTH_SHORT).show()
             } else {
-                var myRoom =
+                val myRoom =
                     RoomInfoDTO(
                         username.orEmpty(), myRoomInput.editText?.text.toString(),
                         myRoomLength, myRoomMaxPlayers, 1, false

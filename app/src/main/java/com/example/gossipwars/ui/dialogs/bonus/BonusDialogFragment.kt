@@ -12,11 +12,11 @@ class BonusDialogFragment: DialogFragment() {
     internal lateinit var listener: BonusDialogListener
     var stringToArmyOption = mutableMapOf("Army size" to ArmyOption.SIZE,
                                         "Attack" to ArmyOption.ATTACK, "Defense" to ArmyOption.DEFEND)
-    var optionSelected: ArmyOption? = null
+    var armyOptions = mutableListOf("Army size", "Attack", "Defense").toTypedArray()
+    var optionSelected: ArmyOption? = stringToArmyOption[armyOptions[0]]
 
     interface BonusDialogListener {
         fun onDialogPositiveClick(dialog: ArmyOption?)
-        fun onDialogNegativeClick(dialog: ArmyOption?)
     }
 
     override fun onAttach(context: Context) {
@@ -33,9 +33,6 @@ class BonusDialogFragment: DialogFragment() {
             throw IllegalStateException("activity can not be null")
         }
         val builder = AlertDialog.Builder(activity)
-
-        var armyOptions = mutableListOf("Army size", "Attack", "Defense").toTypedArray()
-        optionSelected = stringToArmyOption[armyOptions[0]]
         builder.setTitle("Select your bonus(size = 5k, attack / defense = +5)")
             .setSingleChoiceItems(armyOptions, 0) { _, which ->
                 optionSelected = stringToArmyOption[armyOptions[which]]
@@ -43,9 +40,7 @@ class BonusDialogFragment: DialogFragment() {
             .setPositiveButton("Done") { _, _ ->
                 listener.onDialogPositiveClick(optionSelected)
             }
-            .setNegativeButton("Cancel") { _, _ ->
-                listener.onDialogNegativeClick(null)
-            }
+            .setNegativeButton("Cancel") { _, _ -> }
         return builder.create()
     }
 

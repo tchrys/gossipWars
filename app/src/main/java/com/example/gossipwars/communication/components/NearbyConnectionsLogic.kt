@@ -22,12 +22,12 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
                 // an endpoint was found. we request a connection to it
                 Nearby.getConnectionsClient(mainActivity)
                     .requestConnection(mainActivity.username.orEmpty(), endpointId, connectionLifecycleCallback)
-                    .addOnSuccessListener { void ->
+                    .addOnSuccessListener {
                         // we successfully requested a connection. now both sides
                         // must accept before the connection is established
                         Toast.makeText(mainActivity, "Request connection", Toast.LENGTH_LONG).show()
                     }
-                    .addOnFailureListener { exception ->
+                    .addOnFailureListener {
                         // nearby connections failed to request the connection
                         Toast.makeText(mainActivity, "Request failed", Toast.LENGTH_LONG).show()
                     }
@@ -67,16 +67,14 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
                 AlertDialog.Builder(mainActivity)
                     .setTitle("Accept connection to " + connectionInfo.endpointName)
                     .setMessage("Confirm the code matches on both devices " + connectionInfo.authenticationToken)
-                    .setPositiveButton("Accept") {
-                            dialogInterface, i ->
+                    .setPositiveButton("Accept") { _, _ ->
                         // the user confirmed, so we can accept the connection
                         Nearby.getConnectionsClient(mainActivity)
                             .acceptConnection(endpointId, payloadCallback)
                         mainActivity.acceptedUsers.add(endpointId)
                         Toast.makeText(mainActivity, endpointId, Toast.LENGTH_LONG).show()
                     }
-                    .setNegativeButton("Cancel") {
-                            dialogInterface, i ->
+                    .setNegativeButton("Cancel") { _, _ ->
                         // the user canceled, so we should reject the connection
                         Nearby.getConnectionsClient(mainActivity).rejectConnection(endpointId)
                     }
@@ -90,10 +88,10 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
         Nearby.getConnectionsClient(mainActivity)
             .startAdvertising(mainActivity.username.orEmpty(), "com.example.gossipwars",
                 connectionLifecycleCallback, advertisingOptions)
-            .addOnSuccessListener { void ->
+            .addOnSuccessListener {
                 Toast.makeText(mainActivity, "We are advertising", Toast.LENGTH_LONG).show()
             }
-            .addOnFailureListener { exception ->
+            .addOnFailureListener {
                 Toast.makeText(mainActivity, "Unable to advertise", Toast.LENGTH_LONG).show()
             }
     }
@@ -102,10 +100,10 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
         val discoveryOptions = DiscoveryOptions.Builder().setStrategy(Strategy.P2P_CLUSTER).build()
         Nearby.getConnectionsClient(mainActivity).startDiscovery("com.example.gossipwars",
             endpointDiscoveryCallback, discoveryOptions)
-            .addOnSuccessListener { void ->
+            .addOnSuccessListener {
                 Toast.makeText(mainActivity, "We are discovering", Toast.LENGTH_LONG).show()
             }
-            .addOnFailureListener { exception ->
+            .addOnFailureListener {
                 Toast.makeText(mainActivity, "Unable to discover", Toast.LENGTH_LONG).show()
             }
     }
@@ -118,63 +116,63 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
                 val receivedBytes = payload.asBytes()
                 when (payload.id) {
                     MessageCode.ROOM_INFO.toLong() -> {
-                        var roomInfo: RoomInfoDTO = SerializationUtils.deserialize(receivedBytes)
+                        val roomInfo: RoomInfoDTO = SerializationUtils.deserialize(receivedBytes)
                         mainActivity.manageRoomInfoPayload(roomInfo, endpointId)
                     }
                     MessageCode.ALLIANCE_INFO.toLong() -> {
-                        var allianceInvitationDTO: AllianceInvitationDTO = SerializationUtils.deserialize(receivedBytes)
+                        val allianceInvitationDTO: AllianceInvitationDTO = SerializationUtils.deserialize(receivedBytes)
                         Game.receiveNewAllianceInfo(allianceInvitationDTO)
                     }
                     MessageCode.JOIN_KICK_PROPOSAL.toLong() -> {
-                        var joinKickProposalDTO: JoinKickProposalDTO = SerializationUtils.deserialize(receivedBytes)
+                        val joinKickProposalDTO: JoinKickProposalDTO = SerializationUtils.deserialize(receivedBytes)
                         Game.receiveJoinKickProposalDTO(joinKickProposalDTO)
                     }
                     MessageCode.MEMBERS_ACTION.toLong() -> {
-                        var membersAction: MembersActionDTO = SerializationUtils.deserialize(receivedBytes)
+                        val membersAction: MembersActionDTO = SerializationUtils.deserialize(receivedBytes)
                         Game.acknowledgeMembersAction(membersAction)
                     }
                     MessageCode.MESSAGE_DTO.toLong() -> {
-                        var messageDTO: ChatMessageDTO = SerializationUtils.deserialize(receivedBytes)
+                        val messageDTO: ChatMessageDTO = SerializationUtils.deserialize(receivedBytes)
                         Game.receiveMessage(messageDTO)
                     }
                     MessageCode.PLAYER_INFO.toLong() -> {
-                        var playerDTO: PlayerDTO = SerializationUtils.deserialize(receivedBytes)
+                        val playerDTO: PlayerDTO = SerializationUtils.deserialize(receivedBytes)
                         Game.acknowledgePlayer(playerDTO, endpointId)
                     }
                     MessageCode.ACTION_END.toLong() -> {
-                        var actionsEndDTO: ActionEndDTO = SerializationUtils.deserialize(receivedBytes)
+                        val actionsEndDTO: ActionEndDTO = SerializationUtils.deserialize(receivedBytes)
                         Game.acknowledgeActionEnd(actionsEndDTO)
                     }
                     MessageCode.PROPOSAL_RESPONSE.toLong() -> {
-                        var proposalResponse: ProposalResponse = SerializationUtils.deserialize(receivedBytes)
+                        val proposalResponse: ProposalResponse = SerializationUtils.deserialize(receivedBytes)
                         Game.receiveProposalResponse(proposalResponse)
                     }
                     MessageCode.STRATEGY_ACTION.toLong() -> {
-                        var strategyActionDTO: StrategyActionDTO = SerializationUtils.deserialize(receivedBytes)
+                        val strategyActionDTO: StrategyActionDTO = SerializationUtils.deserialize(receivedBytes)
                         Game.receiveStrategyAction(strategyActionDTO)
                     }
                     MessageCode.STRATEGY_PROPOSAL.toLong() -> {
-                        var strategyProposalDTO: StrategyProposalDTO = SerializationUtils.deserialize(receivedBytes)
+                        val strategyProposalDTO: StrategyProposalDTO = SerializationUtils.deserialize(receivedBytes)
                         Game.receiveStrategyProposal(strategyProposalDTO)
                     }
                     MessageCode.TROOPS_ACTION.toLong() -> {
-                        var troopsActionDTO: TroopsActionDTO = SerializationUtils.deserialize(receivedBytes)
+                        val troopsActionDTO: TroopsActionDTO = SerializationUtils.deserialize(receivedBytes)
                         Game.receiveTroopsAction(troopsActionDTO)
                     }
                     MessageCode.PLAYER_ORDER.toLong() -> {
-                        var playersOrderDTO: PlayersOrderDTO = SerializationUtils.deserialize(receivedBytes)
+                        val playersOrderDTO: PlayersOrderDTO = SerializationUtils.deserialize(receivedBytes)
                         Game.reorderPlayers(playersOrderDTO)
                     }
                     MessageCode.ARMY_REQUEST.toLong() -> {
-                        var armyRequestDTO: ArmyRequestDTO = SerializationUtils.deserialize(receivedBytes)
+                        val armyRequestDTO: ArmyRequestDTO = SerializationUtils.deserialize(receivedBytes)
                         Game.receiveArmyRequest(armyRequestDTO)
                     }
                     MessageCode.ARMY_APPROVAL.toLong() -> {
-                        var armyRequestDTO: ArmyRequestDTO = SerializationUtils.deserialize(receivedBytes)
+                        val armyRequestDTO: ArmyRequestDTO = SerializationUtils.deserialize(receivedBytes)
                         Game.receiveArmyApproval(armyRequestDTO)
                     }
                     MessageCode.ARMY_UPGRADE.toLong() -> {
-                        var armyRequestDTO: ArmyRequestDTO = SerializationUtils.deserialize(receivedBytes)
+                        val armyRequestDTO: ArmyRequestDTO = SerializationUtils.deserialize(receivedBytes)
                         Game.receiveArmyAction(armyRequestDTO)
                     }
                 }

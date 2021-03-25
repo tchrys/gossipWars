@@ -14,24 +14,16 @@ class AddAllianceDialogFragment : DialogFragment() {
     internal lateinit var listener: AllianceDialogListener
     var usernameSelected: String? = null
 
-
-    /* The activity that creates an instance of this dialog fragment must
-     * implement this interface in order to receive event callbacks.
-     * Each method passes the DialogFragment in case the host needs to query it. */
     interface AllianceDialogListener {
-        fun onDialogPositiveClick(dialog: AllianceAfterDialog?)
-        fun onDialogNegativeClick(dialog: AllianceAfterDialog?)
+        fun onDialogPositiveClick(dialog: AllianceAfterDialog)
     }
 
     // Override the Fragment.onAttach() method to instantiate the NoticeDialogListener
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        // Verify that the host activity implements the callback interface
         try {
-            // Instantiate the NoticeDialogListener so we can send events to the host
             listener = context as AllianceDialogListener
         } catch (e: ClassCastException) {
-            // The activity doesn't implement the interface, throw exception
             throw ClassCastException((context.toString() + " must implement NoticeDialogListener"))
         }
     }
@@ -44,7 +36,7 @@ class AddAllianceDialogFragment : DialogFragment() {
         val builder = AlertDialog.Builder(activity)
         val inputView: View = inflater.inflate(R.layout.shared_input_name, null)
         builder.setView(inputView)
-        var playerOptionsString: Array<CharSequence>? = Game.players?.value?.filter { player -> player.id != Game.myId }
+        var playerOptionsString: Array<CharSequence>? = Game.players.value?.filter { player -> player.id != Game.myId }
             ?.map { player -> player.username }?.toTypedArray()
         if (playerOptionsString?.size == 0) {
             var mtl = playerOptionsString.toMutableList()
@@ -66,9 +58,7 @@ class AddAllianceDialogFragment : DialogFragment() {
                 val allianceNameInput: TextInputEditText? =  inputView.findViewById(R.id.sharedInputText)
                 listener.onDialogPositiveClick(AllianceAfterDialog(usernameSelected, allianceNameInput?.text.toString()))
             }
-            .setNegativeButton("Cancel") { _, _ ->
-                listener.onDialogNegativeClick(null)
-            }
+            .setNegativeButton("Cancel") { _, _ -> }
         return builder.create()
     }
 }

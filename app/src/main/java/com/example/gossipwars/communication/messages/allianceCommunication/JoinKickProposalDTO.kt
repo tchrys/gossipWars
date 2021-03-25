@@ -8,25 +8,26 @@ import com.example.gossipwars.logic.proposals.ProposalEnum
 import java.io.Serializable
 import java.util.*
 
-class JoinKickProposalDTO(val allianceId: UUID, val target: UUID, val initiator: UUID,
-                          val proposalId: UUID, val proposalEnum: ProposalEnum
+class JoinKickProposalDTO(
+    val allianceId: UUID, val target: UUID, val initiator: UUID,
+    val proposalId: UUID, val proposalEnum: ProposalEnum
 ) : Serializable {
 
     fun convertToEntity(): Proposal? {
-        return when(proposalEnum) {
+        return when (proposalEnum) {
             ProposalEnum.JOIN -> JoinProposal(
-                target = Game.findPlayerByUUID(target),
+                target = GameHelper.findPlayerByUUID(target),
                 proposalEnum = proposalEnum,
                 proposalId = proposalId,
-                initiator = Game.findPlayerByUUID(initiator),
-                alliance = Game.findAllianceByUUID(allianceId)
+                initiator = GameHelper.findPlayerByUUID(initiator),
+                alliance = GameHelper.findAllianceByUUID(allianceId)
             )
             ProposalEnum.KICK -> KickProposal(
-                target = Game.findPlayerByUUID(target),
+                target = GameHelper.findPlayerByUUID(target),
                 proposalEnum = proposalEnum,
                 proposalId = proposalId,
-                initiator = Game.findPlayerByUUID(initiator),
-                alliance = Game.findAllianceByUUID(allianceId)
+                initiator = GameHelper.findPlayerByUUID(initiator),
+                alliance = GameHelper.findAllianceByUUID(allianceId)
             )
             else -> null
         }

@@ -22,8 +22,7 @@ class VoteProposalsDialog(val title: String, val props: ArrayList<Proposal>,
     var responses: VoteProposalsResult = VoteProposalsResult()
 
     interface VoteDialogListener {
-        fun onDialogPositiveClick(dialog: VoteProposalsResult?)
-        fun onDialogNegativeClick(dialog: VoteProposalsResult?)
+        fun onDialogPositiveClick(dialog: VoteProposalsResult)
     }
 
     override fun onAttach(context: Context) {
@@ -38,8 +37,8 @@ class VoteProposalsDialog(val title: String, val props: ArrayList<Proposal>,
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         if (activity == null)
             throw IllegalStateException("activity can not be null")
-        var inflater = requireActivity().layoutInflater
-        var builder = AlertDialog.Builder(activity)
+        val inflater = requireActivity().layoutInflater
+        val builder = AlertDialog.Builder(activity)
         val voteProposalView: View = inflater.inflate(R.layout.vote_proposal_form, null)
 
         mRecyclerView = voteProposalView.findViewById(R.id.proposalsRecyclerView)
@@ -52,9 +51,7 @@ class VoteProposalsDialog(val title: String, val props: ArrayList<Proposal>,
             .setPositiveButton("Done") { _, _ ->
                 listener.onDialogPositiveClick(responses)
             }
-            .setNegativeButton("Cancel") { _, _ ->
-                listener.onDialogNegativeClick(null)
-            }
+            .setNegativeButton("Cancel") { _, _ -> }
         return builder.create()
     }
 

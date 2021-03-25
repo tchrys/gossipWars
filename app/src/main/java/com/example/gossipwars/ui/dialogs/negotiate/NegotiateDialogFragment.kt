@@ -23,8 +23,7 @@ class NegotiateDialogFragment: DialogFragment() {
     var increaseNr: Int? = null
 
     interface NegotiateDialogListener {
-        fun onDialogPositiveClick(dialog: NegotiateDialogResult?)
-        fun onDialogNegativeClick(dialog: NegotiateDialogResult?)
+        fun onDialogPositiveClick(dialog: NegotiateDialogResult)
     }
 
     override fun onAttach(context: Context) {
@@ -94,9 +93,7 @@ class NegotiateDialogFragment: DialogFragment() {
                     )
                 )
             }
-            .setNegativeButton("Cancel") { _, _ ->
-                listener.onDialogNegativeClick(null)
-            }
+            .setNegativeButton("Cancel") { _, _ -> }
 
         return builder.create()
     }

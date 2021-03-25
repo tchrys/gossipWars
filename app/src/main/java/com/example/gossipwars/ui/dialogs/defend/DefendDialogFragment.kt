@@ -11,18 +11,16 @@ import androidx.fragment.app.DialogFragment
 import com.example.gossipwars.R
 import com.example.gossipwars.communication.messages.actions.AllianceInvitationDTO
 import com.example.gossipwars.logic.entities.Game
+import com.example.gossipwars.logic.entities.GameHelper
 import com.example.gossipwars.logic.entities.Region
-import java.lang.ClassCastException
-import java.lang.IllegalStateException
 
-class DefendDialogFragment: DialogFragment() {
+class DefendDialogFragment : DialogFragment() {
     internal lateinit var listener: DefendDialogListener
     var allianceNameSelected: String? = null
     var regionNameSelected: String? = null
 
     interface DefendDialogListener {
-        fun onDialogPositiveClick(dialog: DefendDialogResult?)
-        fun onDialogNegativeClick(dialog: DefendDialogResult?)
+        fun onDialogPositiveClick(dialog: DefendDialogResult)
     }
 
     override fun onAttach(context: Context) {
@@ -38,21 +36,23 @@ class DefendDialogFragment: DialogFragment() {
         if (activity == null) {
             throw IllegalStateException("activity can not be null")
         }
-        var inflater = requireActivity().layoutInflater
-        var builder = AlertDialog.Builder(activity)
+        val inflater = requireActivity().layoutInflater
+        val builder = AlertDialog.Builder(activity)
         val defendProposalView: View = inflater.inflate(R.layout.alliance_defend_form, null)
-        val allianceRadioGroup: RadioGroup = defendProposalView.findViewById(R.id.allianceDefendRadioGroup)
-        val regionsRadioGroup: RadioGroup = defendProposalView.findViewById(R.id.regionDefendRadioGroup)
+        val allianceRadioGroup: RadioGroup =
+            defendProposalView.findViewById(R.id.allianceDefendRadioGroup)
+        val regionsRadioGroup: RadioGroup =
+            defendProposalView.findViewById(R.id.regionDefendRadioGroup)
 
-        val alliances: List<AllianceInvitationDTO>? = Game.findAlliancesForPlayer(Game.myId)?.
-        map { alliance -> alliance.convertToDTO() }
+        val alliances: List<AllianceInvitationDTO>? = GameHelper.findAlliancesForPlayer(Game.myId)
+            ?.map { alliance -> alliance.convertToDTO() }
         alliances?.forEach { allianceInvitationDTO: AllianceInvitationDTO ->
             val allianceButton = RadioButton(context)
             allianceButton.text = allianceInvitationDTO.name
             allianceRadioGroup.addView(allianceButton)
         }
 
-        val regions: List<Region>? = Game.findAllRegions()
+        val regions: List<Region>? = GameHelper.findAllRegions()
         regions?.forEach { region: Region ->
             val regionButton = RadioButton(context)
             regionButton.text = region.name
@@ -86,9 +86,7 @@ class DefendDialogFragment: DialogFragment() {
                     )
                 )
             }
-            .setNegativeButton("Cancel") { _, _ ->
-                listener.onDialogNegativeClick(null)
-            }
+            .setNegativeButton("Cancel") { _, _ -> }
         return builder.create()
     }
 }

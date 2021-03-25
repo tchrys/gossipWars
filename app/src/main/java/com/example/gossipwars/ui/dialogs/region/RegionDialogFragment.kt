@@ -3,9 +3,7 @@ package com.example.gossipwars.ui.dialogs.region
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
-import android.opengl.Visibility
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.RadioButton
@@ -15,19 +13,17 @@ import androidx.fragment.app.DialogFragment
 import com.example.gossipwars.R
 import com.example.gossipwars.communication.messages.info.RegionPlayerInfo
 import com.example.gossipwars.logic.entities.Game
+import com.example.gossipwars.logic.entities.GameHelper
 import com.example.gossipwars.logic.entities.Region
 import com.google.android.material.slider.Slider
-import java.lang.ClassCastException
-import java.lang.IllegalStateException
 
-class RegionDialogFragment(val regionName: String): DialogFragment() {
+class RegionDialogFragment(val regionName: String) : DialogFragment() {
     internal lateinit var listener: RegionDialogListener
     var regionSelected: Region? = null
     var sizeSelected: Int = 0
 
     interface RegionDialogListener {
-        fun onDialogPositiveClick(dialog: RegionDialogResult?)
-        fun onDialogNegativeClick(dialog: RegionDialogResult?)
+        fun onDialogPositiveClick(dialog: RegionDialogResult)
     }
 
     override fun onAttach(context: Context) {
@@ -43,10 +39,10 @@ class RegionDialogFragment(val regionName: String): DialogFragment() {
         if (activity == null) {
             throw IllegalStateException("activity can not be null")
         }
-        var inflater = requireActivity().layoutInflater
-        var builder = AlertDialog.Builder(activity)
+        val inflater = requireActivity().layoutInflater
+        val builder = AlertDialog.Builder(activity)
         val regionView: View = inflater.inflate(R.layout.region_dialog, null)
-        val dialogRegion: Region = Game.findRegionByName(regionName)!!
+        val dialogRegion: Region = GameHelper.findRegionByName(regionName)!!
 
         val regionDescription: TextView = regionView.findViewById(R.id.regionDescription)
         var regionInfoString = ""
@@ -56,13 +52,13 @@ class RegionDialogFragment(val regionName: String): DialogFragment() {
             "This region is not occupied"
         }
         regionInfoString += "\n"
-        val regionPopulation: List<RegionPlayerInfo>? = Game.findRegionPopulation(regionName)
+        val regionPopulation: List<RegionPlayerInfo>? = GameHelper.findRegionPopulation(regionName)
         if (regionPopulation != null && regionPopulation.isNotEmpty()) {
             regionInfoString += "Soldiers in this region: \n"
             regionPopulation.forEachIndexed { index: Int, regionPlayerInfo: RegionPlayerInfo ->
                 val sizeInK: Float = 1f * regionPlayerInfo.size / 1000
                 regionInfoString += "\t" + regionPlayerInfo.playerName + " : " +
-                                        String.format("%.1f", sizeInK) + "k"
+                        String.format("%.1f", sizeInK) + "k"
                 if (index != regionPopulation.size - 1) {
                     regionInfoString += "\n"
                 }
@@ -74,12 +70,13 @@ class RegionDialogFragment(val regionName: String): DialogFragment() {
 
         val regionAttackTextView: TextView = regionView.findViewById(R.id.regionDialogAttackText)
         val attackButton: Button = regionView.findViewById(R.id.regionAttackButton)
-        val canAttack: Boolean = Game.iCanAttackThisRegion(regionName)
+        val canAttack: Boolean = GameHelper.iCanAttackThisRegion(regionName)
         if (!canAttack) {
             attackButton.visibility = View.GONE
             regionAttackTextView.text = getString(R.string.cant_attack)
             regionAttackTextView.setCompoundDrawablesWithIntrinsicBounds(
-                R.drawable.ic_warning, 0,0, 0)
+                R.drawable.ic_warning, 0, 0, 0
+            )
         } else {
             attackButton.setOnClickListener {
                 // TODO
@@ -98,13 +95,15 @@ class RegionDialogFragment(val regionName: String): DialogFragment() {
 
         regionsRadioGroup.setOnCheckedChangeListener { _, checkedIdx ->
             val checkedRadioButton = regionsRadioGroup.findViewById<RadioButton>(checkedIdx)
-            regionSelected = Game.findRegionByName(checkedRadioButton.text.toString())
-            val soldiersNo: Int? = regionSelected?.name?.let { Game.soldiersForRegion(it, Game.myId) }
+            regionSelected = GameHelper.findRegionByName(checkedRadioButton.text.toString())
+            val soldiersNo: Int? =
+                regionSelected?.name?.let { GameHelper.soldiersForRegion(it, Game.myId) }
             if (soldiersNo == null || soldiersNo == 0) {
                 soldiersSlider.visibility = View.GONE
                 howManySoldiers.text = getString(R.string.no_soldiers_text)
                 howManySoldiers.setCompoundDrawablesWithIntrinsicBounds(
-                    R.drawable.ic_warning, 0,0, 0)
+                    R.drawable.ic_warning, 0, 0, 0
+                )
                 sizeSelected = 0
             } else {
                 howManySoldiers.text = getString(R.string.how_many_soldiers_to_move)
@@ -120,20 +119,18 @@ class RegionDialogFragment(val regionName: String): DialogFragment() {
 
 
         builder.setView(regionView)
-        builder.setTitle(camelCaseToSpaced(regionName))
+        builder.setTitle(GameHelper.camelCaseToSpaced(regionName))
             .setPositiveButton("Done") { _, _ ->
-                listener.onDialogPositiveClick(RegionDialogResult(regionSelected?.name, regionName, sizeSelected))
+                listener.onDialogPositiveClick(
+                    RegionDialogResult(
+                        regionSelected?.name,
+                        regionName,
+                        sizeSelected
+                    )
+                )
             }
-            .setNegativeButton("Cancel") { _, _ ->
-                listener.onDialogNegativeClick(null)
-            }
+            .setNegativeButton("Cancel") { _, _ -> }
         return builder.create()
-    }
-
-    fun camelCaseToSpaced(name: String): String {
-        var ans: String = ""
-        name.forEach { c: Char -> ans += if (c in 'A'..'Z') " " + c else c }
-        return ans
     }
 
 }

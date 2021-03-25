@@ -13,10 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gossipwars.R
 import com.example.gossipwars.communication.messages.actions.MembersActionDTO
-import com.example.gossipwars.logic.entities.Alliance
-import com.example.gossipwars.logic.entities.ChatMessage
-import com.example.gossipwars.logic.entities.Game
-import com.example.gossipwars.logic.entities.Player
+import com.example.gossipwars.logic.entities.*
 import com.example.gossipwars.logic.proposals.ProposalEnum
 import com.google.android.material.textfield.TextInputEditText
 import java.util.*
@@ -33,16 +30,20 @@ class MessengerActivity : AppCompatActivity() {
         setSupportActionBar(findViewById(R.id.chatToolbar))
 
         val allianceId: UUID = (intent.getSerializableExtra("alliance") as UUID)
-        val alliance: Alliance = Game.findAllianceByUUID(allianceId)
+        val alliance: Alliance = GameHelper.findAllianceByUUID(allianceId)
         activityAllianceId = allianceId
         Toast.makeText(this, alliance.name, Toast.LENGTH_LONG).show()
 
         mRecyclerView = findViewById(R.id.chatMessagesRecyclerView)
-        mAdapter = MessagesListAdapter(this, alliance.messageList, Game.findPlayerByUUID(Game.myId).username)
+        mAdapter = MessagesListAdapter(
+            this,
+            alliance.messageList,
+            GameHelper.findPlayerByUUID(Game.myId).username
+        )
         mRecyclerView?.adapter = mAdapter
         mRecyclerView?.layoutManager = LinearLayoutManager(this)
 
-        Game.messageEmitter[alliance]?.observe(this, Observer {
+        Notifications.messageEmitter[alliance]?.observe(this, Observer {
             mRecyclerView?.adapter?.notifyDataSetChanged()
 //            mRecyclerView?.adapter?.notifyItemInserted(alliance.messageList.size)
 //            mRecyclerView?.scrollToPosition(alliance.messageList.size)
@@ -59,8 +60,12 @@ class MessengerActivity : AppCompatActivity() {
         chatInput?.inputType = InputType.TYPE_CLASS_TEXT.or(InputType.TYPE_TEXT_FLAG_MULTI_LINE)
         val sendButton = findViewById<Button>(R.id.chatSendButton)
         sendButton.setOnClickListener { view ->
-            Game.sendMessage(ChatMessage(alliance, chatInput?.text.toString(),
-                                    Game.findPlayerByUUID(Game.myId)).convertToDTO())
+            Game.sendMessage(
+                ChatMessage(
+                    alliance, chatInput?.text.toString(),
+                    GameHelper.findPlayerByUUID(Game.myId)
+                ).convertToDTO()
+            )
             chatInput?.setText("")
         }
     }
@@ -73,10 +78,12 @@ class MessengerActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id: Int = item.itemId
         if (id == R.id.actionQuitAlliance) {
-            Toast.makeText(this, "Quit alliance", Toast.LENGTH_LONG).show()
-            val meAsAPlayer: Player = Game.findPlayerByUUID(Game.myId)
-            Game.sendMembersAction(MembersActionDTO(Game.myId, Game.myId, activityAllianceId,
-                                    ProposalEnum.KICK))
+            Game.sendMembersAction(
+                MembersActionDTO(
+                    Game.myId, Game.myId, activityAllianceId,
+                    ProposalEnum.KICK
+                )
+            )
             onBackPressed()
             return true
         } else {
