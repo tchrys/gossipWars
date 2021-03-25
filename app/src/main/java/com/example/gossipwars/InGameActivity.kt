@@ -2,18 +2,22 @@ package com.example.gossipwars
 
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.example.gossipwars.communication.messages.actions.TroopsActionDTO
 import com.example.gossipwars.communication.messages.allianceCommunication.ArmyRequestDTO
+import com.example.gossipwars.communication.messages.allianceCommunication.ProposalResponse
+import com.example.gossipwars.logic.actions.TroopsAction
 import com.example.gossipwars.logic.entities.*
 import com.example.gossipwars.logic.proposals.ArmyOption
+import com.example.gossipwars.logic.proposals.ArmyRequest
 import com.example.gossipwars.logic.proposals.ProposalEnum
+import com.example.gossipwars.ui.actions.VoteNegotiateDialog
+import com.example.gossipwars.ui.actions.VoteNegotiateResult
 import com.example.gossipwars.ui.actions.VoteProposalsDialog
 import com.example.gossipwars.ui.actions.VoteProposalsResult
 import com.example.gossipwars.ui.chat.AddAllianceDialogFragment
@@ -31,18 +35,21 @@ import com.example.gossipwars.ui.dialogs.negotiate.NegotiateDialogFragment
 import com.example.gossipwars.ui.dialogs.negotiate.NegotiateDialogResult
 import com.example.gossipwars.ui.dialogs.region.RegionDialogFragment
 import com.example.gossipwars.ui.dialogs.region.RegionDialogResult
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
+import java.util.*
 
 class InGameActivity : AppCompatActivity(),
-                        AddAllianceDialogFragment.AllianceDialogListener,
-                        KickDialogFragment.KickDialogListener,
-                        JoinDialogFragment.JoinDialogListener,
-                        NegotiateDialogFragment.NegotiateDialogListener,
-                        BonusDialogFragment.BonusDialogListener,
-                        AttackDialogFragment.AttackDialogListener,
-                        DefendDialogFragment.DefendDialogListener,
-                        RegionDialogFragment.RegionDialogListener,
-                        VoteProposalsDialog.VoteDialogListener {
+    AddAllianceDialogFragment.AllianceDialogListener,
+    KickDialogFragment.KickDialogListener,
+    JoinDialogFragment.JoinDialogListener,
+    NegotiateDialogFragment.NegotiateDialogListener,
+    BonusDialogFragment.BonusDialogListener,
+    AttackDialogFragment.AttackDialogListener,
+    DefendDialogFragment.DefendDialogListener,
+    RegionDialogFragment.RegionDialogListener,
+    VoteProposalsDialog.VoteDialogListener,
+    VoteNegotiateDialog.NegotiateDialogListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,9 +74,11 @@ class InGameActivity : AppCompatActivity(),
         if (dialog.allianceName.isNullOrEmpty() || dialog.firstMemberUsername == null) {
             showSnackBarOnError(R.id.fragment_chat_layout, "Please complete all fields")
         } else {
-            val alliance: Alliance = Game.addAlliance(GameHelper.findPlayerByUUID(Game.myId), dialog.allianceName)
+            val alliance: Alliance =
+                Game.addAlliance(GameHelper.findPlayerByUUID(Game.myId), dialog.allianceName)
             GameHelper.findPlayerByUsername(dialog.firstMemberUsername)?.id?.let {
-                Game.sendAllianceDTO(alliance.convertToDTO(),
+                Game.sendAllianceDTO(
+                    alliance.convertToDTO(),
                     it
                 )
             }
@@ -92,7 +101,11 @@ class InGameActivity : AppCompatActivity(),
         }
     }
 
-    private fun onMemberProposalSent(allianceName: String, usernameSelected: String, propEnum: ProposalEnum) {
+    private fun onMemberProposalSent(
+        allianceName: String,
+        usernameSelected: String,
+        propEnum: ProposalEnum
+    ) {
         val meAsAPlayer = GameHelper.findPlayerByUUID(Game.myId)
         val alliance: Alliance? = GameHelper.findAllianceByName(allianceName)
         val player: Player? = GameHelper.findPlayerByUsername(usernameSelected)
@@ -103,16 +116,26 @@ class InGameActivity : AppCompatActivity(),
 
     override fun onDialogPositiveClick(dialog: NegotiateDialogResult) {
         if (dialog.usernameSelected == null || dialog.armyOption == null ||
-                        dialog.increase == null || dialog.increase == -1) {
+            dialog.increase == null || dialog.increase == -1
+        ) {
             showSnackBarOnError(R.id.fragment_actions_layout, "Please complete all fields")
         } else {
-            val playerSelected: Player? = dialog.usernameSelected.let { GameHelper.findPlayerByUsername(it) }
+            val playerSelected: Player? =
+                dialog.usernameSelected.let { GameHelper.findPlayerByUsername(it) }
             if (playerSelected != null) {
-                when(dialog.armyOption) {
-                    ArmyOption.SIZE -> Game.sendArmyRequest(ArmyRequestDTO(Game.myId,
-                                            playerSelected.id, dialog.armyOption, dialog.increase))
-                    else -> Game.sendArmyRequest(ArmyRequestDTO(Game.myId, playerSelected.id,
-                                                    dialog.armyOption, dialog.increase))
+                when (dialog.armyOption) {
+                    ArmyOption.SIZE -> Game.sendArmyRequest(
+                        ArmyRequestDTO(
+                            Game.myId,
+                            playerSelected.id, dialog.armyOption, dialog.increase, UUID.randomUUID()
+                        )
+                    )
+                    else -> Game.sendArmyRequest(
+                        ArmyRequestDTO(
+                            Game.myId, playerSelected.id,
+                            dialog.armyOption, dialog.increase, UUID.randomUUID()
+                        )
+                    )
                 }
             }
         }
@@ -120,14 +143,32 @@ class InGameActivity : AppCompatActivity(),
     }
 
     override fun onDialogPositiveClick(dialog: ArmyOption?) {
-        when(dialog) {
-            ArmyOption.ATTACK -> Game.sendArmyAction(ArmyRequestDTO(Game.myId, Game.myId,
-                                                                    ArmyOption.ATTACK, 5))
-            ArmyOption.DEFEND -> Game.sendArmyAction(ArmyRequestDTO(Game.myId, Game.myId,
-                                                                    ArmyOption.DEFEND, 5))
-            ArmyOption.SIZE -> Game.sendArmyAction(ArmyRequestDTO(Game.myId, Game.myId,
-                                                                    ArmyOption.SIZE, 5000))
+        val meAsAPlayer = GameHelper.findPlayerByUUID(Game.myId)
+        val armyRequestDTO: ArmyRequestDTO? = when (dialog) {
+            ArmyOption.ATTACK -> ArmyRequestDTO(
+                Game.myId,
+                Game.myId,
+                ArmyOption.ATTACK,
+                5,
+                UUID.randomUUID()
+            )
+            ArmyOption.DEFEND -> ArmyRequestDTO(
+                Game.myId,
+                Game.myId,
+                ArmyOption.DEFEND,
+                5,
+                UUID.randomUUID()
+            )
+            ArmyOption.SIZE -> ArmyRequestDTO(
+                Game.myId,
+                Game.myId,
+                ArmyOption.SIZE,
+                5000,
+                UUID.randomUUID()
+            )
+            else -> null
         }
+        armyRequestDTO?.convertToEntity()?.let { meAsAPlayer.armyImprovements.add(it) }
         Notifications.myBonusTaken.value = true
     }
 
@@ -147,7 +188,11 @@ class InGameActivity : AppCompatActivity(),
         }
     }
 
-    private fun onStrategyProposalSent(allianceName: String, regionName: String, propEnum: ProposalEnum) {
+    private fun onStrategyProposalSent(
+        allianceName: String,
+        regionName: String,
+        propEnum: ProposalEnum
+    ) {
         val meAsAPlayer = GameHelper.findPlayerByUUID(Game.myId)
         val alliance: Alliance? = GameHelper.findAllianceByName(allianceName)
         val region: Region? = GameHelper.findRegionByName(regionName)
@@ -158,11 +203,61 @@ class InGameActivity : AppCompatActivity(),
     }
 
     override fun onDialogPositiveClick(dialog: RegionDialogResult) {
-        // TODO
+        val regionFrom: Region? = dialog.regionFrom?.let { GameHelper.findRegionByName(it) }
+        val regionTo: Region? = dialog.regionTo?.let { GameHelper.findRegionByName(it) }
+        if (regionFrom != null && regionTo != null) {
+            val meAsAPlayer = GameHelper.findPlayerByUUID(Game.myId)
+            meAsAPlayer.soldiersUsedThisRound[regionFrom.id] =
+                meAsAPlayer.soldiersUsedThisRound.getOrElse(regionFrom.id) {0} + dialog.size
+            Game.sendTroopsAction(TroopsActionDTO(Game.myId, regionFrom.id, regionTo.id, dialog.size))
+        }
     }
 
     override fun onDialogPositiveClick(dialog: VoteProposalsResult) {
-        // TODO
+        dialog.responseList.forEach {
+            Game.sendProposalResponse(
+                ProposalResponse(it.allianceId, it.proposalId, it.response, Game.myId)
+            )
+            val alliance = GameHelper.findAllianceByUUID(it.allianceId)
+            val propEnum: ProposalEnum? = alliance.proposalsList.find { proposal ->
+                proposal.proposalId == it.proposalId
+            }?.proposalEnum
+            val idx =
+                alliance.proposalsList.indexOfFirst { proposal ->
+                                proposal.proposalId == it.proposalId && proposal.initiator.id != Game.myId}
+            if (idx != -1) {
+                propEnum.let { proposalEnum ->
+                    if (proposalEnum != null) {
+                        updateProposalNotifications(proposalEnum)
+                    }
+                }
+                alliance.proposalsList.removeAt(idx)
+            }
+        }
+    }
+
+    private fun updateProposalNotifications(propEnum: ProposalEnum) {
+        when (propEnum) {
+            ProposalEnum.KICK -> Notifications.kickPropsNo.value = Notifications.kickPropsNo.value?.minus(1)
+            ProposalEnum.JOIN -> Notifications.joinPropsNo.value = Notifications.joinPropsNo.value?.minus(1)
+            ProposalEnum.DEFEND -> Notifications.defensePropsNo.value = Notifications.defensePropsNo.value?.minus(1)
+            ProposalEnum.ATTACK -> Notifications.attackPropsNo.value = Notifications.attackPropsNo.value?.minus(1)
+        }
+    }
+
+    override fun onDialogPositiveClick(dialog: VoteNegotiateResult) {
+        val myArmyRequest: MutableList<ArmyRequest> = GameHelper.findMyArmyRequests()
+        dialog.yesList.forEach { yesRequest: ArmyRequest ->
+            Game.sendArmyApproval(yesRequest.convertToDTO())
+        }
+        dialog.yesList.plus(dialog.noList).forEach { request: ArmyRequest ->
+            val idx = myArmyRequest.indexOfFirst { armyRequest -> armyRequest.id == request.id }
+            if (idx != -1) {
+                Notifications.negotiatePropsNo.value =
+                    Notifications.negotiatePropsNo.value?.minus(1)
+                myArmyRequest.removeAt(idx)
+            }
+        }
     }
 
     fun showSnackBarOnError(viewId: Int, message: String) {

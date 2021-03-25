@@ -2,6 +2,7 @@ package com.example.gossipwars.logic.entities
 
 import com.example.gossipwars.communication.messages.info.RegionPlayerInfo
 import com.example.gossipwars.logic.actions.StrategyAction
+import com.example.gossipwars.logic.proposals.ArmyRequest
 import com.example.gossipwars.logic.proposals.Proposal
 import com.example.gossipwars.logic.proposals.ProposalEnum
 import java.util.*
@@ -20,7 +21,7 @@ object GameHelper {
         Game.alliances.find { alliance -> alliance.name == allianceName }
 
     fun findPlayersInsideAlliance(allianceName: String): MutableList<Player>? =
-        findAllianceByName(allianceName)?.playersInvolved?.filter { it.id !== Game.myId }
+        findAllianceByName(allianceName)?.playersInvolved?.filter { it.id != Game.myId }
             ?.toMutableList()
 
     fun playerBelongToAlliance(alliance: Alliance, player: Player): Boolean =
@@ -40,6 +41,8 @@ object GameHelper {
 
     fun findMyProposals(): List<Proposal>? =
         findAllProposals()?.filter { proposal -> proposal.initiator.id == Game.myId }
+
+    fun findMyArmyRequests(): MutableList<ArmyRequest> = findPlayerByUUID(Game.myId).armyRequestReceived
 
     fun findPlayersOutsideAlliance(allianceName: String): MutableList<Player> {
         val answer = mutableListOf<Player>()
@@ -78,6 +81,9 @@ object GameHelper {
 
     fun findRegionByName(regionName: String): Region? =
         Game.regions.find { region -> region.name == regionName }
+
+    fun findRegionById(regionId: Int): Region? =
+        Game.regions.find { region -> region.id == regionId }
 
     fun findRegionPopulation(regionName: String): List<RegionPlayerInfo>? {
         val region: Region = findRegionByName(regionName)!!

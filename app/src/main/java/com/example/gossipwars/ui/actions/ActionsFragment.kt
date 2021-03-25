@@ -15,10 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.gossipwars.InGameActivity
 import com.example.gossipwars.R
 import com.example.gossipwars.logic.entities.*
-import com.example.gossipwars.logic.proposals.JoinProposal
-import com.example.gossipwars.logic.proposals.KickProposal
-import com.example.gossipwars.logic.proposals.Proposal
-import com.example.gossipwars.logic.proposals.ProposalEnum
+import com.example.gossipwars.logic.proposals.*
 import com.example.gossipwars.ui.dialogs.attack.AttackDialogFragment
 import com.example.gossipwars.ui.dialogs.bonus.BonusDialogFragment
 import com.example.gossipwars.ui.dialogs.defend.DefendDialogFragment
@@ -33,11 +30,11 @@ import kotlin.collections.ArrayList
 class ActionsFragment : Fragment() {
 
     private lateinit var actionsViewModel: ActionsViewModel
-    private var username: String = "dsf"
     private var joinProps: List<Proposal>? = null
     private var kickProps: List<Proposal>? = null
     private var attackProps: List<Proposal>? = null
     private var defendProps: List<Proposal>? = null
+    private var negotiateProps: List<ArmyRequest>? = null
 
     private lateinit var kickChip: Chip
     private lateinit var joinChip: Chip
@@ -99,6 +96,7 @@ class ActionsFragment : Fragment() {
         kickReplySetup()
         attackReplySetup()
         defendReplySetup()
+        negotiateReplySetup()
         yourRequestsSetup()
 
         subscribeToJoinProps()
@@ -106,9 +104,8 @@ class ActionsFragment : Fragment() {
         subscribeToAttackProps()
         subscribeToDefenseProps()
         subscribeToMyProps()
+        subscribeToNegotiateProps()
         subscribeToChipStateEvents()
-
-        // TODO negotiate props
 
         return root
     }
@@ -195,9 +192,7 @@ class ActionsFragment : Fragment() {
         joinCardReply.setOnClickListener {
             if (!joinProps.isNullOrEmpty()) {
                 fragmentManager?.let {
-                    VoteProposalsDialog(
-                        "Join proposals",
-                        joinProps as ArrayList<Proposal>, username
+                    VoteProposalsDialog("Join proposals", joinProps as ArrayList<Proposal>
                     ).show(it, "joinVotesDialog")
                 }
             } else {
@@ -214,7 +209,7 @@ class ActionsFragment : Fragment() {
                     )
                 }
                 fragmentManager?.let {
-                    VoteProposalsDialog("Join proposals", props, username).show(
+                    VoteProposalsDialog("Join proposals", props).show(
                         it,
                         "joinVotesDialog"
                     )
@@ -227,9 +222,7 @@ class ActionsFragment : Fragment() {
         kickCardReply.setOnClickListener {
             if (!kickProps.isNullOrEmpty()) {
                 fragmentManager?.let {
-                    VoteProposalsDialog(
-                        "Kick proposals",
-                        kickProps as ArrayList<Proposal>, username
+                    VoteProposalsDialog("Kick proposals", kickProps as ArrayList<Proposal>
                     ).show(it, "kickVotesDialog")
                 }
             } else {
@@ -244,7 +237,7 @@ class ActionsFragment : Fragment() {
                 fragmentManager?.let {
                     VoteProposalsDialog(
                         "Attack proposals",
-                        attackProps as ArrayList<Proposal>, username
+                        attackProps as ArrayList<Proposal>
                     ).show(it, "attackVotesDialog")
                 }
             } else {
@@ -259,11 +252,25 @@ class ActionsFragment : Fragment() {
                 fragmentManager?.let {
                     VoteProposalsDialog(
                         "Defense proposals",
-                        defendProps as ArrayList<Proposal>, username
+                        defendProps as ArrayList<Proposal>
                     ).show(it, "defendVotesDialog")
                 }
             } else {
                 showSnackbarForError("There are no defense proposals yet")
+            }
+        }
+    }
+
+    private fun negotiateReplySetup() {
+        negotiateCardReply.setOnClickListener {
+            if (Notifications.negotiatePropsNo.value!! > 0) {
+                fragmentManager?.let {
+                    VoteNegotiateDialog("Negotiate requests",
+                        negotiateProps as ArrayList<ArmyRequest>)
+                        .show(it, "negotiateReqDialog")
+                }
+            } else {
+                showSnackbarForError("There are no negotiate requests yet")
             }
         }
     }
@@ -274,7 +281,7 @@ class ActionsFragment : Fragment() {
                 fragmentManager?.let {
                     VoteProposalsDialog(
                         "Your requests",
-                        GameHelper.findMyProposals() as ArrayList<Proposal>, username
+                        GameHelper.findMyProposals() as ArrayList<Proposal>
                     ).show(it, "yourReqDialog")
                 }
             } else {
@@ -311,11 +318,19 @@ class ActionsFragment : Fragment() {
         })
     }
 
+    private fun subscribeToNegotiateProps() {
+        Notifications.negotiatePropsNo.observe(viewLifecycleOwner, Observer {
+            negotiateCardText.text = getString(R.string.negotiate_proposals, it)
+            negotiateProps = GameHelper.findMyArmyRequests()
+        })
+    }
+
     private fun subscribeToMyProps() {
         Notifications.myPropsNo.observe(viewLifecycleOwner, Observer {
             yourRequestsText.text = getString(R.string.your_proposals, it)
         })
     }
+
     private fun subscribeToChipStateEvents() {
         Notifications.myBonusTaken.observe(viewLifecycleOwner, Observer {
             if (it) {

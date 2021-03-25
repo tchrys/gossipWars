@@ -166,6 +166,8 @@ object Game {
             player.army = Army.initDefaultArmy(regions[index])
             player.winRegion(regions[index])
             if (player.id == myId) {
+                regions.forEach { region: Region ->
+                    player.soldiersUsedThisRound[region.id] = 0 }
                 if (playersIds != null) {
                     for (playerId in playersIds) {
                         if (playerId != myId) {
@@ -243,9 +245,8 @@ object Game {
         }
         if (ProposalEnum.JOIN == membersAction.proposalEnum) {
             sendAllianceDTO(alliance.convertToDTO(), membersAction.targetId)
-        } else {
-            acknowledgeMembersAction(membersAction)
         }
+        acknowledgeMembersAction(membersAction)
     }
 
     fun acknowledgeMembersAction(membersAction: MembersActionDTO) {
@@ -334,10 +335,10 @@ object Game {
     fun sendStrategyAction(strategyActionDTO: StrategyActionDTO) {
         val data = SerializationUtils.serialize(strategyActionDTO)
         val streamPayload = Payload.zza(data, MessageCode.STRATEGY_ACTION.toLong())
-        for (helper in strategyActionDTO.helpers) {
-            if (helper == myId)
+        for (player in players.value!!) {
+            if (player.id == myId)
                 continue
-            idToEndpoint[helper]?.let {
+            idToEndpoint[player.id]?.let {
                 Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
             }
         }

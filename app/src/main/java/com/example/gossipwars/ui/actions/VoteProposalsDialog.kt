@@ -14,12 +14,11 @@ import com.example.gossipwars.communication.messages.allianceCommunication.Propo
 import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.proposals.Proposal
 
-class VoteProposalsDialog(val title: String, val props: ArrayList<Proposal>,
-                            val username: String): DialogFragment() {
+class VoteProposalsDialog(val title: String, val props: ArrayList<Proposal>): DialogFragment() {
     internal lateinit var listener: VoteDialogListener
     private var mRecyclerView: RecyclerView? = null
     private var mAdapter: ProposalListAdapter? = null
-    var responses: VoteProposalsResult = VoteProposalsResult()
+    var proposalsVotes: MutableMap<Proposal, Boolean> = mutableMapOf()
 
     interface VoteDialogListener {
         fun onDialogPositiveClick(dialog: VoteProposalsResult)
@@ -41,26 +40,33 @@ class VoteProposalsDialog(val title: String, val props: ArrayList<Proposal>,
         val builder = AlertDialog.Builder(activity)
         val voteProposalView: View = inflater.inflate(R.layout.vote_proposal_form, null)
 
+        props.forEach { proposal: Proposal ->  proposalsVotes[proposal] = false}
         mRecyclerView = voteProposalView.findViewById(R.id.proposalsRecyclerView)
-        mAdapter = ProposalListAdapter(this, props, username)
+        mAdapter = ProposalListAdapter(this, props)
         mRecyclerView?.adapter = mAdapter
         mRecyclerView?.layoutManager = LinearLayoutManager(context)
 
         builder.setView(voteProposalView)
         builder.setTitle(title)
             .setPositiveButton("Done") { _, _ ->
-                listener.onDialogPositiveClick(responses)
+                listener.onDialogPositiveClick(createResponse())
             }
             .setNegativeButton("Cancel") { _, _ -> }
         return builder.create()
     }
 
     fun sendVote(proposal: Proposal, vote: Boolean) {
-        props.remove(proposal)
-        mRecyclerView?.adapter?.notifyDataSetChanged()
-        responses.responseList.add(ProposalResponse(proposal.alliance.id, proposal.proposalId,
-                                        vote, Game.myId))
+        proposalsVotes[proposal] = vote
     }
 
+    fun createResponse(): VoteProposalsResult {
+        val responses = VoteProposalsResult()
+        proposalsVotes.forEach { entry ->
+            val prop = entry.key
+            responses.responseList.add(ProposalResponse(prop.alliance.id, prop.proposalId,
+                                        entry.value, Game.myId))
+        }
+        return responses
+    }
 
 }

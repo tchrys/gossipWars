@@ -1,71 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:padding="6dp">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
-
-
-    <com.google.android.flexbox.FlexboxLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/voteContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal"
-        app:flexWrap="wrap"
-        app:justifyContent="flex_start">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        >
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/actionChip"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/initiatorChip"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-    </com.google.android.flexbox.FlexboxLayout>
-
-    <com.google.android.flexbox.FlexboxLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal"
-        app:flexWrap="wrap"
-        app:alignItems="stretch"
-        app:alignContent="stretch"
-        app:justifyContent="flex_end">
-
-        <Button
-            android:id="@+id/voteYesButton"
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/proposalStatement"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/vote_yes"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/proposalSwitch"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="4dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="4dp"
+            />
 
-        <Button
-            android:id="@+id/voteNoButton"
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/proposalSwitch"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/vote_no"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:layout_height="match_parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:checked="false" />
 
-    </com.google.android.flexbox.FlexboxLayout>
-
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <View
         android:id="@+id/divider"
-        android:layout_width="409dp"
+        android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:background="?android:attr/listDivider"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/chipGroup" />
+        app:layout_constraintTop_toBottomOf="@+id/voteContainer" />
 
 
 
 
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

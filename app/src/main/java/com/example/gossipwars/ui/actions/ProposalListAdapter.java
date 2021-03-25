@@ -4,62 +4,58 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Switch;
+import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.gossipwars.R;
+import com.example.gossipwars.logic.entities.Game;
+import com.example.gossipwars.logic.entities.GameHelper;
+import com.example.gossipwars.logic.entities.Region;
 import com.example.gossipwars.logic.proposals.Proposal;
 import com.example.gossipwars.logic.proposals.ProposalEnum;
 import com.example.gossipwars.logic.proposals.StrategyProposal;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ProposalListAdapter extends
         RecyclerView.Adapter<ProposalListAdapter.ProposalViewHolder> {
     private VoteProposalsDialog context;
     private final ArrayList<Proposal> proposalsList;
     private final LayoutInflater mInflater;
-    private final String username;
 
     class ProposalViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        public final Chip actionChip;
-        public final Chip initiatorChip;
-        public final Button yesButton;
-        public final Button noButton;
+        public final TextView propStatement;
+        public final SwitchMaterial propVote;
         final ProposalListAdapter mAdapter;
 
         public ProposalViewHolder(View itemView, ProposalListAdapter adapter) {
             super(itemView);
-            actionChip = itemView.findViewById(R.id.actionChip);
-            initiatorChip = itemView.findViewById(R.id.initiatorChip);
-            yesButton = itemView.findViewById(R.id.voteYesButton);
-            noButton = itemView.findViewById(R.id.voteNoButton);
+            propStatement = itemView.findViewById(R.id.proposalStatement);
+            propVote = itemView.findViewById(R.id.proposalSwitch);
             this.mAdapter = adapter;
             itemView.setOnClickListener(this);
-            yesButton.setOnClickListener(view -> {
-                context.sendVote(proposalsList.get(getLayoutPosition()), true);
-            });
-            noButton.setOnClickListener(view -> {
-                context.sendVote(proposalsList.get(getLayoutPosition()), false);
+            propVote.setOnCheckedChangeListener((compoundButton, isChecked) -> {
+                context.sendVote(proposalsList.get(getLayoutPosition()), isChecked);
             });
         }
 
         @Override
         public void onClick(View view) {
-            // Get the position of the item that was clicked.
             int mPosition = getLayoutPosition();
-            // Use that to access the affected item in mWordList.
             Proposal element = proposalsList.get(mPosition);
             mAdapter.notifyDataSetChanged();
         }
     }
 
-    public ProposalListAdapter(VoteProposalsDialog context, ArrayList<Proposal> proposalsList, String username) {
+    public ProposalListAdapter(VoteProposalsDialog context, ArrayList<Proposal> proposalsList) {
         this.context = context;
         mInflater = LayoutInflater.from(context.getActivity());
         this.proposalsList = proposalsList;
-        this.username = username;
     }
 
     @Override
@@ -73,23 +69,24 @@ public class ProposalListAdapter extends
 
     @Override
     public void onBindViewHolder(ProposalViewHolder holder, int position) {
-        // Retrieve the data for that position.
         Proposal mCurrent = proposalsList.get(position);
-        // Add the data to the view holder.
-        holder.initiatorChip.setText("From " + mCurrent.getInitiator().getUsername()
-            + ", alliance " + mCurrent.getAlliance().getName());
-        if (mCurrent.getProposalEnum().equals(ProposalEnum.JOIN)) {
-            holder.actionChip.setText("Add " + mCurrent.getTarget().getUsername());
-        } else if (mCurrent.getProposalEnum().equals(ProposalEnum.KICK)) {
-            holder.actionChip.setText("Kick " + mCurrent.getTarget().getUsername());
-        } else if (mCurrent instanceof StrategyProposal) {
-            String action = mCurrent.getProposalEnum().equals(ProposalEnum.ATTACK) ? "Attack " : "Help ";
-            holder.actionChip.setText(action + mCurrent.getTarget().getUsername()
-            + " in region " + ((StrategyProposal) mCurrent).getTargetRegion());
+        String regionName = "";
+        if (Arrays.asList(ProposalEnum.DEFEND, ProposalEnum.ATTACK)
+                .contains(mCurrent.getProposalEnum())) {
+            regionName = GameHelper.INSTANCE.findRegionById(((StrategyProposal) mCurrent)
+                                                    .getTargetRegion()).getName();
+            regionName = "in region" + GameHelper.INSTANCE.camelCaseToSpaced(regionName);
         }
-        if (username.equals(mCurrent.getInitiator().getUsername())) {
-            holder.yesButton.setVisibility(View.INVISIBLE);
-            holder.noButton.setVisibility(View.INVISIBLE);
+        holder.propStatement.setText(
+                String.format("%s requests member's vote from alliance %s for %s %s %s",
+                mCurrent.getInitiator().getUsername(),
+                mCurrent.getAlliance().getName(),
+                mCurrent.getProposalEnum().toString().toLowerCase() + "ing",
+                mCurrent.getTarget().getUsername(),
+                regionName
+                ));
+        if (mCurrent.getInitiator().getId().equals(Game.INSTANCE.getMyId())) {
+            holder.propVote.setVisibility(View.GONE);
         }
     }
 

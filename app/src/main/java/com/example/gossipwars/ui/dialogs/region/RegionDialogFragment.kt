@@ -11,11 +11,15 @@ import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import com.example.gossipwars.R
+import com.example.gossipwars.communication.messages.actions.StrategyActionDTO
 import com.example.gossipwars.communication.messages.info.RegionPlayerInfo
 import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.entities.GameHelper
+import com.example.gossipwars.logic.entities.Player
 import com.example.gossipwars.logic.entities.Region
+import com.example.gossipwars.logic.proposals.ProposalEnum
 import com.google.android.material.slider.Slider
+import java.util.*
 
 class RegionDialogFragment(val regionName: String) : DialogFragment() {
     internal lateinit var listener: RegionDialogListener
@@ -79,7 +83,11 @@ class RegionDialogFragment(val regionName: String) : DialogFragment() {
             )
         } else {
             attackButton.setOnClickListener {
-                // TODO
+                val targetId: UUID? = dialogRegion.occupiedBy?.id
+                if (targetId != null) {
+                    Game.sendStrategyAction(StrategyActionDTO(Game.myId, targetId,
+                        dialogRegion.id, mutableListOf(), ProposalEnum.ATTACK))
+                }
             }
         }
 
@@ -92,6 +100,7 @@ class RegionDialogFragment(val regionName: String) : DialogFragment() {
 
         val howManySoldiers: TextView = regionView.findViewById(R.id.howManySoldiers)
         val soldiersSlider: Slider = regionView.findViewById(R.id.soldiersSlider)
+        val meAsAPlayer: Player = GameHelper.findPlayerByUUID(Game.myId)
 
         regionsRadioGroup.setOnCheckedChangeListener { _, checkedIdx ->
             val checkedRadioButton = regionsRadioGroup.findViewById<RadioButton>(checkedIdx)
@@ -111,6 +120,10 @@ class RegionDialogFragment(val regionName: String) : DialogFragment() {
                 soldiersSlider.visibility = View.VISIBLE
                 soldiersSlider.valueFrom = 0.toFloat()
                 soldiersSlider.valueTo = soldiersNo.toFloat()
+                val soldiersAlreadyUsed: Int? = meAsAPlayer.soldiersUsedThisRound[regionSelected?.id]
+                if (soldiersAlreadyUsed != null) {
+                    soldiersSlider.valueTo -= soldiersAlreadyUsed
+                }
                 soldiersSlider.addOnChangeListener { _, value, _ ->
                     sizeSelected = value.toInt()
                 }
