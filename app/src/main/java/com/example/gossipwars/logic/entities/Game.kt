@@ -1,14 +1,12 @@
 package com.example.gossipwars.logic.entities
 
+import android.provider.Settings
 import androidx.lifecycle.MutableLiveData
 import com.example.gossipwars.MainActivity
 import com.example.gossipwars.communication.messages.MessageCode
 import com.example.gossipwars.communication.messages.actions.*
 import com.example.gossipwars.communication.messages.allianceCommunication.*
-import com.example.gossipwars.communication.messages.gameInit.PlayerDTO
-import com.example.gossipwars.communication.messages.gameInit.PlayerWithOrderDTO
-import com.example.gossipwars.communication.messages.gameInit.PlayersOrderDTO
-import com.example.gossipwars.communication.messages.gameInit.RoomInfoDTO
+import com.example.gossipwars.communication.messages.gameInit.*
 import com.example.gossipwars.logic.actions.StrategyAction
 import com.example.gossipwars.logic.actions.TroopsAction
 import com.example.gossipwars.logic.entities.GameHelper.findAllianceByUUID
@@ -30,6 +28,8 @@ import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.connection.Payload
 import org.apache.commons.lang3.SerializationUtils
 import java.util.*
+import java.util.logging.Handler
+import kotlin.math.sqrt
 
 object Game {
     lateinit var myId: UUID
@@ -43,6 +43,7 @@ object Game {
     var alliances: MutableList<Alliance> = mutableListOf()
     var regionsPerPlayers: MutableMap<Int, UUID> = mutableMapOf()
     var playersWithAllActionsSent: MutableSet<UUID> = mutableSetOf()
+    var playersReadyForNewRound: MutableSet<UUID> = mutableSetOf()
     var strategyActions: MutableList<StrategyAction> = mutableListOf()
     var troopsActions: MutableList<TroopsAction> = mutableListOf()
     var armyActions: MutableList<ArmyRequest> = mutableListOf()
@@ -80,6 +81,9 @@ object Game {
 
     fun roundEndCompute() {
         // strategy actions
+//        for (i in 0..100000000) {
+//            sqrt(24.43)
+//        }
         for (region in regions) {
             val attackers: Set<Player> = findRegionDefOrAtt(region.id, ProposalEnum.ATTACK)
             val defenders: Set<Player> = findRegionDefOrAtt(region.id, ProposalEnum.DEFEND)
@@ -93,6 +97,7 @@ object Game {
         for (armyAction in armyActions) {
             armyAction.initiator.improveArmy(armyAction)
         }
+        sendStartRound(StartRoundDTO(myId))
     }
 
     fun sendMyInfo() {
@@ -177,6 +182,8 @@ object Game {
                 }
             }
         }
+        Notifications.roundTimer.value = roomInfo?.roundLength
+        Notifications.createTimeCounter()
         gameStarted = true
     }
 
@@ -312,11 +319,11 @@ object Game {
         if (playersWithAllActionsSent.size == players.value?.size) {
             // all players sent their actions, can start round end processing
             roundEndCompute()
-            TODO("logic for starting a new round, sth like two phase commit")
         }
     }
 
     fun sendActionEnd(actionsEndDTO: ActionEndDTO) {
+        Notifications.roundOngoing.value = false
         val data = SerializationUtils.serialize(actionsEndDTO)
         val streamPayload = Payload.zza(data, MessageCode.ACTION_END.toLong())
         for (player in players.value!!) {
@@ -326,6 +333,9 @@ object Game {
             }
         }
         playersWithAllActionsSent.add(myId)
+        if (playersWithAllActionsSent.size == players.value?.size) {
+            roundEndCompute()
+        }
     }
 
     fun receiveStrategyAction(strategyActionDTO: StrategyActionDTO) {
@@ -403,8 +413,7 @@ object Game {
     }
 
     fun receiveArmyApproval(armyRequestDTO: ArmyRequestDTO) {
-        val meAsAPlayer = findPlayerByUUID(armyRequestDTO.initiatorId)
-        meAsAPlayer.armyImprovements.add(armyRequestDTO.convertToEntity())
+        sendArmyAction(armyRequestDTO)
     }
 
     fun sendArmyApproval(armyRequestDTO: ArmyRequestDTO) {
@@ -430,6 +439,28 @@ object Game {
             }
         }
         armyActions.add(armyRequestDTO.convertToEntity())
+    }
+
+    fun sendStartRound(startRoundDTO: StartRoundDTO) {
+        val data = SerializationUtils.serialize(startRoundDTO)
+        val streamPayload = Payload.zza(data, MessageCode.START_ROUND.toLong())
+        for (player in players.value!!) {
+            if (player.id == myId) continue
+            idToEndpoint[player.id]?.let {
+                Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+            }
+        }
+        playersReadyForNewRound.add(myId)
+        if (playersReadyForNewRound.size == players.value?.size)
+            Notifications.roundOngoing.value = true
+    }
+
+    fun acknowledgeStartRound(startRoundDTO: StartRoundDTO) {
+        playersReadyForNewRound.add(startRoundDTO.playerId)
+        if (playersReadyForNewRound.size == players.value?.size) {
+            // all players are ready to start a new round
+            Notifications.roundOngoing.value = true
+        }
     }
 
 }

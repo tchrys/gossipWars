@@ -126,4 +126,8 @@ object GameHelper {
         return ans
     }
 
+    fun roundTimeToString(roundTime: Int): String {
+        return (roundTime / 60).toString() + ":" + (roundTime % 60).toString()
+    }
+
 }

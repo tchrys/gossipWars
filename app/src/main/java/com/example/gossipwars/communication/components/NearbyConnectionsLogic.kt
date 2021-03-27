@@ -9,6 +9,7 @@ import com.example.gossipwars.communication.messages.allianceCommunication.*
 import com.example.gossipwars.communication.messages.gameInit.PlayerDTO
 import com.example.gossipwars.communication.messages.gameInit.PlayersOrderDTO
 import com.example.gossipwars.communication.messages.gameInit.RoomInfoDTO
+import com.example.gossipwars.communication.messages.gameInit.StartRoundDTO
 import com.example.gossipwars.logic.entities.Game
 import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.connection.*
@@ -174,6 +175,10 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
                     MessageCode.ARMY_UPGRADE.toLong() -> {
                         val armyRequestDTO: ArmyRequestDTO = SerializationUtils.deserialize(receivedBytes)
                         Game.receiveArmyAction(armyRequestDTO)
+                    }
+                    MessageCode.START_ROUND.toLong() -> {
+                        val startRoundDTO: StartRoundDTO = SerializationUtils.deserialize(receivedBytes)
+                        Game.acknowledgeStartRound(startRoundDTO)
                     }
                 }
             }

@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -57,6 +58,8 @@ class ActionsFragment : Fragment() {
     private lateinit var negotiateCardReply: Button
     private lateinit var yourRequestsReply: Button
 
+    private lateinit var fragmentBarTitle: String
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -64,6 +67,10 @@ class ActionsFragment : Fragment() {
     ): View? {
         actionsViewModel = ViewModelProviders.of(this).get(ActionsViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_actions, container, false)
+        fragmentBarTitle = (context as InGameActivity).supportActionBar?.title.toString()
+
+        subscribeToTimer()
+
         kickChip = root.findViewById(R.id.kickChip)
         joinChip = root.findViewById(R.id.joinChip)
         negotiateChip = root.findViewById(R.id.negotiateChip)
@@ -351,6 +358,19 @@ class ActionsFragment : Fragment() {
                     attackChip.setTextColor(it)
                     defendChip.setTextColor(it)
                 }
+            }
+        })
+    }
+
+    private fun subscribeToTimer() {
+        Notifications.roundTimer.observe(viewLifecycleOwner, Observer {
+            if (it > 5) {
+                (context as InGameActivity).supportActionBar?.title =
+                    getString(R.string.bar_title, fragmentBarTitle, GameHelper.roundTimeToString(it))
+            } else {
+                (context as InGameActivity).supportActionBar?.title =
+                    HtmlCompat.fromHtml(getString(R.string.bar_title_alert, fragmentBarTitle,
+                        GameHelper.roundTimeToString(it)), HtmlCompat.FROM_HTML_MODE_LEGACY)
             }
         })
     }

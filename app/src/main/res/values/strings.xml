@@ -40,7 +40,7 @@
     <string name="select_upgrade_option">Select upgrade option</string>
 
     <string-array name="game_length_array">
-        <item>45s</item>
+        <item>20s</item>
         <item>60s</item>
         <item>90s</item>
         <item>120s</item>
@@ -84,5 +84,9 @@
     <string name="cant_attack">You can\'t attack this region</string>
     <string name="please_enter_your_username">Please enter your username</string>
     <string name="warning_vote_dialog">All proposals will be voted when you select done. If you don\'t want this, select cancel</string>
+    <string name="bar_title">%s %s</string>
+    <string name="bar_title_alert"><![CDATA[
+%s <font color=#FF4444>%s</font>
+    ]]></string>
 
 </resources>

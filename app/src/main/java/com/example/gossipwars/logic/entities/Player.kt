@@ -11,7 +11,6 @@ data class Player(var username : String, val id : UUID): Serializable {
     var regionsOccupied : MutableSet<Region> = mutableSetOf()
     var trustInOthers : MutableMap<UUID, Int> = mutableMapOf()
     var alliances : MutableSet<Alliance> = mutableSetOf()
-    var armyImprovements: MutableList<ArmyRequest> = mutableListOf()
     var armyRequestReceived: MutableList<ArmyRequest> = mutableListOf()
     var soldiersUsedThisRound: MutableMap<Int, Int> = mutableMapOf()
 

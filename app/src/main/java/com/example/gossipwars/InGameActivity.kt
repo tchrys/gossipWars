@@ -2,6 +2,8 @@ package com.example.gossipwars
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
@@ -51,11 +53,14 @@ class InGameActivity : AppCompatActivity(),
     VoteProposalsDialog.VoteDialogListener,
     VoteNegotiateDialog.NegotiateDialogListener {
 
+    private lateinit var frameLayout: FrameLayout
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_in_game)
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
         val navController = findNavController(R.id.nav_host_fragment)
+        frameLayout = findViewById(R.id.progress_view)
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         val appBarConfiguration = AppBarConfiguration(
@@ -67,6 +72,21 @@ class InGameActivity : AppCompatActivity(),
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
         Game.sendMyInfo()
+
+//        frameLayout.visibility = View.VISIBLE
+
+        Notifications.roundOngoing.observe(this, androidx.lifecycle.Observer {
+            if (!it) {
+                frameLayout.visibility = View.VISIBLE
+                Log.d("DBG", "visible")
+            }
+            else {
+                frameLayout.visibility = View.GONE
+                Log.d("DBG", "gone")
+
+            }
+//            frameLayout.visibility = if (it) View.GONE else View.VISIBLE
+        })
 
     }
 
@@ -168,7 +188,7 @@ class InGameActivity : AppCompatActivity(),
             )
             else -> null
         }
-        armyRequestDTO?.convertToEntity()?.let { meAsAPlayer.armyImprovements.add(it) }
+        armyRequestDTO?.let { Game.sendArmyAction(it) }
         Notifications.myBonusTaken.value = true
     }
 

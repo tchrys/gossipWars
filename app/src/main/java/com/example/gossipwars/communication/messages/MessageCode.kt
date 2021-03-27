@@ -16,4 +16,5 @@ object MessageCode {
     const val ARMY_REQUEST = 23
     const val ARMY_APPROVAL = 24
     const val ARMY_UPGRADE = 25
+    const val START_ROUND = 26
 }
