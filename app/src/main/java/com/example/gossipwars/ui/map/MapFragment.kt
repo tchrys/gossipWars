@@ -37,9 +37,6 @@ class MapFragment : Fragment() {
 
         gameMap.provinceClicked.observe(viewLifecycleOwner, Observer {
             val region: Region? = GameHelper.findRegionByName(it)
-//            var info: String? = region?.name
-//            info += ": " + region?.getNeighborsList()?.map { region -> region.name }.joinToString(",")
-//            Toast.makeText(context, info, Toast.LENGTH_SHORT).show()
             fragmentManager?.let {
                 region?.name?.let { it1 ->
                     RegionDialogFragment(it1).show(
@@ -49,6 +46,7 @@ class MapFragment : Fragment() {
                 }
             }
         })
+
 
 //        Province.values().forEach {
 //            gameMap.addTitle(it, it.name, Typeface.SANS_SERIF, Color.BLACK)

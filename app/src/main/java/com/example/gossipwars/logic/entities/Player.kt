@@ -8,6 +8,7 @@ import kotlin.math.max
 
 data class Player(var username : String, val id : UUID): Serializable {
     lateinit var army : Army
+    var capitalRegion: Int = -1
     var regionsOccupied : MutableSet<Region> = mutableSetOf()
     var trustInOthers : MutableMap<UUID, Int> = mutableMapOf()
     var alliances : MutableSet<Alliance> = mutableSetOf()
@@ -45,7 +46,13 @@ data class Player(var username : String, val id : UUID): Serializable {
         when (armyRequest.armyOption) {
             ArmyOption.ATTACK -> army.attack += armyRequest.increase
             ArmyOption.DEFEND -> army.defense += armyRequest.increase
-            ArmyOption.SIZE -> army.size += armyRequest.increase
+            ArmyOption.SIZE -> {
+                if (capitalRegion != -1) {
+                    army.size += armyRequest.increase
+                    army.sizePerRegion[capitalRegion] =
+                        army.sizePerRegion.getOrPut(capitalRegion, {0}) + armyRequest.increase
+                }
+            }
         }
     }
 
@@ -57,11 +64,15 @@ data class Player(var username : String, val id : UUID): Serializable {
         army.sizePerRegion[regionId] = max(0, army.sizePerRegion[regionId]!! + delta)
     }
 
+    fun computeArmySize() {
+        army.size = army.sizePerRegion.values.sum()
+    }
+
     fun getArmyAttDamage(regionId: Int): Float =
-                    1f * getArmySizeForRegion(regionId) * army.attack / 100 * 1.2f
+                    1f * getArmySizeForRegion(regionId) * army.attack / 400
 
     fun getArmyDefDamage(regionId: Int): Float =
-                    1f * getArmySizeForRegion(regionId) * army.defense / 100 * 0.8f
+                    1f * getArmySizeForRegion(regionId) * army.defense / 400
 
     fun createAlliance(name : String) {
         Game.addAlliance(this, name)

@@ -11,7 +11,10 @@ import com.example.gossipwars.logic.actions.StrategyAction
 import com.example.gossipwars.logic.actions.TroopsAction
 import com.example.gossipwars.logic.entities.GameHelper.findAllianceByUUID
 import com.example.gossipwars.logic.entities.GameHelper.findPlayerByUUID
+import com.example.gossipwars.logic.entities.GameHelper.findRegionAttackInitiator
 import com.example.gossipwars.logic.entities.GameHelper.findRegionDefOrAtt
+import com.example.gossipwars.logic.entities.GameHelper.findRegionOwner
+import com.example.gossipwars.logic.entities.GameHelper.soldiersForRegion
 import com.example.gossipwars.logic.entities.Notifications.allianceNewStructure
 import com.example.gossipwars.logic.entities.Notifications.alliancesNoForMe
 import com.example.gossipwars.logic.entities.Notifications.attackPropsNo
@@ -77,6 +80,29 @@ object Game {
             val soldiersLost = (defDamage * attWeight).toInt()
             attacker.changeArmySizeForRegion(region.id, -soldiersLost)
         }
+        // if this territory was lost
+        val owner: Player? = findRegionOwner(region.id)
+        if (owner != null && attackers.isNotEmpty()) {
+            val soldiersLeft: Int? = soldiersForRegion(region.name, owner.id)
+            if (soldiersLeft == null || soldiersLeft == 0) {
+                val attackInitiator: Player? = findRegionAttackInitiator(region.id)
+                owner.loseRegion(region)
+                attackInitiator?.winRegion(region)
+                checkLoserCapital(owner, region)
+            }
+        }
+    }
+
+    private fun checkLoserCapital(player: Player, region: Region) {
+        if (player.capitalRegion == region.id) {
+            if (player.regionsOccupied.isEmpty()) {
+                // this player lost all territories, so we can consider he lost?
+                // TODO
+                player.capitalRegion = -1
+            } else {
+                player.capitalRegion = player.regionsOccupied.first().id
+            }
+        }
     }
 
     fun roundEndCompute() {
@@ -97,7 +123,31 @@ object Game {
         for (armyAction in armyActions) {
             armyAction.initiator.improveArmy(armyAction)
         }
+        // compute army size for players
+        players.value?.forEach { player: Player -> player.computeArmySize() }
+        // cleanup and start new round
+        doCleanup()
         sendStartRound(StartRoundDTO(myId))
+    }
+
+    private fun doCleanup() {
+        val meAsAPlayer = findPlayerByUUID(myId)
+        meAsAPlayer.soldiersUsedThisRound.clear()
+        meAsAPlayer.armyRequestReceived.clear()
+        strategyActions.clear()
+        troopsActions.clear()
+        armyActions.clear()
+        alliances.forEach { alliance: Alliance ->
+            alliance.proposalsList.clear()
+        }
+        negotiatePropsNo.value = 0
+        defensePropsNo.value = 0
+        attackPropsNo.value = 0
+        joinPropsNo.value = 0
+        kickPropsNo.value = 0
+        myPropsNo.value = 0
+        Notifications.myBonusTaken.value = false
+
     }
 
     fun sendMyInfo() {
@@ -166,10 +216,21 @@ object Game {
         if (gameStarted)
             return
         val playersIds = players.value?.map { player -> player.id }
+        val playersNo: Int = players.value?.size!!
+        val regionsNo: Int = regions.size
+        val regionsPerPlayer = regionsNo / playersNo
         players.value?.forEachIndexed { index, player ->
-            regionsPerPlayers[index] = player.id
-            player.army = Army.initDefaultArmy(regions[index])
-            player.winRegion(regions[index])
+            val floor = index * regionsPerPlayer
+            player.army = Army.initDefaultArmy(regions[floor])
+            var ceil = (index + 1) * regionsPerPlayer
+            if (index == players.value?.size!! - 1)
+                ceil = regions.size
+            for (i in floor until ceil) {
+                regionsPerPlayers[i] = player.id
+                player.winRegion(regions[i])
+            }
+            player.capitalRegion = regions[floor].id
+
             if (player.id == myId) {
                 regions.forEach { region: Region ->
                     player.soldiersUsedThisRound[region.id] = 0 }
@@ -451,8 +512,10 @@ object Game {
             }
         }
         playersReadyForNewRound.add(myId)
-        if (playersReadyForNewRound.size == players.value?.size)
+        if (playersReadyForNewRound.size == players.value?.size) {
             Notifications.roundOngoing.value = true
+            playersReadyForNewRound.clear()
+        }
     }
 
     fun acknowledgeStartRound(startRoundDTO: StartRoundDTO) {
@@ -460,6 +523,7 @@ object Game {
         if (playersReadyForNewRound.size == players.value?.size) {
             // all players are ready to start a new round
             Notifications.roundOngoing.value = true
+            playersReadyForNewRound.clear()
         }
     }
 

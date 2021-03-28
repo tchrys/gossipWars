@@ -120,6 +120,12 @@ object GameHelper {
         return ans
     }
 
+    fun findRegionAttackInitiator(regionId: Int): Player? {
+        return Game.strategyActions.filter { strategyAction ->
+            strategyAction.proposalEnum == ProposalEnum.ATTACK &&
+                    strategyAction.targetRegion == regionId }.firstOrNull()?.initiator
+    }
+
     fun camelCaseToSpaced(name: String): String {
         var ans = ""
         name.forEach { c: Char -> ans += if (c in 'A'..'Z') " " + c else c }

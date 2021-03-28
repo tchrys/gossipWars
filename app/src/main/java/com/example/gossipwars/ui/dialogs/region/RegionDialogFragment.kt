@@ -103,6 +103,8 @@ class RegionDialogFragment(val regionName: String) : DialogFragment() {
         val meAsAPlayer: Player = GameHelper.findPlayerByUUID(Game.myId)
 
         regionsRadioGroup.setOnCheckedChangeListener { _, checkedIdx ->
+            sizeSelected = 0
+            soldiersSlider.value = 0.toFloat()
             val checkedRadioButton = regionsRadioGroup.findViewById<RadioButton>(checkedIdx)
             regionSelected = GameHelper.findRegionByName(checkedRadioButton.text.toString())
             val soldiersNo: Int? =
@@ -113,7 +115,6 @@ class RegionDialogFragment(val regionName: String) : DialogFragment() {
                 howManySoldiers.setCompoundDrawablesWithIntrinsicBounds(
                     R.drawable.ic_warning, 0, 0, 0
                 )
-                sizeSelected = 0
             } else {
                 howManySoldiers.text = getString(R.string.how_many_soldiers_to_move)
                 howManySoldiers.setCompoundDrawables(null, null, null, null)
