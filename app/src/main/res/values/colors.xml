@@ -9,4 +9,13 @@
     <color name="light_green">#25D366</color>
     <color name="light_blue">#34B7F1</color>
     <color name="grey">#455a64</color>
+    <color name="player1">#25D366</color>
+    <color name="player2">#34B7F1</color>
+    <color name="player3">#a6765d</color>
+    <color name="player4">#d1bf38</color>
+    <color name="player5">#395e23</color>
+    <color name="player6">#c94230</color>
+    <color name="player7">#485399</color>
+    <color name="player8">#703882</color>
+    <color name="player9">#d977b5</color>
 </resources>

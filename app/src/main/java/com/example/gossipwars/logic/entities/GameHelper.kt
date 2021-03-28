@@ -1,5 +1,7 @@
 package com.example.gossipwars.logic.entities
 
+import android.graphics.Color
+import com.example.gossipwars.R
 import com.example.gossipwars.communication.messages.info.RegionPlayerInfo
 import com.example.gossipwars.logic.actions.StrategyAction
 import com.example.gossipwars.logic.proposals.ArmyRequest
@@ -130,6 +132,19 @@ object GameHelper {
         var ans = ""
         name.forEach { c: Char -> ans += if (c in 'A'..'Z') " " + c else c }
         return ans
+    }
+
+    fun getColorByPlayerIdx(idx: Int) = when(idx) {
+        0 -> Color.GREEN
+        1 -> Color.BLUE
+        2 -> Color.CYAN
+        3 -> Color.YELLOW
+        4 -> Color.MAGENTA
+        5 -> Color.DKGRAY
+        6 -> Color.LTGRAY
+        7 -> Color.TRANSPARENT
+        8 -> Color.RED
+        else -> Color.RED
     }
 
     fun roundTimeToString(roundTime: Int): String {

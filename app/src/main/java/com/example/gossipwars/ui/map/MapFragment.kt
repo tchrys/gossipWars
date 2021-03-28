@@ -1,5 +1,7 @@
 package com.example.gossipwars.ui.map
 
+import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,11 +13,14 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.gossipwars.InGameActivity
 import com.example.gossipwars.R
+import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.entities.GameHelper
 import com.example.gossipwars.logic.entities.Notifications
 import com.example.gossipwars.logic.entities.Region
 import com.example.gossipwars.map.src.MapView
+import com.example.gossipwars.map.src.Province
 import com.example.gossipwars.ui.dialogs.region.RegionDialogFragment
+import kotlin.random.Random
 
 class MapFragment : Fragment() {
 
@@ -47,13 +52,20 @@ class MapFragment : Fragment() {
             }
         })
 
-
-//        Province.values().forEach {
-//            gameMap.addTitle(it, it.name, Typeface.SANS_SERIF, Color.BLACK)
-//        }
-
-//        context?.let { MapView(it) }
-
+        Notifications.roundOngoing.observe(viewLifecycleOwner, Observer {
+            if (it) {
+                Province.values().forEach { province ->
+                    val region: Region? = GameHelper.findRegionByName(province.name)
+                    var idx: Int? = Game.players.value?.indexOfFirst { player -> player.id == region?.occupiedBy?.id }
+                    if (idx != null) {
+//                        if (Random.nextBoolean())
+//                            idx = 1
+                        gameMap.colorProvince(province, GameHelper.getColorByPlayerIdx(idx))
+//                        gameMap.addTitle(province, province.name, Typeface.SANS_SERIF, Color.BLACK)
+                    }
+                }
+            }
+        })
         return root
     }
 

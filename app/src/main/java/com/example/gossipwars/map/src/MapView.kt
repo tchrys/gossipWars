@@ -51,7 +51,7 @@ class MapView @JvmOverloads constructor(
     var provinceClicked: MutableLiveData<String> = MutableLiveData()
 
     // give list of selected provinces
-    var selectedProvinces: MutableList<Province> = mutableListOf()
+    var selectedProvinces: MutableSet<Province> = mutableSetOf()
     private val titles: MutableMap<RichPath?, String?> = mutableMapOf()
 
     init {
@@ -177,22 +177,36 @@ class MapView @JvmOverloads constructor(
         }
         provincePath?.let {
             // if province is active now, deactivate it
-            if (selectedProvinces.contains(Province.valueOf(it.name))) {
-                deActivateProvince(it, withAnimate)
-            } else {
+//            if (selectedProvinces.contains(Province.valueOf(it.name))) {
+//                deActivateProvince(it, withAnimate)
+//            } else {
                 // activate province
                 provinceClicked.value = provincePath.name
                 RichPathAnimator.animate(it)
                     .interpolator(AccelerateDecelerateInterpolator())
                     .duration(if (withAnimate) mapAnimationDuration else 0)
                     .scale(1.1f, 1f)
-                    .fillColor(it.fillColor, withBackgroundColor ?: provinceActiveColor)
+//                    .fillColor(it.fillColor, withBackgroundColor ?: provinceActiveColor)
                     .strokeColor(it.strokeColor, withStrokeColor ?: provinceStrokeColor)
                     .start()
                 selectedProvinces.add(Province.valueOf(it.name))
-            }
+//            }
         } ?: kotlin.run {
             throw EnumConstantNotPresentException(Province::class.java, "Province not found")
+        }
+    }
+
+    fun colorProvince(province: Province, color: Int) {
+        val provincePath = gameMapPath.findRichPathByName(province.name)
+        provincePath?.let {
+
+            it.fillColor = color
+//            it.strokeColor = color
+//            RichPathAnimator.animate(it)
+//                .interpolator(AccelerateDecelerateInterpolator())
+//                .fillColor(it.fillColor, color)
+//                .strokeColor(it.strokeColor, color)
+//                .start()
         }
     }
 
@@ -202,7 +216,7 @@ class MapView @JvmOverloads constructor(
                 .interpolator(AccelerateDecelerateInterpolator())
                 .duration(if (withAnimate) mapAnimationDuration else 0)
                 .scale(1.1f, 1f)
-                .fillColor(provinceBackgroundColor)
+//                .fillColor(provinceBackgroundColor)
                 .strokeColor(provinceStrokeColor)
                 .start()
             selectedProvinces.remove(Province.valueOf(it.name))
