@@ -5,7 +5,7 @@ import com.example.gossipwars.logic.entities.Player
 import java.io.Serializable
 
 class TroopsAction(val initiator : Player, val fromRegion: Int, val toRegion : Int,
-                   val size : Int): Serializable {
+                   val size : Int): Action(initiator), Serializable {
 
     fun convertToDTO(): TroopsActionDTO =
         TroopsActionDTO(

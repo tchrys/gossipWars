@@ -85,7 +85,7 @@ class ActionsFragment : Fragment() {
         negotiateCardText = root.findViewById(R.id.negotiateCardText)
         yourRequestsText = root.findViewById(R.id.yourRequestsCardText)
 
-        joinCardReply= root.findViewById(R.id.joinCardReply)
+        joinCardReply = root.findViewById(R.id.joinCardReply)
         kickCardReply = root.findViewById(R.id.kickCardReply)
         attackCardReply = root.findViewById(R.id.attackCardReply)
         defendCardReply = root.findViewById(R.id.defendCardReply)
@@ -199,7 +199,8 @@ class ActionsFragment : Fragment() {
         joinCardReply.setOnClickListener {
             if (!joinProps.isNullOrEmpty()) {
                 fragmentManager?.let {
-                    VoteProposalsDialog("Join proposals", joinProps as ArrayList<Proposal>
+                    VoteProposalsDialog(
+                        "Join proposals", joinProps as ArrayList<Proposal>
                     ).show(it, "joinVotesDialog")
                 }
             } else {
@@ -229,7 +230,8 @@ class ActionsFragment : Fragment() {
         kickCardReply.setOnClickListener {
             if (!kickProps.isNullOrEmpty()) {
                 fragmentManager?.let {
-                    VoteProposalsDialog("Kick proposals", kickProps as ArrayList<Proposal>
+                    VoteProposalsDialog(
+                        "Kick proposals", kickProps as ArrayList<Proposal>
                     ).show(it, "kickVotesDialog")
                 }
             } else {
@@ -272,8 +274,10 @@ class ActionsFragment : Fragment() {
         negotiateCardReply.setOnClickListener {
             if (Notifications.negotiatePropsNo.value!! > 0) {
                 fragmentManager?.let {
-                    VoteNegotiateDialog("Negotiate requests",
-                        negotiateProps as ArrayList<ArmyRequest>)
+                    VoteNegotiateDialog(
+                        "Negotiate requests",
+                        negotiateProps as ArrayList<ArmyRequest>
+                    )
                         .show(it, "negotiateReqDialog")
                 }
             } else {
@@ -340,24 +344,22 @@ class ActionsFragment : Fragment() {
 
     private fun subscribeToChipStateEvents() {
         Notifications.myBonusTaken.observe(viewLifecycleOwner, Observer {
-            if (it) {
-                context?.let { it1 -> ContextCompat.getColor(it1, R.color.disabledChip) }
-                    ?.let { it2 ->
-                        bonusChip.setTextColor(
-                            it2
-                        )
-                    }
-            }
+            val chipColor = if (it) R.color.textError else R.color.light_green
+            context?.let { it1 -> ContextCompat.getColor(it1, chipColor) }
+                ?.let { it2 ->
+                    bonusChip.setTextColor(
+                        it2
+                    )
+                }
         })
 
         Notifications.alliancesNoForMe.observe(viewLifecycleOwner, Observer { value ->
-            if (value == 0) {
-                context?.let { ContextCompat.getColor(it, R.color.disabledChip) }?.let {
-                    kickChip.setTextColor(it)
-                    joinChip.setTextColor(it)
-                    attackChip.setTextColor(it)
-                    defendChip.setTextColor(it)
-                }
+            val chipColor = if (value == 0) R.color.textError else R.color.light_green
+            context?.let { ContextCompat.getColor(it, chipColor) }?.let {
+                kickChip.setTextColor(it)
+                joinChip.setTextColor(it)
+                attackChip.setTextColor(it)
+                defendChip.setTextColor(it)
             }
         })
     }
@@ -366,11 +368,19 @@ class ActionsFragment : Fragment() {
         Notifications.roundTimer.observe(viewLifecycleOwner, Observer {
             if (it > 5) {
                 (context as InGameActivity).supportActionBar?.title =
-                    getString(R.string.bar_title, fragmentBarTitle, GameHelper.roundTimeToString(it))
+                    getString(
+                        R.string.bar_title,
+                        fragmentBarTitle,
+                        GameHelper.roundTimeToString(it)
+                    )
             } else {
                 (context as InGameActivity).supportActionBar?.title =
-                    HtmlCompat.fromHtml(getString(R.string.bar_title_alert, fragmentBarTitle,
-                        GameHelper.roundTimeToString(it)), HtmlCompat.FROM_HTML_MODE_LEGACY)
+                    HtmlCompat.fromHtml(
+                        getString(
+                            R.string.bar_title_alert, fragmentBarTitle,
+                            GameHelper.roundTimeToString(it)
+                        ), HtmlCompat.FROM_HTML_MODE_LEGACY
+                    )
             }
         })
     }

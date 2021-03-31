@@ -8,7 +8,7 @@ import java.io.Serializable
 
 class MembersAction(private val initiator : Player, val target : Player, val alliance : Alliance,
                     val proposalEnum: ProposalEnum
-) : Serializable {
+) : Action(initiator), Serializable {
 
     fun convertToDTO(): MembersActionDTO =
         MembersActionDTO(

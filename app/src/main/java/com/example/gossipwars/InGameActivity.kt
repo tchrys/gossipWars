@@ -163,7 +163,6 @@ class InGameActivity : AppCompatActivity(),
     }
 
     override fun onDialogPositiveClick(dialog: ArmyOption?) {
-        val meAsAPlayer = GameHelper.findPlayerByUUID(Game.myId)
         val armyRequestDTO: ArmyRequestDTO? = when (dialog) {
             ArmyOption.ATTACK -> ArmyRequestDTO(
                 Game.myId,

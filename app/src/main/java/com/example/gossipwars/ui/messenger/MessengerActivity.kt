@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.gossipwars.InGameActivity
 import com.example.gossipwars.R
 import com.example.gossipwars.communication.messages.actions.MembersActionDTO
+import com.example.gossipwars.logic.actions.MembersAction
 import com.example.gossipwars.logic.entities.*
 import com.example.gossipwars.logic.proposals.ProposalEnum
 import com.google.android.material.textfield.TextInputEditText
@@ -90,8 +91,9 @@ class MessengerActivity : AppCompatActivity() {
         val id: Int = item.itemId
         if (id == R.id.actionQuitAlliance) {
             Game.sendMembersAction(
-                MembersActionDTO(
-                    Game.myId, Game.myId, activityAllianceId,
+                MembersAction(
+                    GameHelper.findPlayerByUUID(Game.myId),
+                    GameHelper.findPlayerByUUID(Game.myId), GameHelper.findAllianceByUUID(activityAllianceId),
                     ProposalEnum.KICK
                 )
             )

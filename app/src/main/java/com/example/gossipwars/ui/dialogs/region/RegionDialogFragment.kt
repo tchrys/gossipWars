@@ -13,6 +13,7 @@ import androidx.fragment.app.DialogFragment
 import com.example.gossipwars.R
 import com.example.gossipwars.communication.messages.actions.StrategyActionDTO
 import com.example.gossipwars.communication.messages.info.RegionPlayerInfo
+import com.example.gossipwars.logic.actions.StrategyAction
 import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.entities.GameHelper
 import com.example.gossipwars.logic.entities.Player
@@ -85,8 +86,11 @@ class RegionDialogFragment(val regionName: String) : DialogFragment() {
             attackButton.setOnClickListener {
                 val targetId: UUID? = dialogRegion.occupiedBy?.id
                 if (targetId != null) {
-                    Game.sendStrategyAction(StrategyActionDTO(Game.myId, targetId,
-                        dialogRegion.id, mutableListOf(), ProposalEnum.ATTACK))
+                    Game.sendStrategyAction(
+                        StrategyAction(GameHelper.findPlayerByUUID(Game.myId),
+                            GameHelper.findPlayerByUUID(targetId),
+                        dialogRegion.id, mutableListOf(), ProposalEnum.ATTACK)
+                    )
                 }
             }
         }
