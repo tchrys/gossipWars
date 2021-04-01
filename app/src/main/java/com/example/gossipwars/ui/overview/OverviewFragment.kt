@@ -30,11 +30,6 @@ class OverviewFragment : Fragment() {
         fragmentBarTitle = (context as InGameActivity).supportActionBar?.title.toString()
         subscribeToTimer()
 
-
-        val textView: TextView = root.findViewById(R.id.text_overview)
-        overviewViewModel.text.observe(viewLifecycleOwner, Observer {
-            textView.text = it
-        })
         return root
     }
 
