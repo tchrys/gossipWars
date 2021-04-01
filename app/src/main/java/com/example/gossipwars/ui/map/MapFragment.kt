@@ -58,8 +58,6 @@ class MapFragment : Fragment() {
                     val region: Region? = GameHelper.findRegionByName(province.name)
                     var idx: Int? = Game.players.value?.indexOfFirst { player -> player.id == region?.occupiedBy?.id }
                     if (idx != null) {
-//                        if (Random.nextBoolean())
-//                            idx = 1
                         gameMap.colorProvince(province, GameHelper.getColorByPlayerIdx(idx))
 //                        gameMap.addTitle(province, province.name, Typeface.SANS_SERIF, Color.BLACK)
                     }

@@ -5,9 +5,12 @@ import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
 import android.view.View
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import androidx.fragment.app.DialogFragment
 import com.example.gossipwars.R
 import com.example.gossipwars.logic.entities.Game
+import com.example.gossipwars.logic.entities.Player
 import com.google.android.material.textfield.TextInputEditText
 
 class AddAllianceDialogFragment : DialogFragment() {
@@ -35,25 +38,30 @@ class AddAllianceDialogFragment : DialogFragment() {
         val inflater = requireActivity().layoutInflater
         val builder = AlertDialog.Builder(activity)
         val inputView: View = inflater.inflate(R.layout.shared_input_name, null)
-        builder.setView(inputView)
-        var playerOptionsString: Array<CharSequence>? = Game.players.value?.filter { player -> player.id != Game.myId }
-            ?.map { player -> player.username }?.toTypedArray()
-        if (playerOptionsString?.size == 0) {
-            var mtl = playerOptionsString.toMutableList()
-            mtl.add("ex1")
-            mtl.add("ex2")
-            mtl.add("ex3")
-            mtl.add("ex4")
-            mtl.add("ex5")
-            mtl.add("ex6")
-            mtl.add("ex7")
-            playerOptionsString = mtl.toTypedArray()
+
+        val firstMemberGroup: RadioGroup = inputView.findViewById(R.id.addFirstMemberRadioGroup)
+        Game.players.value?.filter { player -> player.id != Game.myId }?.forEach { player: Player ->
+            val playerButton = RadioButton(context)
+            playerButton.text = player.username
+            firstMemberGroup.addView(playerButton)
         }
-        usernameSelected = playerOptionsString?.get(0).toString()
-        builder.setTitle("Add alliance name and first member")
-            .setSingleChoiceItems(playerOptionsString, 0) { _, which ->
-                usernameSelected = playerOptionsString?.get(which).toString()
+        if (firstMemberGroup.childCount == 0) {
+            for (i in 0..7) {
+                val dummyButton = RadioButton(context)
+                dummyButton.text = "player" + i.toString()
+                firstMemberGroup.addView(dummyButton)
             }
+        }
+
+        firstMemberGroup.setOnCheckedChangeListener { _, checkedId ->
+            if (checkedId != -1) {
+                val checkedRadioButton = firstMemberGroup.findViewById<RadioButton>(checkedId)
+                usernameSelected = checkedRadioButton.text.toString()
+            }
+        }
+
+        builder.setView(inputView)
+        builder.setTitle("Add alliance name and first member")
             .setPositiveButton("Done") { _, _ ->
                 val allianceNameInput: TextInputEditText? =  inputView.findViewById(R.id.sharedInputText)
                 listener.onDialogPositiveClick(AllianceAfterDialog(usernameSelected, allianceNameInput?.text.toString()))

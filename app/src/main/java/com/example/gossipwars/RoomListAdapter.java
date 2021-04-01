@@ -1,5 +1,7 @@
 package com.example.gossipwars;
 
+import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +13,8 @@ import com.example.gossipwars.communication.messages.gameInit.RoomInfoDTO;
 import com.google.android.material.chip.Chip;
 
 import java.util.LinkedList;
+
+import devit951.github.magictip.tip.AutoCloseMagicTip;
 
 public class RoomListAdapter extends
         RecyclerView.Adapter<RoomListAdapter.RoomViewHolder> {
@@ -39,6 +43,25 @@ public class RoomListAdapter extends
             itemView.setOnClickListener(this);
             roomButton.setOnClickListener(view -> {
                 context.joinGame(roomInfoList.get(getLayoutPosition()));
+            });
+            nameChip.setOnClickListener(view -> {
+                // has ellipsis
+                if (nameChip.getLayout().getEllipsisCount(0) > 0) {
+                    new AutoCloseMagicTip(nameChip, 1000)
+                            .settings(magicTipView -> {
+                                magicTipView.setText(nameChip.getText());
+                                return null;
+                            }).show();
+                }
+            });
+            creatorChip.setOnClickListener(view -> {
+                if (creatorChip.getLayout().getEllipsisCount(0) > 0) {
+                    new AutoCloseMagicTip(creatorChip, 1000)
+                            .settings(magicTipView -> {
+                                magicTipView.setText(creatorChip.getText());
+                                return null;
+                            }).show();
+                }
             });
         }
 
@@ -76,12 +99,12 @@ public class RoomListAdapter extends
         if (mCurrent.getRoomName().length() <= MAX_LEN) {
             holder.nameChip.setText(mCurrent.getRoomName());
         } else {
-            holder.nameChip.setText(mCurrent.getRoomName().subSequence(0, MAX_LEN) + "...");
+            holder.nameChip.setText(mCurrent.getRoomName());
         }
         if (mCurrent.getUsername().length() <= MAX_LEN) {
             holder.creatorChip.setText(mCurrent.getUsername());
         } else {
-            holder.creatorChip.setText(mCurrent.getUsername().subSequence(0, MAX_LEN) + "...");
+            holder.creatorChip.setText(mCurrent.getUsername());
         }
         holder.lengthChip.setText(mCurrent.getRoundLength() + "s");
         holder.playersChip.setText(mCurrent.getCrtPlayersNr() +

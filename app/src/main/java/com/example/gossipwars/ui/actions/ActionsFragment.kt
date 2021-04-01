@@ -204,24 +204,7 @@ class ActionsFragment : Fragment() {
                     ).show(it, "joinVotesDialog")
                 }
             } else {
-                // just for debug
-                val props: ArrayList<Proposal> = arrayListOf()
-                for (i in 0..3) {
-                    val alliance = Alliance(UUID.randomUUID())
-                    alliance.name = "all" + i.toString()
-                    props.add(
-                        JoinProposal(
-                            alliance, Player("mirel", UUID.randomUUID()),
-                            Player("marcel", UUID.randomUUID()), proposalId = UUID.randomUUID()
-                        )
-                    )
-                }
-                fragmentManager?.let {
-                    VoteProposalsDialog("Join proposals", props).show(
-                        it,
-                        "joinVotesDialog"
-                    )
-                }
+                showSnackbarForError("There are no join proposals yet")
             }
         }
     }

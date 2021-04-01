@@ -13,11 +13,14 @@ import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.lifecycle.MutableLiveData
+import com.example.gossipwars.InGameActivity
 import com.example.gossipwars.R
 import com.example.gossipwars.ui.map.MapFragment
 import com.richpath.RichPath
 import com.richpath.RichPathView
 import com.richpathanimator.RichPathAnimator
+import devit951.github.magictip.tip.AutoCloseMagicTip
+import kotlinx.android.synthetic.main.activity_in_game.*
 import java.lang.Exception
 
 class MapView @JvmOverloads constructor(
@@ -35,7 +38,18 @@ class MapView @JvmOverloads constructor(
             field = value
             if (value)
                 gameMapPath.setOnPathClickListener {
+
                     activeProvince(it, withAnimate = true)
+
+//                    Log.d("DBG", "pivoti")
+//                    Log.d("DBG", it.width.toString())
+//                    Log.d("DBG", it.height.toString())
+//                    AutoCloseMagicTip((context as InGameActivity).nav_view, 1000)
+//                        .settings {
+//                            this.text = "njk\nnakdn\nkn"
+//
+//                        }.show()
+
                 } else {
                 gameMapPath.setOnPathClickListener(null)
             }
@@ -94,13 +108,20 @@ class MapView @JvmOverloads constructor(
     private fun handleAttr(context: Context, attrs: AttributeSet?) {
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.MapView, 0, 0)
         try {
-            provinceBackgroundColor = typedArray.getColor(R.styleable.MapView_imProvinceBackgroundColor, Color.BLACK)
-            provinceActiveColor = typedArray.getColor(R.styleable.MapView_imProvinceActiveBackgroundColor, Color.CYAN)
-            provinceStrokeColor = typedArray.getColor(R.styleable.MapView_imProvinceStrokeColor, Color.WHITE)
-            provinceSelectByClick = typedArray.getBoolean(R.styleable.MapView_imProvinceSelectByClick, true)
-            provinceCanMultiSelect = typedArray.getBoolean(R.styleable.MapView_imProvinceMultiSelect, false)
-            mapAnimationDuration = typedArray.getInt(R.styleable.MapView_imAnimationDuration, 200).toLong()
-            mapAppearWithAnimation = typedArray.getBoolean(R.styleable.MapView_imMapAppearWithAnimation, false)
+            provinceBackgroundColor =
+                typedArray.getColor(R.styleable.MapView_imProvinceBackgroundColor, Color.BLACK)
+            provinceActiveColor =
+                typedArray.getColor(R.styleable.MapView_imProvinceActiveBackgroundColor, Color.CYAN)
+            provinceStrokeColor =
+                typedArray.getColor(R.styleable.MapView_imProvinceStrokeColor, Color.WHITE)
+            provinceSelectByClick =
+                typedArray.getBoolean(R.styleable.MapView_imProvinceSelectByClick, true)
+            provinceCanMultiSelect =
+                typedArray.getBoolean(R.styleable.MapView_imProvinceMultiSelect, false)
+            mapAnimationDuration =
+                typedArray.getInt(R.styleable.MapView_imAnimationDuration, 200).toLong()
+            mapAppearWithAnimation =
+                typedArray.getBoolean(R.styleable.MapView_imMapAppearWithAnimation, false)
             mapAdjustViewBound = typedArray.getBoolean(R.styleable.MapView_imAdjustViewBound, false)
         } catch (e: Exception) {
             e.printStackTrace()
@@ -151,8 +172,10 @@ class MapView @JvmOverloads constructor(
      * @throws EnumConstantNotPresentException if province not found
      */
     @JvmOverloads
-    fun activeProvince(province: Province, withBackgroundColor: Int? = null, withStrokeColor: Int? = null,
-                        withAnimate: Boolean = false) {
+    fun activeProvince(
+        province: Province, withBackgroundColor: Int? = null, withStrokeColor: Int? = null,
+        withAnimate: Boolean = false
+    ) {
         val provincePath = gameMapPath.findRichPathByName(province.name)
         activeProvince(provincePath, withBackgroundColor, withStrokeColor, withAnimate)
     }
@@ -169,27 +192,30 @@ class MapView @JvmOverloads constructor(
         deActivateProvince(provincePath, withAnimate)
     }
 
-    private fun activeProvince(provincePath: RichPath?, withBackgroundColor: Int? = null,
-                                withStrokeColor: Int? = null, withAnimate: Boolean = false) {
+    private fun activeProvince(
+        provincePath: RichPath?, withBackgroundColor: Int? = null,
+        withStrokeColor: Int? = null, withAnimate: Boolean = false
+    ) {
         // deactivate selected provinces in single select mode
         if (!provinceCanMultiSelect) {
-            Province.values().filter { it.name != provincePath?.name }.forEach { deActiveProvince(it) }
+            Province.values().filter { it.name != provincePath?.name }
+                .forEach { deActiveProvince(it) }
         }
         provincePath?.let {
             // if province is active now, deactivate it
 //            if (selectedProvinces.contains(Province.valueOf(it.name))) {
 //                deActivateProvince(it, withAnimate)
 //            } else {
-                // activate province
-                provinceClicked.value = provincePath.name
-                RichPathAnimator.animate(it)
-                    .interpolator(AccelerateDecelerateInterpolator())
-                    .duration(if (withAnimate) mapAnimationDuration else 0)
-                    .scale(1.1f, 1f)
+            // activate province
+            provinceClicked.value = provincePath.name
+            RichPathAnimator.animate(it)
+                .interpolator(AccelerateDecelerateInterpolator())
+                .duration(if (withAnimate) mapAnimationDuration else 0)
+                .scale(1.1f, 1f)
 //                    .fillColor(it.fillColor, withBackgroundColor ?: provinceActiveColor)
-                    .strokeColor(it.strokeColor, withStrokeColor ?: provinceStrokeColor)
-                    .start()
-                selectedProvinces.add(Province.valueOf(it.name))
+                .strokeColor(it.strokeColor, withStrokeColor ?: provinceStrokeColor)
+                .start()
+            selectedProvinces.add(Province.valueOf(it.name))
 //            }
         } ?: kotlin.run {
             throw EnumConstantNotPresentException(Province::class.java, "Province not found")
@@ -232,7 +258,12 @@ class MapView @JvmOverloads constructor(
      * @param [typeface] type face of title
      * @param [textColor] text color of title
      */
-    fun addTitle(province: Province, title: String?, typeface: Typeface = Typeface.DEFAULT, textColor: Int? = null) {
+    fun addTitle(
+        province: Province,
+        title: String?,
+        typeface: Typeface = Typeface.DEFAULT,
+        textColor: Int? = null
+    ) {
         if (title == null)
             return
         // init paint for draw title
@@ -265,6 +296,7 @@ class MapView @JvmOverloads constructor(
             // force layout to call onDraw method
             setWillNotDraw(false)
         }
+
         @SuppressLint("DrawAllocation")
         override fun onDraw(canvas: Canvas?) {
             super.onDraw(canvas)
@@ -276,9 +308,10 @@ class MapView @JvmOverloads constructor(
                 // find province bounds
                 it.key?.computeBounds(provinceBounds, true)
                 // draw text on center of province
-                canvas?.drawText(it.value ?: "",
-                                    provinceBounds.centerX().minus(textBounds.width().div(2)),
-                                    provinceBounds.centerY(), paint
+                canvas?.drawText(
+                    it.value ?: "",
+                    provinceBounds.centerX().minus(textBounds.width().div(2)),
+                    provinceBounds.centerY(), paint
                 )
             }
         }

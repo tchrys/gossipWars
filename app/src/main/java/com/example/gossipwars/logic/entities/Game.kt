@@ -108,9 +108,6 @@ object Game {
 
     fun roundEndCompute() {
         // strategy actions
-//        for (i in 0..100000000) {
-//            sqrt(24.43)
-//        }
         for (region in regions) {
             val attackers: Set<Player> = findRegionDefOrAtt(region.id, ProposalEnum.ATTACK)
             val defenders: Set<Player> = findRegionDefOrAtt(region.id, ProposalEnum.DEFEND)
@@ -249,7 +246,9 @@ object Game {
             }
         }
         Notifications.roundTimer.value = roomInfo?.roundLength
+        Notifications.roundOngoing.value = true
         Notifications.myBonusTaken.value = false
+
         Notifications.createTimeCounter()
         gameStarted = true
     }

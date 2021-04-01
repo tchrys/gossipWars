@@ -19,8 +19,8 @@ object Notifications {
     var negotiatePropsNo: MutableLiveData<Int> = MutableLiveData<Int>().apply { value = 0 }
     var myPropsNo: MutableLiveData<Int> = MutableLiveData<Int>().apply { value = 0 }
     var alliancesNoForMe: MutableLiveData<Int> = MutableLiveData<Int>().apply { value = 0 }
-    var roundTimer: MutableLiveData<Int> = MutableLiveData<Int>().apply { value = 0 }
-    var roundOngoing: MutableLiveData<Boolean> = MutableLiveData<Boolean>().apply { value = true }
+    var roundTimer: MutableLiveData<Int> = MutableLiveData<Int>().apply { value = 2 }
+    var roundOngoing: MutableLiveData<Boolean> = MutableLiveData<Boolean>().apply { value = false }
 
     fun createTimeCounter() {
         roundOngoing.observeForever {
