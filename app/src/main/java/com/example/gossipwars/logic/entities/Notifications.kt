@@ -21,6 +21,7 @@ object Notifications {
     var alliancesNoForMe: MutableLiveData<Int> = MutableLiveData<Int>().apply { value = 0 }
     var roundTimer: MutableLiveData<Int> = MutableLiveData<Int>().apply { value = 2 }
     var roundOngoing: MutableLiveData<Boolean> = MutableLiveData<Boolean>().apply { value = false }
+    var crtRoundNo: MutableLiveData<Int> = MutableLiveData<Int>().apply { value = -1 }
 
     fun createTimeCounter() {
         roundOngoing.observeForever {
@@ -43,6 +44,7 @@ object Notifications {
     }
 
     private fun updateRoundTime() {
+        Log.d("DBG", crtRoundNo.value.toString())
         if (roundOngoing.value == false)
             return
         if (roundTimer.value!! > 0)

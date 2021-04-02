@@ -1,6 +1,5 @@
 package com.example.gossipwars.logic.entities
 
-import android.provider.Settings
 import androidx.lifecycle.MutableLiveData
 import com.example.gossipwars.MainActivity
 import com.example.gossipwars.communication.messages.MessageCode
@@ -25,6 +24,7 @@ import com.example.gossipwars.logic.entities.Notifications.kickPropsNo
 import com.example.gossipwars.logic.entities.Notifications.messageEmitter
 import com.example.gossipwars.logic.entities.Notifications.myPropsNo
 import com.example.gossipwars.logic.entities.Notifications.negotiatePropsNo
+import com.example.gossipwars.logic.entities.Notifications.crtRoundNo
 import com.example.gossipwars.logic.proposals.ArmyRequest
 import com.example.gossipwars.logic.proposals.Proposal
 import com.example.gossipwars.logic.proposals.ProposalEnum
@@ -32,8 +32,6 @@ import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.connection.Payload
 import org.apache.commons.lang3.SerializationUtils
 import java.util.*
-import java.util.logging.Handler
-import kotlin.math.sqrt
 
 object Game {
     lateinit var myId: UUID
@@ -108,9 +106,13 @@ object Game {
 
     fun roundEndCompute() {
         // strategy actions
+        Snapshots.armyImprovementsPerRound.add(mutableListOf())
+        Snapshots.fightsPerRound.add(mutableListOf())
+        Snapshots.troopsMovedPerRound.add(mutableListOf())
         for (region in regions) {
             val attackers: Set<Player> = findRegionDefOrAtt(region.id, ProposalEnum.ATTACK)
             val defenders: Set<Player> = findRegionDefOrAtt(region.id, ProposalEnum.DEFEND)
+            Snapshots.fightsPerRound[crtRoundNo.value!!].add(Fight(attackers, defenders, region))
             simulateFight(attackers, defenders, region)
         }
         // troop actions
@@ -120,10 +122,12 @@ object Game {
                 troopAction.toRegion,
                 troopAction.size
             )
+            Snapshots.troopsMovedPerRound[crtRoundNo.value!!].add(troopAction)
         }
         // army actions
         for (armyAction in armyActions) {
             armyAction.initiator.improveArmy(armyAction)
+            Snapshots.armyImprovementsPerRound[crtRoundNo.value!!].add(armyAction)
         }
         // compute army size for players
         players.value?.forEach { player: Player -> player.computeArmySize() }
@@ -248,6 +252,7 @@ object Game {
         Notifications.roundTimer.value = roomInfo?.roundLength
         Notifications.roundOngoing.value = true
         Notifications.myBonusTaken.value = false
+        crtRoundNo.value = 0
 
         Notifications.createTimeCounter()
         gameStarted = true
@@ -541,6 +546,7 @@ object Game {
         if (playersReadyForNewRound.size == players.value?.size) {
             Notifications.roundOngoing.value = true
             Notifications.myBonusTaken.value = false
+            crtRoundNo.value = crtRoundNo.value?.plus(1)
             playersReadyForNewRound.clear()
         }
     }
@@ -551,6 +557,7 @@ object Game {
             // all players are ready to start a new round
             Notifications.roundOngoing.value = true
             Notifications.myBonusTaken.value = false
+            crtRoundNo.value = crtRoundNo.value?.plus(1)
             playersReadyForNewRound.clear()
         }
     }

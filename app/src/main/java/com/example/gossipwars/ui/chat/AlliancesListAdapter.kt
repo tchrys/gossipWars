@@ -18,11 +18,10 @@ class AlliancesListAdapter(
 
     inner class AllianceViewHolder(
         itemView: View,
-        adapter: AlliancesListAdapter
+        val mAdapter: AlliancesListAdapter
     ) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
         val allianceNameTextView: TextView = itemView.findViewById(R.id.allianceNameTextView)
         val allianceMembersTextView: TextView = itemView.findViewById(R.id.allianceMembersTextView)
-        val mAdapter: AlliancesListAdapter = adapter
         override fun onClick(view: View) {
             // get the position of the view that was clicked
             val mPosition = layoutPosition

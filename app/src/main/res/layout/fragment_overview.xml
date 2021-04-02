@@ -7,56 +7,10 @@
     tools:context=".ui.overview.OverviewFragment">
 
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/exampleCard"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/overviewNewsFeedRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:cardCornerRadius="30dp"
-        app:contentPadding="10dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-
-            <com.richpath.RichPathView
-                android:id="@+id/exampleMap"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:vector="@drawable/region10_map"
-                />
-
-
-            <TextView
-                android:id="@+id/exampleCardText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:drawableLeft="@drawable/ic_chip_join"
-                android:text="@string/join_proposals"
-                android:textAppearance="?attr/textAppearanceCaption"
-                app:layout_constraintBottom_toTopOf="@id/exampleCardReply"
-                app:layout_constraintTop_toBottomOf="@id/exampleMap"
-                app:layout_constraintStart_toStartOf="parent" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/exampleCardReply"
-                style="?attr/borderlessButtonStyle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
-                android:gravity="end"
-                android:text="@string/reply"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </androidx.cardview.widget.CardView>
-
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
