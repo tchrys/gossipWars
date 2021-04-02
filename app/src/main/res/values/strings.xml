@@ -88,5 +88,9 @@
     <string name="bar_title_alert"><![CDATA[
 %s <font color=#FF4444>%s</font>
     ]]></string>
+    <string name="room_start">Start</string>
+    <string name="room_join">Join</string>
+    <string name="round_seconds">%ss</string>
+    <string name="room_players">%s/%s</string>
 
 </resources>
