@@ -13,8 +13,8 @@ class JoinKickProposalDTO(
     val proposalId: UUID, val proposalEnum: ProposalEnum
 ) : Serializable {
 
-    fun convertToEntity(): Proposal? {
-        return when (proposalEnum) {
+    fun convertToEntity(): Proposal? =
+        when (proposalEnum) {
             ProposalEnum.JOIN -> JoinProposal(
                 target = GameHelper.findPlayerByUUID(target),
                 proposalEnum = proposalEnum,
@@ -31,5 +31,4 @@ class JoinKickProposalDTO(
             )
             else -> null
         }
-    }
 }

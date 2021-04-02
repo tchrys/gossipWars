@@ -4,8 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AccelerateDecelerateInterpolator
-import android.widget.TextView
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -15,19 +13,16 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.gossipwars.InGameActivity
 import com.example.gossipwars.R
 import com.example.gossipwars.logic.entities.GameHelper
-import com.example.gossipwars.logic.entities.NewsfeedInfo
+import com.example.gossipwars.logic.entities.NewsFeedInfo
 import com.example.gossipwars.logic.entities.Notifications
 import com.example.gossipwars.logic.entities.Snapshots
-import com.richpath.RichPath
-import com.richpath.RichPathView
-import com.richpathanimator.RichPathAnimator
 
 class OverviewFragment : Fragment() {
 
     private lateinit var overviewViewModel: OverviewViewModel
     private var mRecyclerView: RecyclerView? = null
     private var mAdapter: NewsFeedListAdapter? = null
-    private var newsFeedList: ArrayList<NewsfeedInfo> = ArrayList()
+    private var newsFeedList: ArrayList<NewsFeedInfo> = ArrayList()
     private lateinit var fragmentBarTitle: String
 
     override fun onCreateView(
@@ -49,14 +44,12 @@ class OverviewFragment : Fragment() {
         Notifications.roundOngoing.observe(viewLifecycleOwner, Observer {
             if (it) {
                 newsFeedList.clear()
-                Snapshots.generateNewsFeed().forEach { newsfeedInfo: NewsfeedInfo ->
-                    newsFeedList.add(newsfeedInfo)
+                Snapshots.generateNewsFeed().forEach { newsFeedInfo: NewsFeedInfo ->
+                    newsFeedList.add(newsFeedInfo)
                 }
                 mRecyclerView?.adapter?.notifyDataSetChanged()
             }
         })
-
-
         return root
     }
 

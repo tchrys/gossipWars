@@ -1,6 +1,5 @@
 package com.example.gossipwars.logic.entities
 
-import com.example.gossipwars.logic.actions.Action
 import com.example.gossipwars.logic.proposals.*
 import java.io.Serializable
 import java.util.*
@@ -59,9 +58,8 @@ data class Player(var username : String, val id : UUID): Serializable {
     fun getArmySizeForRegion(regionId: Int) = army.sizePerRegion.getOrElse(regionId, {0})
 
     fun changeArmySizeForRegion(regionId: Int, delta: Int) {
-        if (!army.sizePerRegion.containsKey(regionId))
-            return
-        army.sizePerRegion[regionId] = max(0, army.sizePerRegion[regionId]!! + delta)
+        if (army.sizePerRegion.containsKey(regionId))
+            army.sizePerRegion[regionId] = max(0, army.sizePerRegion[regionId]!! + delta)
     }
 
     fun computeArmySize() {
@@ -74,49 +72,8 @@ data class Player(var username : String, val id : UUID): Serializable {
     fun getArmyDefDamage(regionId: Int): Float =
                     1f * getArmySizeForRegion(regionId) * army.defense / 400
 
-    fun createAlliance(name : String) {
-        Game.addAlliance(this, name)
-    }
-
-    fun findProposalsNotVoted() : MutableList<Proposal> {
-        var result : MutableList<Proposal> = mutableListOf()
-        for (alliance : Alliance in alliances) {
-            for (proposal : Proposal in alliance.proposalsList) {
-                if (!proposal.votes.containsKey(this) && proposal.initiator != this) {
-                    result.add(proposal)
-                }
-            }
-        }
-        return result
-    }
-
-    fun createActionsWhereInitiator() : MutableList<Action> {
-        var result : MutableList<Action> = mutableListOf()
-        for (alliance in alliances) {
-            for (proposal in alliance.proposalsList) {
-                if (proposal.initiator == this && proposal.proposalAccepted()) {
-                    when (proposal) {
-                        is JoinProposal -> {
-                            if (proposal.proposalAccepted())
-                                result.add(proposal.createAction())
-                        }
-                        is KickProposal -> {
-                            if (proposal.proposalAccepted()) {
-                                result.add(proposal.createAction())
-                            }
-                        }
-                        is StrategyProposal -> {
-                            result.add(proposal.createAction())
-                        }
-                    }
-                }
-            }
-        }
-        return result
-    }
-
     fun makeProposal(alliance: Alliance, target : Player, proposalType: ProposalEnum, targetRegion: Int) {
-        var proposalMade: Proposal = when(proposalType) {
+        val proposalMade: Proposal = when(proposalType) {
             ProposalEnum.KICK -> KickProposal(alliance = alliance, target = target,
                                                 initiator = this, proposalId = UUID.randomUUID())
             ProposalEnum.JOIN -> JoinProposal(alliance = alliance, target = target,
@@ -132,24 +89,11 @@ data class Player(var username : String, val id : UUID): Serializable {
         sendProposalToOtherPlayers(proposalMade)
     }
 
-    fun sendProposalToOtherPlayers(proposal: Proposal) {
+    private fun sendProposalToOtherPlayers(proposal: Proposal) {
         when(proposal.proposalEnum) {
             ProposalEnum.JOIN -> Game.sendJoinKickProposalDTO((proposal as JoinProposal).convertToDTO())
             ProposalEnum.KICK -> Game.sendJoinKickProposalDTO((proposal as KickProposal).convertToDTO())
             else -> Game.sendStrategyProposal((proposal as StrategyProposal).convertToDTO())
         }
-    }
-
-    fun iAmInvolvedInThisRegion(regionId: Int): Boolean {
-        alliances.forEach { alliance: Alliance ->
-            alliance.proposalsList.forEach { proposal: Proposal ->
-                if (ProposalEnum.DEFEND == proposal.proposalEnum ||
-                            ProposalEnum.ATTACK == proposal.proposalEnum) {
-                    if (proposal.votes.containsKey(this) && proposal.votes[this]!!)
-                        return true
-                }
-            }
-        }
-        return false
     }
 }

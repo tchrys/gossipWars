@@ -2,11 +2,9 @@ package com.example.gossipwars.ui.chat
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Toast
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
@@ -63,7 +61,6 @@ class ChatFragment : Fragment() {
     }
 
     fun enterAllianceChat(alliance: Alliance) {
-        Toast.makeText(context, alliance.name, Toast.LENGTH_LONG).show()
         val intent = Intent(context, MessengerActivity::class.java).apply {}
         intent.putExtra("alliance", alliance.id)
         startActivity(intent)

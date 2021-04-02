@@ -23,7 +23,7 @@ class NegotiateListAdapter(
         adapter: NegotiateListAdapter
     ) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
         val propStatement: TextView = itemView.findViewById(R.id.proposalStatement)
-        val propVote: SwitchMaterial = itemView.findViewById(R.id.proposalSwitch)
+        private val propVote: SwitchMaterial = itemView.findViewById(R.id.proposalSwitch)
         val mAdapter: NegotiateListAdapter = adapter
         override fun onClick(view: View) {
             val mPosition = layoutPosition

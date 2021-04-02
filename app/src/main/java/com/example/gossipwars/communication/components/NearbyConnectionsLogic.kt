@@ -26,11 +26,9 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
                     .addOnSuccessListener {
                         // we successfully requested a connection. now both sides
                         // must accept before the connection is established
-                        Toast.makeText(mainActivity, "Request connection", Toast.LENGTH_LONG).show()
                     }
                     .addOnFailureListener {
                         // nearby connections failed to request the connection
-                        Toast.makeText(mainActivity, "Request failed", Toast.LENGTH_LONG).show()
                     }
             }
 
@@ -47,7 +45,6 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
                         if (mainActivity.acceptedUsers.contains(endpointId)) {
                             mainActivity.peers.add(endpointId)
                         }
-                        Toast.makeText(mainActivity, "Status ok", Toast.LENGTH_LONG).show()
                     }
                     ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED -> {
                     }
@@ -66,14 +63,13 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
             override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
                 // Automatically accept the connection on both sides.
                 AlertDialog.Builder(mainActivity)
-                    .setTitle("Accept connection to " + connectionInfo.endpointName)
-                    .setMessage("Confirm the code matches on both devices " + connectionInfo.authenticationToken)
+                    .setTitle("Accept connection to ${connectionInfo.endpointName}")
+                    .setMessage("Confirm the code matches on both devices ${connectionInfo.authenticationToken}")
                     .setPositiveButton("Accept") { _, _ ->
                         // the user confirmed, so we can accept the connection
                         Nearby.getConnectionsClient(mainActivity)
                             .acceptConnection(endpointId, payloadCallback)
                         mainActivity.acceptedUsers.add(endpointId)
-                        Toast.makeText(mainActivity, endpointId, Toast.LENGTH_LONG).show()
                     }
                     .setNegativeButton("Cancel") { _, _ ->
                         // the user canceled, so we should reject the connection
@@ -90,10 +86,8 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
             .startAdvertising(mainActivity.username.orEmpty(), "com.example.gossipwars",
                 connectionLifecycleCallback, advertisingOptions)
             .addOnSuccessListener {
-                Toast.makeText(mainActivity, "We are advertising", Toast.LENGTH_LONG).show()
             }
             .addOnFailureListener {
-                Toast.makeText(mainActivity, "Unable to advertise", Toast.LENGTH_LONG).show()
             }
     }
 
@@ -102,10 +96,8 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
         Nearby.getConnectionsClient(mainActivity).startDiscovery("com.example.gossipwars",
             endpointDiscoveryCallback, discoveryOptions)
             .addOnSuccessListener {
-                Toast.makeText(mainActivity, "We are discovering", Toast.LENGTH_LONG).show()
             }
             .addOnFailureListener {
-                Toast.makeText(mainActivity, "Unable to discover", Toast.LENGTH_LONG).show()
             }
     }
 

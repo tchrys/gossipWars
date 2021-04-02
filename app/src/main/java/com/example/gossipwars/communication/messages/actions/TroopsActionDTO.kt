@@ -6,7 +6,7 @@ import java.io.Serializable
 import java.util.*
 
 class TroopsActionDTO(
-    val initiatorId: UUID, val fromRegion: Int, val toRegion: Int,
+    private val initiatorId: UUID, private val fromRegion: Int, private val toRegion: Int,
     val size: Int
 ) : Serializable {
 

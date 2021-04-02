@@ -1,7 +1,6 @@
 package com.example.gossipwars
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
@@ -13,7 +12,6 @@ import androidx.navigation.ui.setupWithNavController
 import com.example.gossipwars.communication.messages.actions.TroopsActionDTO
 import com.example.gossipwars.communication.messages.allianceCommunication.ArmyRequestDTO
 import com.example.gossipwars.communication.messages.allianceCommunication.ProposalResponse
-import com.example.gossipwars.logic.actions.TroopsAction
 import com.example.gossipwars.logic.entities.*
 import com.example.gossipwars.logic.proposals.ArmyOption
 import com.example.gossipwars.logic.proposals.ArmyRequest
@@ -73,19 +71,8 @@ class InGameActivity : AppCompatActivity(),
         navView.setupWithNavController(navController)
         Game.sendMyInfo()
 
-//        frameLayout.visibility = View.VISIBLE
-
         Notifications.roundOngoing.observe(this, androidx.lifecycle.Observer {
-            if (!it) {
-                frameLayout.visibility = View.VISIBLE
-                Log.d("DBG", "visible")
-            }
-            else {
-                frameLayout.visibility = View.GONE
-                Log.d("DBG", "gone")
-
-            }
-//            frameLayout.visibility = if (it) View.GONE else View.VISIBLE
+            frameLayout.visibility = if (it) View.GONE else View.VISIBLE
         })
 
     }

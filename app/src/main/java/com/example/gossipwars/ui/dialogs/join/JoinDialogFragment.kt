@@ -37,8 +37,8 @@ class JoinDialogFragment: DialogFragment() {
         if (activity == null) {
             throw IllegalStateException("activity can not be null")
         }
-        var inflater = requireActivity().layoutInflater
-        var builder = AlertDialog.Builder(activity)
+        val inflater = requireActivity().layoutInflater
+        val builder = AlertDialog.Builder(activity)
         val joinProposalView: View = inflater.inflate(R.layout.alliance_join_form, null)
         val allianceRadioGroup: RadioGroup = joinProposalView.findViewById(R.id.allianceJoinRadioGroup)
         val playersRadioGroup: RadioGroup = joinProposalView.findViewById(R.id.playersJoinRadioGroup)
@@ -46,7 +46,7 @@ class JoinDialogFragment: DialogFragment() {
         val alliances: List<AllianceInvitationDTO>? = GameHelper.findAlliancesForPlayer(Game.myId)?.
                                                         map { alliance -> alliance.convertToDTO() }
         alliances?.forEach { allianceInvitationDTO: AllianceInvitationDTO ->
-            var allianceButton = RadioButton(context)
+            val allianceButton = RadioButton(context)
             allianceButton.text = allianceInvitationDTO.name
             allianceRadioGroup.addView(allianceButton)
         }

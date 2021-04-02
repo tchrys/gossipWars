@@ -48,7 +48,7 @@ class AddAllianceDialogFragment : DialogFragment() {
         if (firstMemberGroup.childCount == 0) {
             for (i in 0..7) {
                 val dummyButton = RadioButton(context)
-                dummyButton.text = "player" + i.toString()
+                dummyButton.text = "player$i"
                 firstMemberGroup.addView(dummyButton)
             }
         }

@@ -14,11 +14,12 @@ import com.example.gossipwars.communication.messages.allianceCommunication.Propo
 import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.proposals.Proposal
 
-class VoteProposalsDialog(val title: String, val props: ArrayList<Proposal>): DialogFragment() {
+class VoteProposalsDialog(val title: String, private val props: ArrayList<Proposal>) :
+    DialogFragment() {
     internal lateinit var listener: VoteDialogListener
     private var mRecyclerView: RecyclerView? = null
     private var mAdapter: ProposalListAdapter? = null
-    var proposalsVotes: MutableMap<Proposal, Boolean> = mutableMapOf()
+    private var proposalsVotes: MutableMap<Proposal, Boolean> = mutableMapOf()
 
     interface VoteDialogListener {
         fun onDialogPositiveClick(dialog: VoteProposalsResult)
@@ -40,7 +41,7 @@ class VoteProposalsDialog(val title: String, val props: ArrayList<Proposal>): Di
         val builder = AlertDialog.Builder(activity)
         val voteProposalView: View = inflater.inflate(R.layout.vote_proposal_form, null)
 
-        props.forEach { proposal: Proposal ->  proposalsVotes[proposal] = false}
+        props.forEach { proposal: Proposal -> proposalsVotes[proposal] = false }
         mRecyclerView = voteProposalView.findViewById(R.id.proposalsRecyclerView)
         mAdapter = ProposalListAdapter(this, props)
         mRecyclerView?.adapter = mAdapter
@@ -48,10 +49,14 @@ class VoteProposalsDialog(val title: String, val props: ArrayList<Proposal>): Di
 
         builder.setView(voteProposalView)
         builder.setTitle(title)
-            .setPositiveButton("Done") { _, _ ->
+        if (title == "Your requests") {
+            builder.setNegativeButton("Close") { _, _ -> }
+        } else {
+            builder.setPositiveButton("Done") { _, _ ->
                 listener.onDialogPositiveClick(createResponse())
             }
-            .setNegativeButton("Cancel") { _, _ -> }
+                .setNegativeButton("Cancel") { _, _ -> }
+        }
         return builder.create()
     }
 
@@ -59,12 +64,16 @@ class VoteProposalsDialog(val title: String, val props: ArrayList<Proposal>): Di
         proposalsVotes[proposal] = vote
     }
 
-    fun createResponse(): VoteProposalsResult {
+    private fun createResponse(): VoteProposalsResult {
         val responses = VoteProposalsResult()
         proposalsVotes.forEach { entry ->
             val prop = entry.key
-            responses.responseList.add(ProposalResponse(prop.alliance.id, prop.proposalId,
-                                        entry.value, Game.myId))
+            responses.responseList.add(
+                ProposalResponse(
+                    prop.alliance.id, prop.proposalId,
+                    entry.value, Game.myId
+                )
+            )
         }
         return responses
     }

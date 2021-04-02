@@ -56,8 +56,7 @@ class MessengerActivity : AppCompatActivity() {
         mRecyclerView = findViewById(R.id.chatMessagesRecyclerView)
         mAdapter = MessagesListAdapter(
             this,
-            alliance.messageList,
-            GameHelper.findPlayerByUUID(Game.myId).username
+            alliance.messageList
         )
         mRecyclerView?.adapter = mAdapter
         mRecyclerView?.layoutManager = LinearLayoutManager(this)

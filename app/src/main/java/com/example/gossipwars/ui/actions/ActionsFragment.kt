@@ -6,17 +6,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.RecyclerView
 import com.example.gossipwars.InGameActivity
 import com.example.gossipwars.R
-import com.example.gossipwars.logic.entities.*
-import com.example.gossipwars.logic.proposals.*
+import com.example.gossipwars.logic.entities.GameHelper
+import com.example.gossipwars.logic.entities.Notifications
+import com.example.gossipwars.logic.proposals.ArmyRequest
+import com.example.gossipwars.logic.proposals.Proposal
+import com.example.gossipwars.logic.proposals.ProposalEnum
 import com.example.gossipwars.ui.dialogs.attack.AttackDialogFragment
 import com.example.gossipwars.ui.dialogs.bonus.BonusDialogFragment
 import com.example.gossipwars.ui.dialogs.defend.DefendDialogFragment
@@ -24,8 +25,6 @@ import com.example.gossipwars.ui.dialogs.join.JoinDialogFragment
 import com.example.gossipwars.ui.dialogs.kick.KickDialogFragment
 import com.example.gossipwars.ui.dialogs.negotiate.NegotiateDialogFragment
 import com.google.android.material.chip.Chip
-import java.util.*
-import kotlin.collections.ArrayList
 
 
 class ActionsFragment : Fragment() {
@@ -115,10 +114,6 @@ class ActionsFragment : Fragment() {
         subscribeToChipStateEvents()
 
         return root
-    }
-
-    fun sendVote(proposal: Proposal, boolean: Boolean) {
-
     }
 
     private fun kickChipSetup() {

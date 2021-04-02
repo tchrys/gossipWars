@@ -128,9 +128,9 @@ object GameHelper {
                     strategyAction.targetRegion == regionId }.firstOrNull()?.initiator
     }
 
-    fun camelCaseToSpaced(name: String): String {
+    fun String.camelCaseToSpaced(): String {
         var ans = ""
-        name.forEach { c: Char -> ans += if (c in 'A'..'Z') " " + c else c }
+        forEach { c: Char -> ans += if (c in 'A'..'Z') " $c" else c }
         return ans
     }
 

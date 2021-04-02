@@ -36,8 +36,8 @@ class AttackDialogFragment : DialogFragment() {
         if (activity == null) {
             throw IllegalStateException("activity can not be null")
         }
-        var inflater = requireActivity().layoutInflater
-        var builder = AlertDialog.Builder(activity)
+        val inflater = requireActivity().layoutInflater
+        val builder = AlertDialog.Builder(activity)
         val attackProposalView: View = inflater.inflate(R.layout.alliance_attack_form, null)
         val allianceRadioGroup: RadioGroup =
             attackProposalView.findViewById(R.id.allianceAttackRadioGroup)
@@ -47,7 +47,7 @@ class AttackDialogFragment : DialogFragment() {
         val alliances: List<AllianceInvitationDTO>? = GameHelper.findAlliancesForPlayer(Game.myId)
             ?.map { alliance -> alliance.convertToDTO() }
         alliances?.forEach { allianceInvitationDTO: AllianceInvitationDTO ->
-            var allianceButton = RadioButton(context)
+            val allianceButton = RadioButton(context)
             allianceButton.text = allianceInvitationDTO.name
             allianceRadioGroup.addView(allianceButton)
         }
@@ -60,7 +60,7 @@ class AttackDialogFragment : DialogFragment() {
         }
         if (regions?.size == 0) {
             for (i in 0..9) {
-                var regionButton = RadioButton(context)
+                val regionButton = RadioButton(context)
                 regionButton.text = "region" + i.toString()
                 regionsRadioGroup.addView(regionButton)
             }

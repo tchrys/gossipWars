@@ -11,67 +11,61 @@ object Snapshots {
     var troopsMovedPerRound: MutableList<MutableList<TroopsAction>> = mutableListOf()
     var armyImprovementsPerRound: MutableList<MutableList<ArmyRequest>> = mutableListOf()
 
-    fun generateNewsFeed(): List<NewsfeedInfo> {
-        val ans: MutableList<NewsfeedInfo> = mutableListOf()
+    fun generateNewsFeed(): List<NewsFeedInfo> {
+        val ans: MutableList<NewsFeedInfo> = mutableListOf()
         for (i in fightsPerRound.size - 1 downTo 0) {
             for (fight in fightsPerRound[i]) {
                 if (fight.attackers.isNotEmpty() && fight.defenders.isNotEmpty()) {
-                    ans.add(extractInfoFromFight(fight))
+                    ans.add(fight.extractInfoFromFight())
                 }
             }
             for (troopAction in troopsMovedPerRound[i]) {
-                ans.add(extractInfoFromTroops(troopAction))
+                ans.add(troopAction.extractInfoFromTroops())
             }
             for (armyUpgrade in armyImprovementsPerRound[i]) {
-                ans.add(extractInfoFromArmyUpgrade(armyUpgrade))
+                ans.add(armyUpgrade.extractInfoFromArmyUpgrade())
             }
         }
         return ans
     }
 
-    fun extractInfoFromArmyUpgrade(armyRequest: ArmyRequest): NewsfeedInfo {
-        val title = String.format("%s's army is stronger now", armyRequest.initiator.username)
+    private fun ArmyRequest.extractInfoFromArmyUpgrade(): NewsFeedInfo {
+        val title = "${initiator.username}'s army is stronger now"
         val content = String.format(
             "%s raised his army's %s with %s%s",
-            armyRequest.initiator.username,
-            armyRequest.armyOption.toString().toLowerCase(Locale.ROOT),
-            armyRequest.increase,
-            if (armyRequest.armyOption == ArmyOption.SIZE) "" else "xp"
+            initiator.username,
+            armyOption.toString().toLowerCase(Locale.ROOT),
+            increase,
+            if (armyOption == ArmyOption.SIZE) "" else "xp"
         )
-        return NewsfeedInfo(armyRequest.initiator.capitalRegion, null, title, content)
+        return NewsFeedInfo(initiator.capitalRegion, null, title, content)
     }
 
-    fun extractInfoFromTroops(troopsAction: TroopsAction): NewsfeedInfo {
-        val fromRegion: Region? = GameHelper.findRegionById(troopsAction.fromRegion)
-        val toRegion: Region? = GameHelper.findRegionById(troopsAction.toRegion)
-        val title = String.format("%s is moving troops", troopsAction.initiator.username)
-        val content = String.format(
-            "%s moved %s soldiers from %s to %s",
-            troopsAction.initiator.username,
-            troopsAction.size.toString(),
-            fromRegion?.name,
-            toRegion?.name
-        )
-        return NewsfeedInfo(troopsAction.toRegion, troopsAction.fromRegion, title, content)
+    private fun TroopsAction.extractInfoFromTroops(): NewsFeedInfo {
+        val fromName: String? = GameHelper.findRegionById(fromRegion)?.name
+        val toName: String? = GameHelper.findRegionById(toRegion)?.name
+        val title = "${initiator.username} is moving troops"
+        val content = "${initiator.username} moved $size soldiers from $fromName to $toName"
+        return NewsFeedInfo(this.toRegion, this.fromRegion, title, content)
     }
 
-    fun extractInfoFromFight(fight: Fight): NewsfeedInfo {
-        val title = String.format("Battle in %s", fight.region.name)
-        var content: String = ""
-        fight.attackers.forEachIndexed { index, player ->
-            val conjunction = getConjunction(index, fight.attackers.size)
+    private fun Fight.extractInfoFromFight(): NewsFeedInfo {
+        val title = "Battle in ${region.name}"
+        var content = ""
+        attackers.forEachIndexed { index, player ->
+            val conjunction = getConjunction(index, attackers.size)
             content += player.username + conjunction
         }
         content += " fought "
-        fight.defenders.forEachIndexed { index, player ->
-            val conjunction = getConjunction(index, fight.defenders.size)
+        defenders.forEachIndexed { index, player ->
+            val conjunction = getConjunction(index, defenders.size)
             content += player.username + conjunction
         }
-        content += " for the control of " + fight.region.name
-        return NewsfeedInfo(fight.region.id, null, title, content)
+        content += " for the control of ${region.name}"
+        return NewsFeedInfo(region.id, null, title, content)
     }
 
-    fun getConjunction(idx: Int, size: Int): String {
+    private fun getConjunction(idx: Int, size: Int): String {
         return when (idx) {
             size - 1 -> ""
             size - 2 -> " and "

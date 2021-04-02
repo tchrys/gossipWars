@@ -44,7 +44,6 @@ class MainActivity : AppCompatActivity() {
 
 
     fun joinGame(roomInfo: RoomInfoDTO) {
-        Log.d("DBG", roomInfo.username)
         gameJoined = roomInfo
         if (!username.equals(roomInfo.username)) {
             sendRoomPayload(roomInfo)
@@ -65,7 +64,7 @@ class MainActivity : AppCompatActivity() {
 
     fun manageRoomInfoPayload(roomReceived: RoomInfoDTO, endpointId: String) {
         if (roomReceived.username == username) {
-            var joinedRoomInfo : RoomInfoDTO = roomsList.find { roomInfo ->
+            val joinedRoomInfo : RoomInfoDTO = roomsList.find { roomInfo ->
                 roomEquals(roomInfo, roomReceived) }!!
             if (!joinedRoomInfo.playersList.contains(endpointId)
                 && joinedRoomInfo.crtPlayersNr < joinedRoomInfo.maxPlayers) {
@@ -73,13 +72,9 @@ class MainActivity : AppCompatActivity() {
                 joinedRoomInfo.playersList.add(endpointId)
                 sendRoomPayload(joinedRoomInfo)
                 mRecyclerView?.adapter?.notifyDataSetChanged()
-                Toast.makeText(this, endpointId + " wants to join " +
-                        joinedRoomInfo.roomName, Toast.LENGTH_LONG).show()
             }
         } else {
-            Toast.makeText(this, endpointId + "updated / created " +
-                    roomReceived.roomName, Toast.LENGTH_LONG).show()
-            var roomInList : RoomInfoDTO? = roomsList.find { roomInfo -> roomEquals(roomInfo, roomReceived) }
+            val roomInList : RoomInfoDTO? = roomsList.find { roomInfo -> roomEquals(roomInfo, roomReceived) }
             if (roomInList != null) {
                 roomInList.crtPlayersNr = roomReceived.crtPlayersNr
                 roomInList.playersList = roomReceived.playersList
@@ -105,14 +100,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun checkPermission(permission: String, requestCode: Int) {
+    private fun checkPermission(permission: String, requestCode: Int) {
         if (ContextCompat.checkSelfPermission(this@MainActivity, permission)
             == PackageManager.PERMISSION_DENIED) {
             // Requesting the permission
             ActivityCompat.requestPermissions(this@MainActivity, arrayOf(permission), requestCode)
         } else {
-            Toast.makeText(this@MainActivity, "Permission already granted",
-                Toast.LENGTH_SHORT).show()
             nearbyConnectionsLogic.startAdvertising()
             nearbyConnectionsLogic.startDiscovery()
         }
@@ -123,7 +116,6 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == FINE_LOCATION_PERMISSION) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Location permission granted", Toast.LENGTH_LONG).show()
                 nearbyConnectionsLogic.startAdvertising()
                 nearbyConnectionsLogic.startDiscovery()
             }
@@ -203,31 +195,34 @@ class MainActivity : AppCompatActivity() {
                 Game.players.value?.add(me)
                 mRecyclerView = findViewById(R.id.recyclerview)
                 mAdapter = RoomListAdapter(this, roomsList, username.orEmpty())
-                mRecyclerView?.setAdapter(mAdapter)
-                mRecyclerView?.setLayoutManager(LinearLayoutManager(this))
+                mRecyclerView?.adapter = mAdapter
+                mRecyclerView?.layoutManager = LinearLayoutManager(this)
             }
         })
 
         // create room block
         val createRoomButton = findViewById<Button>(R.id.createRoomButton)
         createRoomButton.setOnClickListener {
-            if (username.orEmpty().isEmpty()) {
-                Snackbar.make(findViewById(R.id.main_layout), "No username", Snackbar.LENGTH_SHORT).show()
-            }
-            else if (myRoomInput.editText?.text.isNullOrEmpty()) {
-                Snackbar.make(findViewById(R.id.main_layout), "No room name", Snackbar.LENGTH_SHORT).show()
-            } else {
-                val myRoom =
-                    RoomInfoDTO(
-                        username.orEmpty(), myRoomInput.editText?.text.toString(),
-                        myRoomLength, myRoomMaxPlayers, 1, false
-                    )
-                myRoom.playersList.add(username.orEmpty())
-                roomsList.addFirst(myRoom)
-                gameJoined = myRoom;
-                mRecyclerView?.adapter?.notifyDataSetChanged()
-                sendRoomPayload(myRoom)
-                myRoomInput.editText?.setText("")
+            when {
+                username.orEmpty().isEmpty() -> {
+                    Snackbar.make(findViewById(R.id.main_layout), "No username", Snackbar.LENGTH_SHORT).show()
+                }
+                myRoomInput.editText?.text.isNullOrEmpty() -> {
+                    Snackbar.make(findViewById(R.id.main_layout), "No room name", Snackbar.LENGTH_SHORT).show()
+                }
+                else -> {
+                    val myRoom =
+                        RoomInfoDTO(
+                            username.orEmpty(), myRoomInput.editText?.text.toString(),
+                            myRoomLength, myRoomMaxPlayers, 1, false
+                        )
+                    myRoom.playersList.add(username.orEmpty())
+                    roomsList.addFirst(myRoom)
+                    gameJoined = myRoom;
+                    mRecyclerView?.adapter?.notifyDataSetChanged()
+                    sendRoomPayload(myRoom)
+                    myRoomInput.editText?.setText("")
+                }
             }
         }
     }

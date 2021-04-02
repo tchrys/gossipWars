@@ -6,14 +6,13 @@ import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 import com.example.gossipwars.logic.proposals.ArmyOption
-import java.lang.IllegalStateException
 
 class BonusDialogFragment: DialogFragment() {
     internal lateinit var listener: BonusDialogListener
-    var stringToArmyOption = mutableMapOf("Army size" to ArmyOption.SIZE,
+    private var stringToArmyOption = mutableMapOf("Army size" to ArmyOption.SIZE,
                                         "Attack" to ArmyOption.ATTACK, "Defense" to ArmyOption.DEFEND)
-    var armyOptions = mutableListOf("Army size", "Attack", "Defense").toTypedArray()
-    var optionSelected: ArmyOption? = stringToArmyOption[armyOptions[0]]
+    private var armyOptions = mutableListOf("Army size", "Attack", "Defense").toTypedArray()
+    private var optionSelected: ArmyOption? = stringToArmyOption[armyOptions[0]]
 
     interface BonusDialogListener {
         fun onDialogPositiveClick(dialog: ArmyOption?)

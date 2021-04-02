@@ -16,13 +16,14 @@ import com.example.gossipwars.communication.messages.info.RegionPlayerInfo
 import com.example.gossipwars.logic.actions.StrategyAction
 import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.entities.GameHelper
+import com.example.gossipwars.logic.entities.GameHelper.camelCaseToSpaced
 import com.example.gossipwars.logic.entities.Player
 import com.example.gossipwars.logic.entities.Region
 import com.example.gossipwars.logic.proposals.ProposalEnum
 import com.google.android.material.slider.Slider
 import java.util.*
 
-class RegionDialogFragment(val regionName: String) : DialogFragment() {
+class RegionDialogFragment(private val regionName: String) : DialogFragment() {
     internal lateinit var listener: RegionDialogListener
     var regionSelected: Region? = null
     var sizeSelected: Int = 0
@@ -52,7 +53,7 @@ class RegionDialogFragment(val regionName: String) : DialogFragment() {
         val regionDescription: TextView = regionView.findViewById(R.id.regionDescription)
         var regionInfoString = ""
         regionInfoString += if (dialogRegion.occupiedBy != null) {
-            "This region is occupied by " + dialogRegion.occupiedBy!!.username
+            "This region is occupied by ${dialogRegion.occupiedBy!!.username}"
         } else {
             "This region is not occupied"
         }
@@ -62,7 +63,7 @@ class RegionDialogFragment(val regionName: String) : DialogFragment() {
             regionInfoString += "Soldiers in this region: \n"
             regionPopulation.forEachIndexed { index: Int, regionPlayerInfo: RegionPlayerInfo ->
                 val sizeInK: Float = 1f * regionPlayerInfo.size / 1000
-                regionInfoString += "\t" + regionPlayerInfo.playerName + " : " +
+                regionInfoString += "\t${regionPlayerInfo.playerName} : " +
                         String.format("%.1f", sizeInK) + "k"
                 if (index != regionPopulation.size - 1) {
                     regionInfoString += "\n"
@@ -137,7 +138,7 @@ class RegionDialogFragment(val regionName: String) : DialogFragment() {
 
 
         builder.setView(regionView)
-        builder.setTitle(GameHelper.camelCaseToSpaced(regionName))
+        builder.setTitle(regionName.camelCaseToSpaced())
             .setPositiveButton("Done") { _, _ ->
                 listener.onDialogPositiveClick(
                     RegionDialogResult(

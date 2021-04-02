@@ -8,15 +8,15 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gossipwars.R
 import com.example.gossipwars.logic.entities.GameHelper
-import com.example.gossipwars.logic.entities.NewsfeedInfo
+import com.example.gossipwars.logic.entities.NewsFeedInfo
 import com.example.gossipwars.logic.entities.Snapshots
 import com.richpath.RichPath
 import com.richpath.RichPathView
 import com.richpathanimator.RichPathAnimator
 
 class NewsFeedListAdapter(
-    private val context: OverviewFragment,
-    private val newsFeedList: ArrayList<NewsfeedInfo>
+    context: OverviewFragment,
+    private val newsFeedList: ArrayList<NewsFeedInfo>
 ) : RecyclerView.Adapter<NewsFeedListAdapter.NewsFeedViewHolder>() {
     private val mInflater: LayoutInflater = LayoutInflater.from(context.activity)
 
@@ -30,7 +30,7 @@ class NewsFeedListAdapter(
 
         override fun onClick(view: View?) {
             val mPosition = layoutPosition
-            val id = newsFeedList[mPosition]
+            newsFeedList[mPosition]
             mAdapter.notifyDataSetChanged()
         }
 

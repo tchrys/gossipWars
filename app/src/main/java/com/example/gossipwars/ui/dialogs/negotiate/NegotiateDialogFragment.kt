@@ -39,14 +39,14 @@ class NegotiateDialogFragment: DialogFragment() {
         if (activity == null) {
             throw IllegalStateException("activity can not be null")
         }
-        var inflater = requireActivity().layoutInflater
-        var builder = AlertDialog.Builder(activity)
+        val inflater = requireActivity().layoutInflater
+        val builder = AlertDialog.Builder(activity)
         val negotiateView: View = inflater.inflate(R.layout.negotiate_form, null)
         val playersGroup: RadioGroup = negotiateView.findViewById(R.id.playersToRequestGroup)
         val optionsGroup: RadioGroup = negotiateView.findViewById(R.id.armyOptionsGroup)
 
         Game.players.value?.filter { player -> player.id != Game.myId }?.forEach { player: Player ->
-            var playerButton = RadioButton(context)
+            val playerButton = RadioButton(context)
             playerButton.text = player.username
             playersGroup.addView(playerButton)
         }

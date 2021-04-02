@@ -17,14 +17,7 @@ class KickProposal @JvmOverloads constructor(override val alliance: Alliance,
 
     override fun allPlayersVoted(): Boolean = alliance.allianceSize() == votes.size + 1
 
-    override fun voteResult(): Boolean {
-        val noVotes : Int = votes.size
-        var yesVotes = 0
-        for (v in votes.values) {
-            if (v) yesVotes++
-        }
-        return yesVotes > noVotes / 2
-    }
+    override fun voteResult(): Boolean = votes.values.filter { b -> b }.size > votes.size / 2
 
     override fun createAction() : MembersAction =
         MembersAction(
@@ -35,11 +28,6 @@ class KickProposal @JvmOverloads constructor(override val alliance: Alliance,
         )
 
     override fun proposalAccepted() : Boolean = voteResult()
-
-    fun actionTaken() {
-        alliance.kickPlayer(target)
-        alliance.proposalsList.remove(this)
-    }
 
     fun convertToDTO(): JoinKickProposalDTO =
         JoinKickProposalDTO(

@@ -1,7 +1,6 @@
 package com.example.gossipwars.logic.proposals
 
 import com.example.gossipwars.communication.messages.allianceCommunication.JoinKickProposalDTO
-import com.example.gossipwars.communication.messages.actions.MembersActionDTO
 import com.example.gossipwars.logic.actions.MembersAction
 import com.example.gossipwars.logic.entities.Alliance
 import com.example.gossipwars.logic.entities.Player
@@ -17,14 +16,7 @@ class JoinProposal @JvmOverloads
 
     override fun allPlayersVoted(): Boolean = alliance.allianceSize() == votes.size
 
-    override fun voteResult(): Boolean {
-        val noVotes : Int = votes.size
-        var yesVotes = 0
-        for (v in votes.values) {
-            if (v) yesVotes++
-        }
-        return yesVotes > noVotes / 2
-    }
+    override fun voteResult(): Boolean = votes.values.filter { b -> b }.size > votes.size / 2
 
     override fun createAction() : MembersAction =
         MembersAction(
@@ -35,11 +27,6 @@ class JoinProposal @JvmOverloads
         )
 
     override fun proposalAccepted() : Boolean = voteResult()
-
-    fun actionTaken() {
-        alliance.addPlayer(target)
-        alliance.proposalsList.remove(this)
-    }
 
     fun convertToDTO(): JoinKickProposalDTO =
         JoinKickProposalDTO(

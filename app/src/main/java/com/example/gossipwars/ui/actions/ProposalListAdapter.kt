@@ -32,7 +32,7 @@ class ProposalListAdapter(
         val mAdapter: ProposalListAdapter = adapter
         override fun onClick(view: View) {
             val mPosition = layoutPosition
-            val element = proposalsList[mPosition]
+            proposalsList[mPosition]
             mAdapter.notifyDataSetChanged()
         }
 
@@ -68,7 +68,7 @@ class ProposalListAdapter(
                 (mCurrent as StrategyProposal)
                     .targetRegion
             )!!.name
-            regionName = "in region" + camelCaseToSpaced(regionName)
+            regionName = "in region ${regionName.camelCaseToSpaced()}"
         }
         holder.propStatement.text = String.format(
             "%s requests member's vote from alliance %s for %s %s %s",

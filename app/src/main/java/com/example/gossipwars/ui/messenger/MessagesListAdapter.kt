@@ -17,8 +17,7 @@ import com.example.gossipwars.ui.messenger.MessagesListAdapter.MessageViewHolder
 import java.util.*
 
 class MessagesListAdapter(
-    private val context: MessengerActivity, private val messagesList: ArrayList<ChatMessage>,
-    private val myUsername: String
+    private val context: MessengerActivity, private val messagesList: ArrayList<ChatMessage>
 ) : RecyclerView.Adapter<MessageViewHolder>() {
     private val mInflater: LayoutInflater = LayoutInflater.from(context)
 
@@ -43,7 +42,6 @@ class MessagesListAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
         // inflate an item view
-        Log.d("DBG", "on create view holder")
         val mItemView = mInflater.inflate(R.layout.messages_items, parent, false)
         return MessageViewHolder(mItemView, this)
     }
@@ -70,7 +68,6 @@ class MessagesListAdapter(
 //            senderId = UUID.randomUUID();
 //        }
         if (senderId == Game.myId) {
-            Log.d("DBG", chatMessage.content + " e verde")
             holder.cardView.setCardBackgroundColor(
                 context.resources.getColor(R.color.light_green)
             )

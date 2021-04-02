@@ -44,7 +44,6 @@ object Notifications {
     }
 
     private fun updateRoundTime() {
-        Log.d("DBG", crtRoundNo.value.toString())
         if (roundOngoing.value == false)
             return
         if (roundTimer.value!! > 0)

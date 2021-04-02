@@ -1,12 +1,9 @@
 package com.example.gossipwars.ui.map
 
-import android.graphics.Color
-import android.graphics.Typeface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -20,7 +17,6 @@ import com.example.gossipwars.logic.entities.Region
 import com.example.gossipwars.map.src.MapView
 import com.example.gossipwars.map.src.Province
 import com.example.gossipwars.ui.dialogs.region.RegionDialogFragment
-import kotlin.random.Random
 
 class MapFragment : Fragment() {
 
@@ -56,7 +52,7 @@ class MapFragment : Fragment() {
             if (it) {
                 Province.values().forEach { province ->
                     val region: Region? = GameHelper.findRegionByName(province.name)
-                    var idx: Int? = Game.players.value?.indexOfFirst { player -> player.id == region?.occupiedBy?.id }
+                    val idx: Int? = Game.players.value?.indexOfFirst { player -> player.id == region?.occupiedBy?.id }
                     if (idx != null) {
                         gameMap.colorProvince(province, GameHelper.getColorByPlayerIdx(idx))
 //                        gameMap.addTitle(province, province.name, Typeface.SANS_SERIF, Color.BLACK)

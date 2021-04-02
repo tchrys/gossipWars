@@ -27,29 +27,17 @@ class MapView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
-    // default background color of provinces
-    var provinceBackgroundColor = Color.BLACK
-    var provinceActiveColor = Color.CYAN
-    var provinceStrokeColor = Color.WHITE
+    private var provinceBackgroundColor = Color.BLACK
+    private var provinceActiveColor = Color.CYAN
+    private var provinceStrokeColor = Color.WHITE
 
     // make provinces clickable
-    var provinceSelectByClick = true
+    private var provinceSelectByClick = true
         set(value) {
             field = value
             if (value)
                 gameMapPath.setOnPathClickListener {
-
                     activeProvince(it, withAnimate = true)
-
-//                    Log.d("DBG", "pivoti")
-//                    Log.d("DBG", it.width.toString())
-//                    Log.d("DBG", it.height.toString())
-//                    AutoCloseMagicTip((context as InGameActivity).nav_view, 1000)
-//                        .settings {
-//                            this.text = "njk\nnakdn\nkn"
-//
-//                        }.show()
-
                 } else {
                 gameMapPath.setOnPathClickListener(null)
             }

@@ -7,8 +7,8 @@ import java.io.Serializable
 import java.util.*
 
 class StrategyActionDTO(
-    val initiatorId: UUID, val targetId: UUID, val targetRegion: Int,
-    val helpers: List<UUID>, val proposalEnum: ProposalEnum
+    private val initiatorId: UUID, private val targetId: UUID, private val targetRegion: Int,
+    private val helpers: List<UUID>, val proposalEnum: ProposalEnum
 ) : Serializable {
 
     fun convertToEntity(): StrategyAction =

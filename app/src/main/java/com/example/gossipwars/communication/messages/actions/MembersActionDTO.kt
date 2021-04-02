@@ -6,8 +6,9 @@ import com.example.gossipwars.logic.proposals.ProposalEnum
 import java.io.Serializable
 import java.util.*
 
-class MembersActionDTO(val initiatorId : UUID, val targetId : UUID, val allianceId : UUID,
-                       val proposalEnum: ProposalEnum
+class MembersActionDTO(
+    private val initiatorId : UUID, val targetId : UUID, val allianceId : UUID,
+    val proposalEnum: ProposalEnum
 ) : Serializable {
 
     fun convertToEntity(): MembersAction =
