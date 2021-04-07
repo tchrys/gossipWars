@@ -112,7 +112,7 @@ object GameHelper {
             findRegionOwner(regionId)?.let { ans.add(it) }
         }
         Game.strategyActions.forEach { strategyAction: StrategyAction ->
-            if (strategyAction.proposalEnum == proposalEnum) {
+            if (strategyAction.proposalEnum == proposalEnum && strategyAction.targetRegion == regionId) {
                 ans.add(findPlayerByUUID(strategyAction.initiator.id))
                 for (helper in strategyAction.helpers) {
                     ans.add(findPlayerByUUID(helper.id))

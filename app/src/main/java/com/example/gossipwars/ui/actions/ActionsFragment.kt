@@ -13,6 +13,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.gossipwars.InGameActivity
 import com.example.gossipwars.R
+import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.entities.GameHelper
 import com.example.gossipwars.logic.entities.Notifications
 import com.example.gossipwars.logic.proposals.ArmyRequest
@@ -181,6 +182,8 @@ class ActionsFragment : Fragment() {
         bonusChip.setOnClickListener {
             if (Notifications.myBonusTaken.value!!) {
                 showSnackbarForError("You've already taken the bonus for this round")
+            } else if (GameHelper.findPlayerByUUID(Game.myId).capitalRegion == -1) {
+                showSnackbarForError("You've lost all regions.")
             } else {
                 fragmentManager?.let {
                     BonusDialogFragment()
@@ -322,7 +325,8 @@ class ActionsFragment : Fragment() {
 
     private fun subscribeToChipStateEvents() {
         Notifications.myBonusTaken.observe(viewLifecycleOwner, Observer {
-            val chipColor = if (it) R.color.textError else R.color.light_green
+            val noCapital: Boolean = GameHelper.findPlayerByUUID(Game.myId).capitalRegion == -1
+            val chipColor = if (it || noCapital) R.color.textError else R.color.light_green
             context?.let { it1 -> ContextCompat.getColor(it1, chipColor) }
                 ?.let { it2 ->
                     bonusChip.setTextColor(

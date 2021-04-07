@@ -95,8 +95,6 @@ object Game {
     private fun checkLoserCapital(player: Player, region: Region) {
         if (player.capitalRegion == region.id) {
             if (player.regionsOccupied.isEmpty()) {
-                // this player lost all territories, so we can consider he lost?
-                // TODO
                 player.capitalRegion = -1
             } else {
                 player.capitalRegion = player.regionsOccupied.first().id
