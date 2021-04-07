@@ -31,13 +31,15 @@ object Snapshots {
 
     private fun ArmyRequest.extractInfoFromArmyUpgrade(): NewsFeedInfo {
         val title = "${initiator.username}'s army is stronger now"
-        val content = String.format(
-            "%s raised his army's %s with %s%s",
+        var content = String.format(
+            "%s raised his army's %s with %s%s.",
             initiator.username,
             armyOption.toString().toLowerCase(Locale.ROOT),
             increase,
             if (armyOption == ArmyOption.SIZE) "" else "xp"
         )
+        if (approver.username != initiator.username)
+            content += "${approver.username} approved this request."
         return NewsFeedInfo(initiator.capitalRegion, null, title, content)
     }
 

@@ -92,5 +92,65 @@
     <string name="room_join">Join</string>
     <string name="round_seconds">%ss</string>
     <string name="room_players">%s/%s</string>
+    <string name="navigation_drawer_open">nav drawer open</string>
+    <string name="navigation_drawer_closed">nav drawer closed</string>
+    <string name="how_to_play">How to play</string>
+    <string name="title_activity_how_to_play">ScrollingActivity</string>
+    <string name="intro_text">
+        "GossipWars is a peer-to-peer game where each player receives regions on a map and an "
+        "army and the purpose is to gain other territories and neutralize other players's armies"
+        "The game consists of rounds of length set at room creation. During a round, each player "
+        "can do one of the following actions:\n"
+        "\u25BA move soldiers from a populated region to a neighboring region\n"
+        "\u25BA attack a region occupied by another player\n"
+        "\u25BA create alliances\n"
+        "\u25BA chat with other players inside an alliance\n"
+        "\u25BA create proposals (join / kick / defend / attack) that must be voted by players "
+        "from the chosen alliance to take action\n"
+        "\u25BA vote proposals made by allies\n"
+        "\u25BA negotiate with other players\n"
+        "\u25BA take round bonus\n"
+    </string>
+    <string name="room_screen_text">
+        "When the app starts, it looks for other devices to connect through bluetooth. When it "
+        "finds an device, a dialog will appear for requesting pairing. In order to pair,"
+        "select accept option.\nNow you or the other players can create rooms by setting the name,"
+        "round length and max number of players. The game will start when the room host clicks "
+        "start. All players that joined will enter the game."
+    </string>
+    <string name="map_actions_text">
+        "When the game starts, map's regions will be shared between players. Each player has at "
+        "beginning an army of 100k soldiers, with 50xp attack and defense and a region assigned "
+        "as capital. Map regions will have "
+        "a color to distinguish owners.\nActions can be taken when clicking on a region.You can "
+        "attack a region only if you have soldiers in that region. Same condition applies for "
+        "moving soldiers in that region from a neighbor one."
+    </string>
+    <string name="chat_tab_text">
+        "At beginning there are no alliances.When creating an alliance you must select the first "
+        "member(excepting yourself) and a name. Now you can select one of the alliances you belong "
+        "to read messages and chat with the other allies"
+    </string>
+    <string name="overview_tab_text">
+        "At the end of every round players will send their actions and the game state will update."
+        "To figure out what happened you can view the content of overview tab, where each fight,"
+        "negotiation and troop moving will be displayed."
+    </string>
+    <string name="actions_tab_text">
+        "In this tab you can make proposals and vote the proposals made by other players."
+        "In order to do a proposal you must belong to at least an alliance.\nFor join and kick "
+        "actions to take action you must get majority from allies votes. For defense and attack "
+        "proposals all players that voted yes will help the proposal initiator during the attack."
+        "Helping means that their soldiers in that region will attack / defend together"
+        "(damage will sum up and loss will be split proportionally).\nYou can also take your round"
+        " bonus if you have a capital and send negotiate proposals to other players."
+    </string>
+    <string name="action_settings">Settings</string>
+    <string name="intro">Intro</string>
+    <string name="map_actions">Map actions</string>
+    <string name="chat_tab">Chat tab</string>
+    <string name="room_screen">Room screen</string>
+    <string name="overview_tab">Overview tab</string>
+    <string name="actions_tab">Actions tab</string>
 
 </resources>
