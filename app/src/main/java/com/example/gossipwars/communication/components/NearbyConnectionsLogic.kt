@@ -1,5 +1,6 @@
 package com.example.gossipwars.communication.components
 
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.example.gossipwars.MainActivity
@@ -13,13 +14,17 @@ import com.example.gossipwars.communication.messages.gameInit.StartRoundDTO
 import com.example.gossipwars.logic.entities.Game
 import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.connection.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.SerializationUtils
 
 class NearbyConnectionsLogic(val mainActivity: MainActivity) {
 
     private val endpointDiscoveryCallback: EndpointDiscoveryCallback =
         object : EndpointDiscoveryCallback() {
-            override fun onEndpointFound(endpointId: String, info: DiscoveredEndpointInfo) {
+             override fun onEndpointFound(endpointId: String, info: DiscoveredEndpointInfo) {
                 // an endpoint was found. we request a connection to it
                 Nearby.getConnectionsClient(mainActivity)
                     .requestConnection(mainActivity.username.orEmpty(), endpointId, connectionLifecycleCallback)
@@ -80,25 +85,31 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
             }
         }
 
-    fun startAdvertising() {
-        val advertisingOptions = AdvertisingOptions.Builder().setStrategy(Strategy.P2P_CLUSTER).build()
-        Nearby.getConnectionsClient(mainActivity)
-            .startAdvertising(mainActivity.username.orEmpty(), "com.example.gossipwars",
-                connectionLifecycleCallback, advertisingOptions)
-            .addOnSuccessListener {
-            }
-            .addOnFailureListener {
-            }
+    suspend fun startAdvertising() {
+        withContext(Dispatchers.IO) {
+            val advertisingOptions = AdvertisingOptions.Builder().setStrategy(Strategy.P2P_CLUSTER).build()
+            Nearby.getConnectionsClient(mainActivity)
+                .startAdvertising(mainActivity.username.orEmpty(), "com.example.gossipwars",
+                    connectionLifecycleCallback, advertisingOptions)
+                .addOnSuccessListener {
+                    Log.d("DBG", "start advertising")
+                }
+                .addOnFailureListener {
+                }
+        }
     }
 
-    fun startDiscovery() {
-        val discoveryOptions = DiscoveryOptions.Builder().setStrategy(Strategy.P2P_CLUSTER).build()
-        Nearby.getConnectionsClient(mainActivity).startDiscovery("com.example.gossipwars",
-            endpointDiscoveryCallback, discoveryOptions)
-            .addOnSuccessListener {
-            }
-            .addOnFailureListener {
-            }
+    suspend fun startDiscovery() {
+        withContext(Dispatchers.IO) {
+            val discoveryOptions = DiscoveryOptions.Builder().setStrategy(Strategy.P2P_CLUSTER).build()
+            Nearby.getConnectionsClient(mainActivity).startDiscovery("com.example.gossipwars",
+                endpointDiscoveryCallback, discoveryOptions)
+                .addOnSuccessListener {
+                    Log.d("DBG", "start discovering")
+                }
+                .addOnFailureListener {
+                }
+        }
     }
 
     private val payloadCallback: PayloadCallback =
@@ -114,19 +125,19 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
                     }
                     MessageCode.ALLIANCE_INFO.toLong() -> {
                         val allianceInvitationDTO: AllianceInvitationDTO = SerializationUtils.deserialize(receivedBytes)
-                        Game.receiveNewAllianceInfo(allianceInvitationDTO)
+                        GlobalScope.launch { Game.receiveNewAllianceInfo(allianceInvitationDTO) }
                     }
                     MessageCode.JOIN_KICK_PROPOSAL.toLong() -> {
                         val joinKickProposalDTO: JoinKickProposalDTO = SerializationUtils.deserialize(receivedBytes)
-                        Game.receiveJoinKickProposalDTO(joinKickProposalDTO)
+                        GlobalScope.launch { Game.receiveJoinKickProposalDTO(joinKickProposalDTO) }
                     }
                     MessageCode.MEMBERS_ACTION.toLong() -> {
                         val membersAction: MembersActionDTO = SerializationUtils.deserialize(receivedBytes)
-                        Game.acknowledgeMembersAction(membersAction)
+                        GlobalScope.launch { Game.acknowledgeMembersAction(membersAction) }
                     }
                     MessageCode.MESSAGE_DTO.toLong() -> {
                         val messageDTO: ChatMessageDTO = SerializationUtils.deserialize(receivedBytes)
-                        Game.receiveMessage(messageDTO)
+                        GlobalScope.launch { Game.receiveMessage(messageDTO) }
                     }
                     MessageCode.PLAYER_INFO.toLong() -> {
                         val playerDTO: PlayerDTO = SerializationUtils.deserialize(receivedBytes)
@@ -134,23 +145,23 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
                     }
                     MessageCode.ACTION_END.toLong() -> {
                         val actionsEndDTO: ActionEndDTO = SerializationUtils.deserialize(receivedBytes)
-                        Game.acknowledgeActionEnd(actionsEndDTO)
+                        GlobalScope.launch { Game.acknowledgeActionEnd(actionsEndDTO) }
                     }
                     MessageCode.PROPOSAL_RESPONSE.toLong() -> {
                         val proposalResponse: ProposalResponse = SerializationUtils.deserialize(receivedBytes)
-                        Game.receiveProposalResponse(proposalResponse)
+                        GlobalScope.launch { Game.receiveProposalResponse(proposalResponse) }
                     }
                     MessageCode.STRATEGY_ACTION.toLong() -> {
                         val strategyActionDTO: StrategyActionDTO = SerializationUtils.deserialize(receivedBytes)
-                        Game.receiveStrategyAction(strategyActionDTO)
+                        GlobalScope.launch { Game.receiveStrategyAction(strategyActionDTO) }
                     }
                     MessageCode.STRATEGY_PROPOSAL.toLong() -> {
                         val strategyProposalDTO: StrategyProposalDTO = SerializationUtils.deserialize(receivedBytes)
-                        Game.receiveStrategyProposal(strategyProposalDTO)
+                        GlobalScope.launch { Game.receiveStrategyProposal(strategyProposalDTO) }
                     }
                     MessageCode.TROOPS_ACTION.toLong() -> {
                         val troopsActionDTO: TroopsActionDTO = SerializationUtils.deserialize(receivedBytes)
-                        Game.receiveTroopsAction(troopsActionDTO)
+                        GlobalScope.launch { Game.receiveTroopsAction(troopsActionDTO) }
                     }
                     MessageCode.PLAYER_ORDER.toLong() -> {
                         val playersOrderDTO: PlayersOrderDTO = SerializationUtils.deserialize(receivedBytes)
@@ -158,19 +169,19 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
                     }
                     MessageCode.ARMY_REQUEST.toLong() -> {
                         val armyRequestDTO: ArmyRequestDTO = SerializationUtils.deserialize(receivedBytes)
-                        Game.receiveArmyRequest(armyRequestDTO)
+                        GlobalScope.launch { Game.receiveArmyRequest(armyRequestDTO) }
                     }
                     MessageCode.ARMY_APPROVAL.toLong() -> {
                         val armyRequestDTO: ArmyRequestDTO = SerializationUtils.deserialize(receivedBytes)
-                        Game.receiveArmyApproval(armyRequestDTO)
+                        GlobalScope.launch { Game.receiveArmyApproval(armyRequestDTO) }
                     }
                     MessageCode.ARMY_UPGRADE.toLong() -> {
                         val armyRequestDTO: ArmyRequestDTO = SerializationUtils.deserialize(receivedBytes)
-                        Game.receiveArmyAction(armyRequestDTO)
+                        GlobalScope.launch { Game.receiveArmyAction(armyRequestDTO) }
                     }
                     MessageCode.START_ROUND.toLong() -> {
                         val startRoundDTO: StartRoundDTO = SerializationUtils.deserialize(receivedBytes)
-                        Game.acknowledgeStartRound(startRoundDTO)
+                        GlobalScope.launch { Game.acknowledgeStartRound(startRoundDTO) }
                     }
                 }
             }

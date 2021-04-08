@@ -21,6 +21,8 @@ import com.example.gossipwars.logic.actions.MembersAction
 import com.example.gossipwars.logic.entities.*
 import com.example.gossipwars.logic.proposals.ProposalEnum
 import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -71,12 +73,14 @@ class MessengerActivity : AppCompatActivity() {
         chatInput?.inputType = InputType.TYPE_CLASS_TEXT.or(InputType.TYPE_TEXT_FLAG_MULTI_LINE)
         val sendButton = findViewById<Button>(R.id.chatSendButton)
         sendButton.setOnClickListener { view ->
-            Game.sendMessage(
-                ChatMessage(
-                    alliance, chatInput?.text.toString(),
-                    GameHelper.findPlayerByUUID(Game.myId)
-                ).convertToDTO()
-            )
+            GlobalScope.launch {
+                Game.sendMessage(
+                    ChatMessage(
+                        alliance, chatInput?.text.toString(),
+                        GameHelper.findPlayerByUUID(Game.myId)
+                    ).convertToDTO()
+                )
+            }
             chatInput?.setText("")
         }
     }
@@ -89,13 +93,15 @@ class MessengerActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id: Int = item.itemId
         if (id == R.id.actionQuitAlliance) {
-            Game.sendMembersAction(
-                MembersAction(
-                    GameHelper.findPlayerByUUID(Game.myId),
-                    GameHelper.findPlayerByUUID(Game.myId), GameHelper.findAllianceByUUID(activityAllianceId),
-                    ProposalEnum.KICK
+            GlobalScope.launch {
+                Game.sendMembersAction(
+                    MembersAction(
+                        GameHelper.findPlayerByUUID(Game.myId),
+                        GameHelper.findPlayerByUUID(Game.myId), GameHelper.findAllianceByUUID(activityAllianceId),
+                        ProposalEnum.KICK
+                    )
                 )
-            )
+            }
             onBackPressed()
             return true
         } else {

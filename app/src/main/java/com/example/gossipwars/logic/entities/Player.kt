@@ -1,6 +1,8 @@
 package com.example.gossipwars.logic.entities
 
 import com.example.gossipwars.logic.proposals.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.Serializable
 import java.util.*
 import kotlin.math.max
@@ -90,10 +92,12 @@ data class Player(var username : String, val id : UUID): Serializable {
     }
 
     private fun sendProposalToOtherPlayers(proposal: Proposal) {
-        when(proposal.proposalEnum) {
-            ProposalEnum.JOIN -> Game.sendJoinKickProposalDTO((proposal as JoinProposal).convertToDTO())
-            ProposalEnum.KICK -> Game.sendJoinKickProposalDTO((proposal as KickProposal).convertToDTO())
-            else -> Game.sendStrategyProposal((proposal as StrategyProposal).convertToDTO())
+        GlobalScope.launch {
+            when(proposal.proposalEnum) {
+                ProposalEnum.JOIN -> Game.sendJoinKickProposalDTO((proposal as JoinProposal).convertToDTO())
+                ProposalEnum.KICK -> Game.sendJoinKickProposalDTO((proposal as KickProposal).convertToDTO())
+                else -> Game.sendStrategyProposal((proposal as StrategyProposal).convertToDTO())
+            }
         }
     }
 }

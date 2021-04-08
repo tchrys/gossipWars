@@ -30,6 +30,8 @@ import com.example.gossipwars.logic.proposals.Proposal
 import com.example.gossipwars.logic.proposals.ProposalEnum
 import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.connection.Payload
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.SerializationUtils
 import java.util.*
 
@@ -102,12 +104,12 @@ object Game {
         }
     }
 
-    fun roundEndCompute() {
-        // strategy actions
+    suspend fun roundEndCompute() {
         Snapshots.armyImprovementsPerRound.add(mutableListOf())
         Snapshots.fightsPerRound.add(mutableListOf())
         Snapshots.troopsMovedPerRound.add(mutableListOf())
         for (region in regions) {
+//            attackers = GlobalScope.async {find...} apoi await()
             val attackers: Set<Player> = findRegionDefOrAtt(region.id, ProposalEnum.ATTACK)
             val defenders: Set<Player> = findRegionDefOrAtt(region.id, ProposalEnum.DEFEND)
             Snapshots.fightsPerRound[crtRoundNo.value!!].add(Fight(attackers, defenders, region))
@@ -144,12 +146,12 @@ object Game {
         alliances.forEach { alliance: Alliance ->
             alliance.proposalsList.clear()
         }
-        negotiatePropsNo.value = 0
-        defensePropsNo.value = 0
-        attackPropsNo.value = 0
-        joinPropsNo.value = 0
-        kickPropsNo.value = 0
-        myPropsNo.value = 0
+        negotiatePropsNo.postValue(0)
+        defensePropsNo.postValue(0)
+        attackPropsNo.postValue(0)
+        joinPropsNo.postValue(0)
+        kickPropsNo.postValue(0)
+        myPropsNo.postValue(0)
 
     }
 
@@ -247,316 +249,367 @@ object Game {
                 }
             }
         }
-        Notifications.roundTimer.value = roomInfo?.roundLength
-        Notifications.roundOngoing.value = true
-        Notifications.myBonusTaken.value = false
-        crtRoundNo.value = 0
+        Notifications.roundTimer.postValue(roomInfo?.roundLength)
+        Notifications.roundOngoing.postValue(true)
+        Notifications.myBonusTaken.postValue(false)
+        crtRoundNo.postValue(0)
 
         Notifications.createTimeCounter()
         gameStarted = true
     }
 
-    fun sendAllianceDTO(allianceInvitationDTO: AllianceInvitationDTO, targetId: UUID) {
-        val data = SerializationUtils.serialize(allianceInvitationDTO)
-        val streamPayload = Payload.zza(data, MessageCode.ALLIANCE_INFO.toLong())
-        idToEndpoint[targetId]?.let {
-            Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+    suspend fun sendAllianceDTO(allianceInvitationDTO: AllianceInvitationDTO, targetId: UUID) {
+        withContext(Dispatchers.IO) {
+            val data = SerializationUtils.serialize(allianceInvitationDTO)
+            val streamPayload = Payload.zza(data, MessageCode.ALLIANCE_INFO.toLong())
+            idToEndpoint[targetId]?.let {
+                Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+            }
+            // register new member
+            val alliance: Alliance = findAllianceByUUID(allianceInvitationDTO.id)
+            val player: Player = findPlayerByUUID(targetId)
+            alliance.addPlayer(player)
+            allianceNewStructure.postValue(true)
         }
-        // register new member
-        val alliance: Alliance = findAllianceByUUID(allianceInvitationDTO.id)
-        val player: Player = findPlayerByUUID(targetId)
-        alliance.addPlayer(player)
-        allianceNewStructure.value = true
     }
 
-    fun receiveNewAllianceInfo(allianceInvitationDTO: AllianceInvitationDTO) {
-        val alliance: Alliance = allianceInvitationDTO.convertToEntity()
-        alliances.add(alliance)
-        alliance.addPlayer(findPlayerByUUID(myId))
-        allianceNewStructure.value = true
-        alliancesNoForMe.value = alliancesNoForMe.value?.plus(1)
-        messageEmitter[alliance] = MutableLiveData()
+    suspend fun receiveNewAllianceInfo(allianceInvitationDTO: AllianceInvitationDTO) {
+        withContext(Dispatchers.Default) {
+            val alliance: Alliance = allianceInvitationDTO.convertToEntity()
+            alliances.add(alliance)
+            alliance.addPlayer(findPlayerByUUID(myId))
+            allianceNewStructure.postValue(true)
+            alliancesNoForMe.postValue(alliancesNoForMe.value?.plus(1))
+            messageEmitter[alliance] = MutableLiveData()
+        }
     }
 
-    fun sendJoinKickProposalDTO(joinKickProposalDTO: JoinKickProposalDTO) {
-        val data = SerializationUtils.serialize(joinKickProposalDTO)
-        val streamPayload = Payload.zza(data, MessageCode.JOIN_KICK_PROPOSAL.toLong())
-        val alliance: Alliance = findAllianceByUUID(joinKickProposalDTO.allianceId)
-        for (playerInvolved in alliance.playersInvolved) {
-            if (playerInvolved.id == myId)
-                continue
-            if (ProposalEnum.KICK == joinKickProposalDTO.proposalEnum &&
-                playerInvolved.id == joinKickProposalDTO.target
+    suspend fun sendJoinKickProposalDTO(joinKickProposalDTO: JoinKickProposalDTO) {
+        withContext(Dispatchers.IO) {
+            val data = SerializationUtils.serialize(joinKickProposalDTO)
+            val streamPayload = Payload.zza(data, MessageCode.JOIN_KICK_PROPOSAL.toLong())
+            val alliance: Alliance = findAllianceByUUID(joinKickProposalDTO.allianceId)
+            for (playerInvolved in alliance.playersInvolved) {
+                if (playerInvolved.id == myId)
+                    continue
+                if (ProposalEnum.KICK == joinKickProposalDTO.proposalEnum &&
+                    playerInvolved.id == joinKickProposalDTO.target
+                )
+                    continue
+                idToEndpoint[playerInvolved.id]?.let {
+                    Nearby.getConnectionsClient(mainActivity)
+                        .sendPayload(it, streamPayload)
+                }
+            }
+            myPropsNo.postValue(myPropsNo.value?.plus(1))
+        }
+    }
+
+    suspend fun receiveJoinKickProposalDTO(joinKickProposalDTO: JoinKickProposalDTO) {
+        withContext(Dispatchers.Default) {
+            val alliance: Alliance = findAllianceByUUID(joinKickProposalDTO.allianceId)
+            val targetPlayer: Player = findPlayerByUUID(joinKickProposalDTO.target)
+            val initiator: Player = findPlayerByUUID(joinKickProposalDTO.initiator)
+            alliance.addProposal(
+                targetPlayer, initiator, joinKickProposalDTO.proposalId,
+                joinKickProposalDTO.proposalEnum, 0
             )
-                continue
-            idToEndpoint[playerInvolved.id]?.let {
-                Nearby.getConnectionsClient(mainActivity)
-                    .sendPayload(it, streamPayload)
+            if (joinKickProposalDTO.proposalEnum == ProposalEnum.JOIN)
+                joinPropsNo.postValue(joinPropsNo.value?.plus(1))
+            else
+                kickPropsNo.postValue(kickPropsNo.value?.plus(1))
+        }
+    }
+
+    suspend fun sendMembersAction(membersAction: MembersAction) {
+        withContext(Dispatchers.IO) {
+            val data = SerializationUtils.serialize(membersAction.convertToDTO())
+            val streamPayload = Payload.zza(data, MessageCode.MEMBERS_ACTION.toLong())
+            val alliance: Alliance = findAllianceByUUID(membersAction.alliance.id)
+            for (playerInvolved in alliance.playersInvolved) {
+                if (playerInvolved.id == myId)
+                    continue
+                idToEndpoint[playerInvolved.id]?.let {
+                    Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+                }
+            }
+            if (ProposalEnum.JOIN == membersAction.proposalEnum) {
+                sendAllianceDTO(alliance.convertToDTO(), membersAction.target.id)
+            }
+            acknowledgeMembersAction(membersAction.convertToDTO())
+        }
+    }
+
+    suspend fun acknowledgeMembersAction(membersAction: MembersActionDTO) {
+        withContext(Dispatchers.Default) {
+            val alliance: Alliance = findAllianceByUUID(membersAction.allianceId)
+            val targetPlayer: Player = findPlayerByUUID(membersAction.targetId)
+            if (ProposalEnum.JOIN == membersAction.proposalEnum) {
+                alliance.addPlayer(targetPlayer)
+                if (targetPlayer.id == myId)
+                    alliancesNoForMe.postValue(alliancesNoForMe.value?.plus(1))
+            } else if (ProposalEnum.KICK == membersAction.proposalEnum) {
+                alliance.kickPlayer(targetPlayer)
+                if (targetPlayer.id == myId) {
+                    alliancesNoForMe.postValue(alliancesNoForMe.value?.minus(1))
+                    alliances.remove(alliance)
+                } else if (alliance.playersInvolved.size < 2) {
+                    alliance.kickPlayer(findPlayerByUUID(myId))
+                    alliances.remove(alliance)
+                    alliancesNoForMe.postValue(alliancesNoForMe.value?.minus(1))
+                }
+
+            }
+            allianceNewStructure.postValue(true)
+        }
+    }
+
+    suspend fun sendProposalResponse(proposalResponse: ProposalResponse) {
+        withContext(Dispatchers.IO) {
+            val data = SerializationUtils.serialize(proposalResponse)
+            val streamPayload = Payload.zza(data, MessageCode.PROPOSAL_RESPONSE.toLong())
+            val alliance: Alliance = findAllianceByUUID(proposalResponse.allianceId)
+            val proposal: Proposal? = alliance.proposalsList.find { proposal ->
+                proposal.proposalId == proposalResponse.proposalId
+            }
+            val meAsAPlayer: Player = findPlayerByUUID(myId)
+            proposal?.votes?.set(meAsAPlayer, proposalResponse.response)
+            idToEndpoint[proposal?.initiator?.id]?.let {
+                Nearby.getConnectionsClient(mainActivity).sendPayload(
+                    it, streamPayload
+                )
             }
         }
-        myPropsNo.value = myPropsNo.value?.plus(1)
     }
 
-    fun receiveJoinKickProposalDTO(joinKickProposalDTO: JoinKickProposalDTO) {
-        val alliance: Alliance = findAllianceByUUID(joinKickProposalDTO.allianceId)
-        val targetPlayer: Player = findPlayerByUUID(joinKickProposalDTO.target)
-        val initiator: Player = findPlayerByUUID(joinKickProposalDTO.initiator)
-        alliance.addProposal(
-            targetPlayer, initiator, joinKickProposalDTO.proposalId,
-            joinKickProposalDTO.proposalEnum, 0
-        )
-        if (joinKickProposalDTO.proposalEnum == ProposalEnum.JOIN)
-            joinPropsNo.value = joinPropsNo.value?.plus(1)
-        else
-            kickPropsNo.value = kickPropsNo.value?.plus(1)
+    suspend fun receiveProposalResponse(proposalResponse: ProposalResponse) {
+        withContext(Dispatchers.Default) {
+            val alliance: Alliance = findAllianceByUUID(proposalResponse.allianceId)
+            val proposal: Proposal? = alliance.proposalsList.find { proposal ->
+                proposal.proposalId == proposalResponse.proposalId
+            }
+            val sender: Player = findPlayerByUUID(proposalResponse.playerId)
+            proposal?.registerVote(sender, proposalResponse.response)
+        }
     }
 
-    fun sendMembersAction(membersAction: MembersAction) {
-        val data = SerializationUtils.serialize(membersAction.convertToDTO())
-        val streamPayload = Payload.zza(data, MessageCode.MEMBERS_ACTION.toLong())
-        val alliance: Alliance = findAllianceByUUID(membersAction.alliance.id)
-        for (playerInvolved in alliance.playersInvolved) {
-            if (playerInvolved.id == myId)
-                continue
-            idToEndpoint[playerInvolved.id]?.let {
-                Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+    suspend fun sendMessage(message: ChatMessageDTO) {
+        withContext(Dispatchers.IO) {
+            val data = SerializationUtils.serialize(message)
+            val streamPayload = Payload.zza(data, MessageCode.MESSAGE_DTO.toLong())
+            val alliance: Alliance = findAllianceByUUID(message.allianceId)
+            for (playerInvolved in alliance.playersInvolved) {
+                if (playerInvolved.id == myId)
+                    continue
+                idToEndpoint[playerInvolved.id]?.let {
+                    Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+                }
+            }
+            alliance.addMessage(message.convertToEntity())
+            messageEmitter[alliance]?.postValue(message.convertToEntity())
+        }
+    }
+
+    suspend fun receiveMessage(message: ChatMessageDTO) {
+        withContext(Dispatchers.Default) {
+            val alliance: Alliance = findAllianceByUUID(message.allianceId)
+            alliance.addMessage(message.convertToEntity())
+            messageEmitter[alliance]?.postValue(message.convertToEntity())
+        }
+    }
+
+    suspend fun acknowledgeActionEnd(actionsEndDTO: ActionEndDTO) {
+        withContext(Dispatchers.Default) {
+            playersWithAllActionsSent.add(actionsEndDTO.playerId)
+            if (playersWithAllActionsSent.size == players.value?.size) {
+                // all players sent their actions, can start round end processing
+                roundEndCompute()
             }
         }
-        if (ProposalEnum.JOIN == membersAction.proposalEnum) {
-            sendAllianceDTO(alliance.convertToDTO(), membersAction.target.id)
-        }
-        acknowledgeMembersAction(membersAction.convertToDTO())
     }
 
-    fun acknowledgeMembersAction(membersAction: MembersActionDTO) {
-        val alliance: Alliance = findAllianceByUUID(membersAction.allianceId)
-        val targetPlayer: Player = findPlayerByUUID(membersAction.targetId)
-        if (ProposalEnum.JOIN == membersAction.proposalEnum) {
-            alliance.addPlayer(targetPlayer)
-            if (targetPlayer.id == myId)
-                alliancesNoForMe.value = alliancesNoForMe.value?.plus(1)
-        } else if (ProposalEnum.KICK == membersAction.proposalEnum) {
-            alliance.kickPlayer(targetPlayer)
-            if (targetPlayer.id == myId) {
-                alliancesNoForMe.value = alliancesNoForMe.value?.minus(1)
-                alliances.remove(alliance)
-            } else if (alliance.playersInvolved.size < 2) {
-                alliance.kickPlayer(findPlayerByUUID(myId))
-                alliances.remove(alliance)
-                alliancesNoForMe.value = alliancesNoForMe.value?.minus(1)
+    suspend fun sendActionEnd(actionsEndDTO: ActionEndDTO) {
+        withContext(Dispatchers.Default) {
+            Notifications.roundOngoing.postValue(false)
+            sendStrategyActions()
+            val data = SerializationUtils.serialize(actionsEndDTO)
+            val streamPayload = Payload.zza(data, MessageCode.ACTION_END.toLong())
+            for (player in players.value!!) {
+                if (player.id == myId) continue
+                idToEndpoint[player.id]?.let {
+                    Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+                }
             }
-
-        }
-        allianceNewStructure.value = true
-    }
-
-    fun sendProposalResponse(proposalResponse: ProposalResponse) {
-        val data = SerializationUtils.serialize(proposalResponse)
-        val streamPayload = Payload.zza(data, MessageCode.PROPOSAL_RESPONSE.toLong())
-        val alliance: Alliance = findAllianceByUUID(proposalResponse.allianceId)
-        val proposal: Proposal? = alliance.proposalsList.find { proposal ->
-            proposal.proposalId == proposalResponse.proposalId
-        }
-        val meAsAPlayer: Player = findPlayerByUUID(myId)
-        proposal?.votes?.set(meAsAPlayer, proposalResponse.response)
-        idToEndpoint[proposal?.initiator?.id]?.let {
-            Nearby.getConnectionsClient(mainActivity).sendPayload(
-                it, streamPayload
-            )
-        }
-    }
-
-    fun receiveProposalResponse(proposalResponse: ProposalResponse) {
-        val alliance: Alliance = findAllianceByUUID(proposalResponse.allianceId)
-        val proposal: Proposal? = alliance.proposalsList.find { proposal ->
-            proposal.proposalId == proposalResponse.proposalId
-        }
-        val sender: Player = findPlayerByUUID(proposalResponse.playerId)
-        proposal?.registerVote(sender, proposalResponse.response)
-    }
-
-    fun sendMessage(message: ChatMessageDTO) {
-        val data = SerializationUtils.serialize(message)
-        val streamPayload = Payload.zza(data, MessageCode.MESSAGE_DTO.toLong())
-        val alliance: Alliance = findAllianceByUUID(message.allianceId)
-        for (playerInvolved in alliance.playersInvolved) {
-            if (playerInvolved.id == myId)
-                continue
-            idToEndpoint[playerInvolved.id]?.let {
-                Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+            playersWithAllActionsSent.add(myId)
+            if (playersWithAllActionsSent.size == players.value?.size) {
+                roundEndCompute()
             }
         }
-        alliance.addMessage(message.convertToEntity())
-        messageEmitter[alliance]?.value = message.convertToEntity()
     }
 
-    fun receiveMessage(message: ChatMessageDTO) {
-        val alliance: Alliance = findAllianceByUUID(message.allianceId)
-        alliance.addMessage(message.convertToEntity())
-        messageEmitter[alliance]?.value = message.convertToEntity()
-    }
-
-    fun acknowledgeActionEnd(actionsEndDTO: ActionEndDTO) {
-        playersWithAllActionsSent.add(actionsEndDTO.playerId)
-        if (playersWithAllActionsSent.size == players.value?.size) {
-            // all players sent their actions, can start round end processing
-            roundEndCompute()
+    suspend fun receiveStrategyAction(strategyActionDTO: StrategyActionDTO) {
+        withContext(Dispatchers.Default) {
+            strategyActions.add(strategyActionDTO.convertToEntity())
         }
     }
 
-    fun sendActionEnd(actionsEndDTO: ActionEndDTO) {
-        Notifications.roundOngoing.value = false
-        sendStrategyActions()
-        val data = SerializationUtils.serialize(actionsEndDTO)
-        val streamPayload = Payload.zza(data, MessageCode.ACTION_END.toLong())
-        for (player in players.value!!) {
-            if (player.id == myId) continue
-            idToEndpoint[player.id]?.let {
-                Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+    suspend fun sendStrategyAction(strategyAction: StrategyAction) {
+        withContext(Dispatchers.IO) {
+            val data = SerializationUtils.serialize(strategyAction.convertToDTO())
+            val streamPayload = Payload.zza(data, MessageCode.STRATEGY_ACTION.toLong())
+            for (player in players.value!!) {
+                if (player.id == myId)
+                    continue
+                idToEndpoint[player.id]?.let {
+                    Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+                }
             }
-        }
-        playersWithAllActionsSent.add(myId)
-        if (playersWithAllActionsSent.size == players.value?.size) {
-            roundEndCompute()
+            strategyActions.add(strategyAction)
         }
     }
 
-    fun receiveStrategyAction(strategyActionDTO: StrategyActionDTO) {
-        strategyActions.add(strategyActionDTO.convertToEntity())
-    }
-
-    fun sendStrategyAction(strategyAction: StrategyAction) {
-        val data = SerializationUtils.serialize(strategyAction.convertToDTO())
-        val streamPayload = Payload.zza(data, MessageCode.STRATEGY_ACTION.toLong())
-        for (player in players.value!!) {
-            if (player.id == myId)
-                continue
-            idToEndpoint[player.id]?.let {
-                Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
-            }
-        }
-        strategyActions.add(strategyAction)
-    }
-
-    fun sendStrategyActions() {
+    private suspend fun sendStrategyActions() {
         GameHelper.findMyProposals()?.filter { proposal -> !proposal.isMemberProposal() }
             ?.forEach { proposal: Proposal -> sendStrategyAction(proposal.createAction() as StrategyAction) }
     }
 
-    fun receiveStrategyProposal(strategyProposalDTO: StrategyProposalDTO) {
-        val alliance: Alliance = findAllianceByUUID(strategyProposalDTO.allianceId)
-        alliance.addProposal(
-            findPlayerByUUID(strategyProposalDTO.target),
-            findPlayerByUUID(strategyProposalDTO.initiator),
-            strategyProposalDTO.proposalId, strategyProposalDTO.proposalEnum,
-            strategyProposalDTO.targetRegion
-        )
-        if (strategyProposalDTO.proposalEnum == ProposalEnum.ATTACK)
-            attackPropsNo.value = attackPropsNo.value?.plus(1)
-        else
-            defensePropsNo.value = defensePropsNo.value?.plus(1)
+    suspend fun receiveStrategyProposal(strategyProposalDTO: StrategyProposalDTO) {
+        withContext(Dispatchers.Default) {
+            val alliance: Alliance = findAllianceByUUID(strategyProposalDTO.allianceId)
+            alliance.addProposal(
+                findPlayerByUUID(strategyProposalDTO.target),
+                findPlayerByUUID(strategyProposalDTO.initiator),
+                strategyProposalDTO.proposalId, strategyProposalDTO.proposalEnum,
+                strategyProposalDTO.targetRegion
+            )
+            if (strategyProposalDTO.proposalEnum == ProposalEnum.ATTACK)
+                attackPropsNo.postValue(attackPropsNo.value?.plus(1))
+            else
+                defensePropsNo.postValue(defensePropsNo.value?.plus(1))
+        }
     }
 
-    fun sendStrategyProposal(strategyProposalDTO: StrategyProposalDTO) {
-        val data = SerializationUtils.serialize(strategyProposalDTO)
-        val streamPayload = Payload.zza(data, MessageCode.STRATEGY_PROPOSAL.toLong())
-        val alliance: Alliance = findAllianceByUUID(strategyProposalDTO.allianceId)
-        for (playerInvolved in alliance.playersInvolved) {
-            if (playerInvolved.id == myId)
-                continue
-            idToEndpoint[playerInvolved.id]?.let {
+    suspend fun sendStrategyProposal(strategyProposalDTO: StrategyProposalDTO) {
+        withContext(Dispatchers.IO) {
+            val data = SerializationUtils.serialize(strategyProposalDTO)
+            val streamPayload = Payload.zza(data, MessageCode.STRATEGY_PROPOSAL.toLong())
+            val alliance: Alliance = findAllianceByUUID(strategyProposalDTO.allianceId)
+            for (playerInvolved in alliance.playersInvolved) {
+                if (playerInvolved.id == myId)
+                    continue
+                idToEndpoint[playerInvolved.id]?.let {
+                    Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+                }
+            }
+            myPropsNo.postValue(myPropsNo.value?.plus(1))
+        }
+    }
+
+    suspend fun receiveTroopsAction(troopsActionDTO: TroopsActionDTO) {
+        withContext(Dispatchers.Default) {
+            troopsActions.add(troopsActionDTO.convertToEntity())
+        }
+    }
+
+    suspend fun sendTroopsAction(troopsActionDTO: TroopsActionDTO) {
+        withContext(Dispatchers.IO) {
+            val data = SerializationUtils.serialize(troopsActionDTO)
+            val streamPayload = Payload.zza(data, MessageCode.TROOPS_ACTION.toLong())
+            for (player in players.value!!) {
+                if (player.id == myId)
+                    continue
+                idToEndpoint[player.id]?.let {
+                    Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+                }
+            }
+            troopsActions.add(troopsActionDTO.convertToEntity())
+        }
+    }
+
+    suspend fun receiveArmyRequest(armyRequestDTO: ArmyRequestDTO) {
+        withContext(Dispatchers.Default) {
+            val meAsAPlayer = findPlayerByUUID(armyRequestDTO.approverId)
+            meAsAPlayer.armyRequestReceived.add(armyRequestDTO.convertToEntity())
+            negotiatePropsNo.postValue(negotiatePropsNo.value?.plus(1))
+        }
+    }
+
+
+    suspend fun sendArmyRequest(armyRequestDTO: ArmyRequestDTO) {
+        withContext(Dispatchers.IO) {
+            val data = SerializationUtils.serialize(armyRequestDTO)
+            val streamPayload = Payload.zza(data, MessageCode.ARMY_REQUEST.toLong())
+            idToEndpoint[armyRequestDTO.approverId]?.let {
                 Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
             }
         }
-        myPropsNo.value = myPropsNo.value?.plus(1)
     }
 
-    fun receiveTroopsAction(troopsActionDTO: TroopsActionDTO) {
-        troopsActions.add(troopsActionDTO.convertToEntity())
-    }
-
-    fun sendTroopsAction(troopsActionDTO: TroopsActionDTO) {
-        val data = SerializationUtils.serialize(troopsActionDTO)
-        val streamPayload = Payload.zza(data, MessageCode.TROOPS_ACTION.toLong())
-        for (player in players.value!!) {
-            if (player.id == myId)
-                continue
-            idToEndpoint[player.id]?.let {
-                Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
-            }
-        }
-        troopsActions.add(troopsActionDTO.convertToEntity())
-    }
-
-    fun receiveArmyRequest(armyRequestDTO: ArmyRequestDTO) {
-        val meAsAPlayer = findPlayerByUUID(armyRequestDTO.approverId)
-        meAsAPlayer.armyRequestReceived.add(armyRequestDTO.convertToEntity())
-        negotiatePropsNo.value = negotiatePropsNo.value?.plus(1)
-    }
-
-    fun sendArmyRequest(armyRequestDTO: ArmyRequestDTO) {
-        val data = SerializationUtils.serialize(armyRequestDTO)
-        val streamPayload = Payload.zza(data, MessageCode.ARMY_REQUEST.toLong())
-        idToEndpoint[armyRequestDTO.approverId]?.let {
-            Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
-        }
-    }
-
-    fun receiveArmyApproval(armyRequestDTO: ArmyRequestDTO) {
+    suspend fun receiveArmyApproval(armyRequestDTO: ArmyRequestDTO) {
         sendArmyAction(armyRequestDTO)
     }
 
-    fun sendArmyApproval(armyRequestDTO: ArmyRequestDTO) {
-        val data = SerializationUtils.serialize(armyRequestDTO)
-        val streamPayload = Payload.zza(data, MessageCode.ARMY_APPROVAL.toLong())
-        idToEndpoint[armyRequestDTO.initiatorId]?.let {
-            Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
-        }
-    }
-
-    fun receiveArmyAction(armyRequestDTO: ArmyRequestDTO) {
-        armyActions.add(armyRequestDTO.convertToEntity())
-    }
-
-    fun sendArmyAction(armyRequestDTO: ArmyRequestDTO) {
-        val data = SerializationUtils.serialize(armyRequestDTO)
-        val streamPayload = Payload.zza(data, MessageCode.ARMY_UPGRADE.toLong())
-        for (player in players.value!!) {
-            if (player.id == myId)
-                continue
-            idToEndpoint[player.id]?.let {
+    suspend fun sendArmyApproval(armyRequestDTO: ArmyRequestDTO) {
+        withContext(Dispatchers.IO) {
+            val data = SerializationUtils.serialize(armyRequestDTO)
+            val streamPayload = Payload.zza(data, MessageCode.ARMY_APPROVAL.toLong())
+            idToEndpoint[armyRequestDTO.initiatorId]?.let {
                 Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
             }
         }
-        armyActions.add(armyRequestDTO.convertToEntity())
     }
 
-    fun sendStartRound(startRoundDTO: StartRoundDTO) {
-        val data = SerializationUtils.serialize(startRoundDTO)
-        val streamPayload = Payload.zza(data, MessageCode.START_ROUND.toLong())
-        for (player in players.value!!) {
-            if (player.id == myId) continue
-            idToEndpoint[player.id]?.let {
-                Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+    suspend fun receiveArmyAction(armyRequestDTO: ArmyRequestDTO) {
+        withContext(Dispatchers.Default) {
+            armyActions.add(armyRequestDTO.convertToEntity())
+        }
+    }
+
+    suspend fun sendArmyAction(armyRequestDTO: ArmyRequestDTO) {
+        withContext(Dispatchers.IO) {
+            val data = SerializationUtils.serialize(armyRequestDTO)
+            val streamPayload = Payload.zza(data, MessageCode.ARMY_UPGRADE.toLong())
+            for (player in players.value!!) {
+                if (player.id == myId)
+                    continue
+                idToEndpoint[player.id]?.let {
+                    Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+                }
+            }
+            armyActions.add(armyRequestDTO.convertToEntity())
+        }
+    }
+
+    private suspend fun sendStartRound(startRoundDTO: StartRoundDTO) {
+        withContext(Dispatchers.IO) {
+            val data = SerializationUtils.serialize(startRoundDTO)
+            val streamPayload = Payload.zza(data, MessageCode.START_ROUND.toLong())
+            for (player in players.value!!) {
+                if (player.id == myId) continue
+                idToEndpoint[player.id]?.let {
+                    Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+                }
+            }
+            playersReadyForNewRound.add(myId)
+            if (playersReadyForNewRound.size == players.value?.size) {
+                Notifications.roundOngoing.postValue(true)
+                Notifications.myBonusTaken.postValue(false)
+                crtRoundNo.postValue(crtRoundNo.value?.plus(1))
+                playersReadyForNewRound.clear()
             }
         }
-        playersReadyForNewRound.add(myId)
-        if (playersReadyForNewRound.size == players.value?.size) {
-            Notifications.roundOngoing.value = true
-            Notifications.myBonusTaken.value = false
-            crtRoundNo.value = crtRoundNo.value?.plus(1)
-            playersReadyForNewRound.clear()
-        }
     }
 
-    fun acknowledgeStartRound(startRoundDTO: StartRoundDTO) {
-        playersReadyForNewRound.add(startRoundDTO.playerId)
-        if (playersReadyForNewRound.size == players.value?.size) {
-            // all players are ready to start a new round
-            Notifications.roundOngoing.value = true
-            Notifications.myBonusTaken.value = false
-            crtRoundNo.value = crtRoundNo.value?.plus(1)
-            playersReadyForNewRound.clear()
+    suspend fun acknowledgeStartRound(startRoundDTO: StartRoundDTO) {
+        withContext(Dispatchers.Default) {
+            playersReadyForNewRound.add(startRoundDTO.playerId)
+            if (playersReadyForNewRound.size == players.value?.size) {
+                // all players are ready to start a new round
+                Notifications.roundOngoing.postValue(true)
+                Notifications.myBonusTaken.postValue(false)
+                crtRoundNo.postValue(crtRoundNo.value?.plus(1))
+                playersReadyForNewRound.clear()
+            }
         }
     }
 

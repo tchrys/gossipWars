@@ -9,6 +9,8 @@ import com.example.gossipwars.logic.actions.StrategyAction
 import com.example.gossipwars.logic.entities.Alliance
 import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.entities.Player
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.Serializable
 import java.util.*
 
@@ -41,7 +43,7 @@ abstract class Proposal(
         votes[player] = playerVote
         if (!actionSent && proposalAccepted() && isMemberProposal()) {
             actionSent = true
-            Game.sendMembersAction(createAction() as MembersAction)
+            GlobalScope.launch { Game.sendMembersAction(createAction() as MembersAction) }
         }
     }
 

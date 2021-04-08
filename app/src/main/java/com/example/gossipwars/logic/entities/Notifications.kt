@@ -5,6 +5,8 @@ import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.gossipwars.communication.messages.actions.ActionEndDTO
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.*
 
 
@@ -49,7 +51,7 @@ object Notifications {
         if (roundTimer.value!! > 0)
             roundTimer.value = roundTimer.value?.minus(1)
         if (roundTimer.value == 0)
-            Game.sendActionEnd(ActionEndDTO(Game.myId))
+            GlobalScope.launch { Game.sendActionEnd(ActionEndDTO(Game.myId)) }
     }
 
 }

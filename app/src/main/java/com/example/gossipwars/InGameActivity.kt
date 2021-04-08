@@ -37,6 +37,8 @@ import com.example.gossipwars.ui.dialogs.region.RegionDialogFragment
 import com.example.gossipwars.ui.dialogs.region.RegionDialogResult
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.*
 
 class InGameActivity : AppCompatActivity(),
@@ -84,10 +86,10 @@ class InGameActivity : AppCompatActivity(),
             val alliance: Alliance =
                 Game.addAlliance(GameHelper.findPlayerByUUID(Game.myId), dialog.allianceName)
             GameHelper.findPlayerByUsername(dialog.firstMemberUsername)?.id?.let {
-                Game.sendAllianceDTO(
+                GlobalScope.launch { Game.sendAllianceDTO(
                     alliance.convertToDTO(),
                     it
-                )
+                ) }
             }
         }
     }
@@ -131,18 +133,22 @@ class InGameActivity : AppCompatActivity(),
                 dialog.usernameSelected.let { GameHelper.findPlayerByUsername(it) }
             if (playerSelected != null) {
                 when (dialog.armyOption) {
-                    ArmyOption.SIZE -> Game.sendArmyRequest(
-                        ArmyRequestDTO(
-                            Game.myId,
-                            playerSelected.id, dialog.armyOption, dialog.increase, UUID.randomUUID()
+                    ArmyOption.SIZE -> GlobalScope.launch {
+                        Game.sendArmyRequest(
+                            ArmyRequestDTO(
+                                Game.myId,
+                                playerSelected.id, dialog.armyOption, dialog.increase, UUID.randomUUID()
+                            )
                         )
-                    )
-                    else -> Game.sendArmyRequest(
-                        ArmyRequestDTO(
-                            Game.myId, playerSelected.id,
-                            dialog.armyOption, dialog.increase, UUID.randomUUID()
+                    }
+                    else -> GlobalScope.launch {
+                        Game.sendArmyRequest(
+                            ArmyRequestDTO(
+                                Game.myId, playerSelected.id,
+                                dialog.armyOption, dialog.increase, UUID.randomUUID()
+                            )
                         )
-                    )
+                    }
                 }
             }
         }
@@ -174,7 +180,7 @@ class InGameActivity : AppCompatActivity(),
             )
             else -> null
         }
-        armyRequestDTO?.let { Game.sendArmyAction(it) }
+        armyRequestDTO?.let { GlobalScope.launch { Game.sendArmyAction(it) } }
         Notifications.myBonusTaken.value = true
     }
 
@@ -215,15 +221,19 @@ class InGameActivity : AppCompatActivity(),
             val meAsAPlayer = GameHelper.findPlayerByUUID(Game.myId)
             meAsAPlayer.soldiersUsedThisRound[regionFrom.id] =
                 meAsAPlayer.soldiersUsedThisRound.getOrElse(regionFrom.id) {0} + dialog.size
-            Game.sendTroopsAction(TroopsActionDTO(Game.myId, regionFrom.id, regionTo.id, dialog.size))
+            GlobalScope.launch {
+                Game.sendTroopsAction(TroopsActionDTO(Game.myId, regionFrom.id, regionTo.id, dialog.size))
+            }
         }
     }
 
     override fun onDialogPositiveClick(dialog: VoteProposalsResult) {
         dialog.responseList.forEach {
-            Game.sendProposalResponse(
-                ProposalResponse(it.allianceId, it.proposalId, it.response, Game.myId)
-            )
+            GlobalScope.launch {
+                Game.sendProposalResponse(
+                    ProposalResponse(it.allianceId, it.proposalId, it.response, Game.myId)
+                )
+            }
             val alliance = GameHelper.findAllianceByUUID(it.allianceId)
             val propEnum: ProposalEnum? = alliance.proposalsList.find { proposal ->
                 proposal.proposalId == it.proposalId
@@ -254,7 +264,7 @@ class InGameActivity : AppCompatActivity(),
     override fun onDialogPositiveClick(dialog: VoteNegotiateResult) {
         val myArmyRequest: MutableList<ArmyRequest> = GameHelper.findMyArmyRequests()
         dialog.yesList.forEach { yesRequest: ArmyRequest ->
-            Game.sendArmyApproval(yesRequest.convertToDTO())
+            GlobalScope.launch { Game.sendArmyApproval(yesRequest.convertToDTO()) }
         }
         dialog.yesList.plus(dialog.noList).forEach { request: ArmyRequest ->
             val idx = myArmyRequest.indexOfFirst { armyRequest -> armyRequest.id == request.id }

@@ -29,6 +29,8 @@ import com.google.android.gms.nearby.connection.Payload
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputLayout
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.apache.commons.lang3.SerializationUtils
 import java.util.*
 
@@ -66,7 +68,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setupDrawer()
         Game.mainActivity = this
         nearbyConnectionsLogic = NearbyConnectionsLogic(this)
-        checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, FINE_LOCATION_PERMISSION);
+        GlobalScope.launch {
+            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, FINE_LOCATION_PERMISSION);
+        }
         setupUsername()
         setupLengthSpinner()
         setupPlayersSpinner()
@@ -110,7 +114,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private fun checkPermission(permission: String, requestCode: Int) {
+    private suspend fun checkPermission(permission: String, requestCode: Int) {
         if (ContextCompat.checkSelfPermission(this@MainActivity, permission)
             == PackageManager.PERMISSION_DENIED) {
             // Requesting the permission
@@ -126,8 +130,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == FINE_LOCATION_PERMISSION) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                nearbyConnectionsLogic.startAdvertising()
-                nearbyConnectionsLogic.startDiscovery()
+                GlobalScope.launch {
+                    nearbyConnectionsLogic.startAdvertising()
+                }
+                GlobalScope.launch {
+                    nearbyConnectionsLogic.startDiscovery()
+                }
             }
         }
     }

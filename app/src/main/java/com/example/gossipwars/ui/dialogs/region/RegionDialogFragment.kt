@@ -21,6 +21,8 @@ import com.example.gossipwars.logic.entities.Player
 import com.example.gossipwars.logic.entities.Region
 import com.example.gossipwars.logic.proposals.ProposalEnum
 import com.google.android.material.slider.Slider
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.*
 
 class RegionDialogFragment(private val regionName: String) : DialogFragment() {
@@ -87,11 +89,13 @@ class RegionDialogFragment(private val regionName: String) : DialogFragment() {
             attackButton.setOnClickListener {
                 val targetId: UUID? = dialogRegion.occupiedBy?.id
                 if (targetId != null) {
-                    Game.sendStrategyAction(
-                        StrategyAction(GameHelper.findPlayerByUUID(Game.myId),
-                            GameHelper.findPlayerByUUID(targetId),
-                        dialogRegion.id, mutableListOf(), ProposalEnum.ATTACK)
-                    )
+                    GlobalScope.launch {
+                        Game.sendStrategyAction(
+                            StrategyAction(GameHelper.findPlayerByUUID(Game.myId),
+                                GameHelper.findPlayerByUUID(targetId),
+                                dialogRegion.id, mutableListOf(), ProposalEnum.ATTACK)
+                        )
+                    }
                 }
             }
         }
