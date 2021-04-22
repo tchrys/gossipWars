@@ -2,8 +2,7 @@ package com.example.gossipwars.logic.entities
 
 import com.example.gossipwars.R
 import com.example.gossipwars.logic.actions.TroopsAction
-import com.example.gossipwars.logic.proposals.ArmyOption
-import com.example.gossipwars.logic.proposals.ArmyRequest
+import com.example.gossipwars.logic.proposals.*
 import java.util.*
 
 object Snapshots {
@@ -27,6 +26,92 @@ object Snapshots {
             }
         }
         return ans
+    }
+
+    private fun getMembersRegionsList(alliance: Alliance): MutableList<Int> {
+        val ans = mutableListOf<Int>()
+        for (player in alliance.playersInvolved) {
+            if (player.capitalRegion != -1) {
+                ans.add(player.capitalRegion)
+            }
+        }
+        return ans
+    }
+
+    private fun getMembersRegionsString(alliance: Alliance): String {
+        var content = ""
+        var idx = 0
+        for (player in alliance.playersInvolved) {
+            content += "\u25BA ${player.username}"
+            content += if (player.capitalRegion == -1) {
+                "(no capital)\n"
+            } else {
+                " with capital in ${GameHelper.findRegionById(player.capitalRegion)?.name} (${GameHelper.getColorStringByPlayerIdx(idx)})\n"
+            }
+            idx += 1
+        }
+        return content
+    }
+
+    fun generateContentFromJoinProposal(proposal: JoinProposal): ProposalVoteContent {
+        val content = getMembersRegionsString(proposal.alliance)
+        val membersRegions = getMembersRegionsList(proposal.alliance)
+        return ProposalVoteContent(
+            proposal,
+            null,
+            membersRegions,
+            "${proposal.initiator.username} want ${proposal.target.username} to be part of ${proposal.alliance.name}",
+            "The members of this alliance are:\n${content}"
+        )
+    }
+
+    fun generateContentFromKickProposal(proposal: KickProposal): ProposalVoteContent {
+        val content = getMembersRegionsString(proposal.alliance)
+        val membersRegions = getMembersRegionsList(proposal.alliance)
+        return ProposalVoteContent(
+            proposal,
+            null,
+            membersRegions,
+            "${proposal.initiator.username} want ${proposal.target.username} to be kicked from ${proposal.alliance.name}",
+            "The members of this alliance are:\n${content}"
+        )
+    }
+
+    fun generateContentFromAttackProposal(proposal: StrategyProposal): ProposalVoteContent {
+        val content = getMembersRegionsString(proposal.alliance)
+        val membersRegions = getMembersRegionsList(proposal.alliance)
+        return ProposalVoteContent(
+            proposal,
+            proposal.targetRegion,
+            membersRegions,
+            "${proposal.initiator.username} requests ${proposal.alliance.name}'s members to attack ${GameHelper.findRegionById(proposal.targetRegion)?.name}",
+            "The members of this alliance are:\n${content}"
+        )
+    }
+
+    fun generateContentFromDefendProposal(proposal: StrategyProposal): ProposalVoteContent {
+        val content = getMembersRegionsString(proposal.alliance)
+        val membersRegions = getMembersRegionsList(proposal.alliance)
+        return ProposalVoteContent(
+            proposal,
+            proposal.targetRegion,
+            membersRegions,
+            "${proposal.initiator.username} requests ${proposal.alliance.name}'s members to defend ${GameHelper.findRegionById(proposal.targetRegion)?.name}",
+            "The members of this alliance are:\n${content}"
+        )
+    }
+
+    fun generateContentFromNegotiateProposal(armyRequest: ArmyRequest): NegotiateVoteContent {
+        val increaseUnit: String = if (armyRequest.armyOption != ArmyOption.SIZE) "xp" else "soldiers"
+        return NegotiateVoteContent(
+            armyRequest,
+            if (armyRequest.initiator.capitalRegion == -1) null else armyRequest.initiator.capitalRegion ,
+            GameHelper.findPlayerRegions(armyRequest.initiator.id),
+            "Proposal from ${armyRequest.initiator.username}",
+            "${armyRequest.initiator.username} wants to increase his army" +
+                    armyRequest.armyOption.toString().toLowerCase(Locale.ROOT) +
+                    "with ${armyRequest.increase} $increaseUnit"
+        )
     }
 
     private fun ArmyRequest.extractInfoFromArmyUpgrade(): NewsFeedInfo {
@@ -90,7 +175,8 @@ object Snapshots {
             11 -> R.drawable.region11_map
             12 -> R.drawable.region12_map
             13 -> R.drawable.region13_map
-            else -> R.drawable.region1_map
+            -1 -> R.drawable.map_smaller
+            else -> R.drawable.map
         }
 
 }

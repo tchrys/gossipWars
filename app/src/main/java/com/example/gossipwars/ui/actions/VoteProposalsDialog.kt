@@ -12,9 +12,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.gossipwars.R
 import com.example.gossipwars.communication.messages.allianceCommunication.ProposalResponse
 import com.example.gossipwars.logic.entities.Game
+import com.example.gossipwars.logic.entities.ProposalVoteContent
 import com.example.gossipwars.logic.proposals.Proposal
 
-class VoteProposalsDialog(val title: String, private val props: ArrayList<Proposal>) :
+class VoteProposalsDialog(val title: String, private val props: ArrayList<ProposalVoteContent>) :
     DialogFragment() {
     internal lateinit var listener: VoteDialogListener
     private var mRecyclerView: RecyclerView? = null
@@ -41,7 +42,7 @@ class VoteProposalsDialog(val title: String, private val props: ArrayList<Propos
         val builder = AlertDialog.Builder(activity)
         val voteProposalView: View = inflater.inflate(R.layout.vote_proposal_form, null)
 
-        props.forEach { proposal: Proposal -> proposalsVotes[proposal] = false }
+        props.forEach { content: ProposalVoteContent -> proposalsVotes[content.proposal] = false }
         mRecyclerView = voteProposalView.findViewById(R.id.proposalsRecyclerView)
         mAdapter = ProposalListAdapter(this, props)
         mRecyclerView?.adapter = mAdapter

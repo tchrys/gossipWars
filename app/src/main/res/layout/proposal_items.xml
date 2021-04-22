@@ -5,44 +5,64 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/voteContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        >
 
-        <TextView
-            android:id="@+id/proposalStatement"
-            android:layout_width="0dp"
+        <androidx.cardview.widget.CardView
+            android:id="@+id/proposalVoteCard"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/proposalSwitch"
+            android:layout_marginTop="16dp"
+            app:contentPadding="10dp"
             app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginTop="4dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="4dp"
-            />
+            app:layout_constraintTop_toTopOf="parent">
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/proposalSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:checked="false" />
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                <TextView
+                    android:id="@+id/proposalVoteTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginStart="8dp" />
 
-    <View
-        android:id="@+id/divider"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="8dp"
-        android:background="?android:attr/listDivider"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/voteContainer" />
+
+
+                <com.richpath.RichPathView
+                    android:id="@+id/proposalVoteMap"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="8dp"
+                    app:layout_constraintTop_toBottomOf="@id/proposalVoteTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:vector="@drawable/region10_map"
+                    />
+
+
+                <TextView
+                    android:id="@+id/proposalVoteContent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/join_proposals"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    app:layout_constraintTop_toBottomOf="@id/proposalVoteMap"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/proposalSwitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/proposalVoteContent"
+                    app:layout_goneMarginTop="4dp"
+                    android:checked="false" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.cardview.widget.CardView>
+
 
 
 

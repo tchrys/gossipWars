@@ -13,12 +13,8 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.gossipwars.InGameActivity
 import com.example.gossipwars.R
-import com.example.gossipwars.logic.entities.Game
-import com.example.gossipwars.logic.entities.GameHelper
-import com.example.gossipwars.logic.entities.Notifications
-import com.example.gossipwars.logic.proposals.ArmyRequest
-import com.example.gossipwars.logic.proposals.Proposal
-import com.example.gossipwars.logic.proposals.ProposalEnum
+import com.example.gossipwars.logic.entities.*
+import com.example.gossipwars.logic.proposals.*
 import com.example.gossipwars.ui.dialogs.attack.AttackDialogFragment
 import com.example.gossipwars.ui.dialogs.bonus.BonusDialogFragment
 import com.example.gossipwars.ui.dialogs.defend.DefendDialogFragment
@@ -31,11 +27,11 @@ import com.google.android.material.chip.Chip
 class ActionsFragment : Fragment() {
 
     private lateinit var actionsViewModel: ActionsViewModel
-    private var joinProps: List<Proposal>? = null
-    private var kickProps: List<Proposal>? = null
-    private var attackProps: List<Proposal>? = null
-    private var defendProps: List<Proposal>? = null
-    private var negotiateProps: List<ArmyRequest>? = null
+    private var joinProps: List<ProposalVoteContent>? = null
+    private var kickProps: List<ProposalVoteContent>? = null
+    private var attackProps: List<ProposalVoteContent>? = null
+    private var defendProps: List<ProposalVoteContent>? = null
+    private var negotiateProps: List<NegotiateVoteContent>? = null
 
     private lateinit var kickChip: Chip
     private lateinit var joinChip: Chip
@@ -198,7 +194,7 @@ class ActionsFragment : Fragment() {
             if (!joinProps.isNullOrEmpty()) {
                 fragmentManager?.let {
                     VoteProposalsDialog(
-                        "Join proposals", joinProps as ArrayList<Proposal>
+                        "Join proposals", joinProps as ArrayList<ProposalVoteContent>
                     ).show(it, "joinVotesDialog")
                 }
             } else {
@@ -212,7 +208,7 @@ class ActionsFragment : Fragment() {
             if (!kickProps.isNullOrEmpty()) {
                 fragmentManager?.let {
                     VoteProposalsDialog(
-                        "Kick proposals", kickProps as ArrayList<Proposal>
+                        "Kick proposals", kickProps as ArrayList<ProposalVoteContent>
                     ).show(it, "kickVotesDialog")
                 }
             } else {
@@ -227,7 +223,7 @@ class ActionsFragment : Fragment() {
                 fragmentManager?.let {
                     VoteProposalsDialog(
                         "Attack proposals",
-                        attackProps as ArrayList<Proposal>
+                        attackProps as ArrayList<ProposalVoteContent>
                     ).show(it, "attackVotesDialog")
                 }
             } else {
@@ -242,7 +238,7 @@ class ActionsFragment : Fragment() {
                 fragmentManager?.let {
                     VoteProposalsDialog(
                         "Defense proposals",
-                        defendProps as ArrayList<Proposal>
+                        defendProps as ArrayList<ProposalVoteContent>
                     ).show(it, "defendVotesDialog")
                 }
             } else {
@@ -257,7 +253,7 @@ class ActionsFragment : Fragment() {
                 fragmentManager?.let {
                     VoteNegotiateDialog(
                         "Negotiate requests",
-                        negotiateProps as ArrayList<ArmyRequest>
+                        negotiateProps as ArrayList<NegotiateVoteContent>
                     )
                         .show(it, "negotiateReqDialog")
                 }
@@ -273,7 +269,14 @@ class ActionsFragment : Fragment() {
                 fragmentManager?.let {
                     VoteProposalsDialog(
                         "Your requests",
-                        GameHelper.findMyProposals() as ArrayList<Proposal>
+                        GameHelper.findMyProposals()?.map { proposal ->
+                            when (proposal.proposalEnum) {
+                                ProposalEnum.KICK -> Snapshots.generateContentFromKickProposal(proposal as KickProposal)
+                                ProposalEnum.JOIN -> Snapshots.generateContentFromJoinProposal(proposal as JoinProposal)
+                                ProposalEnum.ATTACK -> Snapshots.generateContentFromAttackProposal(proposal as StrategyProposal)
+                                ProposalEnum.DEFEND -> Snapshots.generateContentFromDefendProposal(proposal as StrategyProposal)
+                            }
+                        } as ArrayList<ProposalVoteContent>
                     ).show(it, "yourReqDialog")
                 }
             } else {
@@ -285,35 +288,44 @@ class ActionsFragment : Fragment() {
     private fun subscribeToJoinProps() {
         Notifications.joinPropsNo.observe(viewLifecycleOwner, Observer {
             joinCardText.text = getString(R.string.join_proposals, it)
-            joinProps = GameHelper.findAllPropsFromCategory(ProposalEnum.JOIN)
+            joinProps = GameHelper.findAllPropsFromCategory(ProposalEnum.JOIN)?.map { proposal ->
+                Snapshots.generateContentFromJoinProposal(proposal as JoinProposal) }
         })
     }
 
     private fun subscribeToKickProps() {
         Notifications.kickPropsNo.observe(viewLifecycleOwner, Observer {
             kickCardText.text = getString(R.string.kick_proposals, it)
-            kickProps = GameHelper.findAllPropsFromCategory(ProposalEnum.KICK)
+            kickProps = GameHelper.findAllPropsFromCategory(ProposalEnum.KICK)?.map { proposal ->
+                Snapshots.generateContentFromKickProposal(proposal as KickProposal)
+            }
         })
     }
 
     private fun subscribeToAttackProps() {
         Notifications.attackPropsNo.observe(viewLifecycleOwner, Observer {
             attackCardText.text = getString(R.string.attack_proposals, it)
-            attackProps = GameHelper.findAllPropsFromCategory(ProposalEnum.ATTACK)
+            attackProps = GameHelper.findAllPropsFromCategory(ProposalEnum.ATTACK)?.map { proposal ->
+                Snapshots.generateContentFromAttackProposal(proposal as StrategyProposal)
+            }
         })
     }
 
     private fun subscribeToDefenseProps() {
         Notifications.defensePropsNo.observe(viewLifecycleOwner, Observer {
             defendCardText.text = getString(R.string.defense_proposals, it)
-            defendProps = GameHelper.findAllPropsFromCategory(ProposalEnum.DEFEND)
+            defendProps = GameHelper.findAllPropsFromCategory(ProposalEnum.DEFEND)?.map { proposal ->
+                Snapshots.generateContentFromDefendProposal(proposal as StrategyProposal)
+            }
         })
     }
 
     private fun subscribeToNegotiateProps() {
         Notifications.negotiatePropsNo.observe(viewLifecycleOwner, Observer {
             negotiateCardText.text = getString(R.string.negotiate_proposals, it)
-            negotiateProps = GameHelper.findMyArmyRequests()
+            negotiateProps = GameHelper.findMyArmyRequests().map { armyRequest ->
+                Snapshots.generateContentFromNegotiateProposal(armyRequest)
+            }
         })
     }
 

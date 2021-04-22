@@ -106,6 +106,10 @@ object GameHelper {
         return null
     }
 
+    fun findPlayerRegions(playerId: UUID): MutableList<Int> =
+        Game.regions.filter { region -> region.occupiedBy?.id == playerId }
+            .map { region -> region.id }.toMutableList()
+
     fun findRegionDefOrAtt(regionId: Int, proposalEnum: ProposalEnum): Set<Player> {
         val ans: MutableSet<Player> = mutableSetOf()
         if (proposalEnum == ProposalEnum.DEFEND) {
@@ -145,6 +149,19 @@ object GameHelper {
         7 -> Color.TRANSPARENT
         8 -> Color.RED
         else -> Color.RED
+    }
+
+    fun getColorStringByPlayerIdx(idx: Int): String = when(idx) {
+        0 -> "green"
+        1 -> "blue"
+        2 -> "cyan"
+        3 -> "yellow"
+        4 -> "magenta"
+        5 -> "dark gray"
+        6 -> "light gray"
+        7 -> "transparent"
+        8 -> "red"
+        else -> "red"
     }
 
     fun roundTimeToString(roundTime: Int): String {

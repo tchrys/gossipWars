@@ -9,9 +9,10 @@ import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gossipwars.R
+import com.example.gossipwars.logic.entities.NegotiateVoteContent
 import com.example.gossipwars.logic.proposals.ArmyRequest
 
-class VoteNegotiateDialog(val title: String, private val requests: ArrayList<ArmyRequest>): DialogFragment() {
+class VoteNegotiateDialog(val title: String, private val requests: ArrayList<NegotiateVoteContent>): DialogFragment() {
     internal lateinit var listener: NegotiateDialogListener
     private var mRecyclerView: RecyclerView? = null
     private var mAdapter: NegotiateListAdapter? = null
@@ -37,7 +38,7 @@ class VoteNegotiateDialog(val title: String, private val requests: ArrayList<Arm
         val builder = AlertDialog.Builder(activity)
         val negotiateProposalView: View = inflater.inflate(R.layout.vote_proposal_form, null)
 
-        requests.forEach { request: ArmyRequest ->  requestsVotes[request] = false}
+        requests.forEach { content: NegotiateVoteContent -> requestsVotes[content.armyRequest] = false }
         mRecyclerView = negotiateProposalView.findViewById(R.id.proposalsRecyclerView)
         mAdapter = NegotiateListAdapter(this, requests)
         mRecyclerView?.adapter = mAdapter
