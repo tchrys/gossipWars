@@ -6,13 +6,26 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+
+    <com.example.gossipwars.ui.chat.AllianceCircle
+        android:id="@+id/allianceCircle"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        >
+
+    </com.example.gossipwars.ui.chat.AllianceCircle>
+
     <TextView
         android:id="@+id/allianceNameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/allianceCircle"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -20,12 +33,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/allianceCircle"
         app:layout_constraintTop_toBottomOf="@+id/allianceNameTextView" />
 
     <View
         android:id="@+id/allianceItemDivider"
-        android:layout_width="409dp"
+        android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"

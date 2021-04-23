@@ -7,6 +7,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gossipwars.R
 import com.example.gossipwars.logic.entities.Alliance
+import com.example.gossipwars.logic.entities.Game
+import com.example.gossipwars.logic.entities.GameHelper
 import com.example.gossipwars.ui.chat.AlliancesListAdapter.AllianceViewHolder
 import java.util.*
 
@@ -22,6 +24,7 @@ class AlliancesListAdapter(
     ) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
         val allianceNameTextView: TextView = itemView.findViewById(R.id.allianceNameTextView)
         val allianceMembersTextView: TextView = itemView.findViewById(R.id.allianceMembersTextView)
+        val allianceCircle: AllianceCircle = itemView.findViewById(R.id.allianceCircle)
         override fun onClick(view: View) {
             // get the position of the view that was clicked
             val mPosition = layoutPosition
@@ -47,7 +50,7 @@ class AlliancesListAdapter(
 
     override fun onBindViewHolder(holder: AllianceViewHolder, position: Int) {
         // retrieve the data for that position
-        val mCurrent = alliancesList[position]
+        val mCurrent: Alliance = alliancesList[position]
         holder.allianceNameTextView.text = mCurrent.name
         var allianceMembersString = ""
         for (i in mCurrent.playersInvolved.indices) {
@@ -55,6 +58,11 @@ class AlliancesListAdapter(
             if (i != mCurrent.playersInvolved.size - 1) {
                 allianceMembersString += ","
             }
+        }
+        Game.players.value?.indexOfFirst { player -> player.id == mCurrent.founderId }?.let {
+            holder.allianceCircle.colorWithPlayerColor(
+                it
+            )
         }
         holder.allianceMembersTextView.text = allianceMembersString
     }

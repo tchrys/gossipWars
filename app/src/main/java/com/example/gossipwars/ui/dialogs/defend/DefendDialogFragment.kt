@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
+import android.text.TextUtils
 import android.view.View
 import android.widget.RadioButton
 import android.widget.RadioGroup
@@ -12,6 +13,8 @@ import com.example.gossipwars.R
 import com.example.gossipwars.communication.messages.actions.AllianceInvitationDTO
 import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.entities.GameHelper
+import com.example.gossipwars.logic.entities.GameHelper.camelCaseToSpaced
+import com.example.gossipwars.logic.entities.GameHelper.spacedToCamelCase
 import com.example.gossipwars.logic.entities.Region
 
 class DefendDialogFragment : DialogFragment() {
@@ -49,13 +52,17 @@ class DefendDialogFragment : DialogFragment() {
         alliances?.forEach { allianceInvitationDTO: AllianceInvitationDTO ->
             val allianceButton = RadioButton(context)
             allianceButton.text = allianceInvitationDTO.name
+            allianceButton.ellipsize = TextUtils.TruncateAt.END
+            allianceButton.isSingleLine = true
             allianceRadioGroup.addView(allianceButton)
         }
 
         val regions: List<Region>? = GameHelper.findAllRegions()
         regions?.forEach { region: Region ->
             val regionButton = RadioButton(context)
-            regionButton.text = region.name
+            regionButton.text = region.name.camelCaseToSpaced()
+            regionButton.ellipsize = TextUtils.TruncateAt.END
+            regionButton.isSingleLine = true
             regionsRadioGroup.addView(regionButton)
         }
         if (regions?.size == 0) {
@@ -73,7 +80,7 @@ class DefendDialogFragment : DialogFragment() {
 
         regionsRadioGroup.setOnCheckedChangeListener { _, checkedId ->
             val checkedRadioButton = regionsRadioGroup.findViewById<RadioButton>(checkedId)
-            regionNameSelected = checkedRadioButton.text.toString()
+            regionNameSelected = checkedRadioButton.text.toString().spacedToCamelCase()
         }
 
         builder.setView(defendProposalView)

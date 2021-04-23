@@ -152,5 +152,6 @@
     <string name="room_screen">Room screen</string>
     <string name="overview_tab">Overview tab</string>
     <string name="actions_tab">Actions tab</string>
+    <string name="no_soldiers_in_neighbors">You have no soldiers in neighboring regions</string>
 
 </resources>

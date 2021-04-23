@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
+import android.text.TextUtils
 import android.view.View
 import android.widget.RadioButton
 import android.widget.RadioGroup
@@ -48,6 +49,8 @@ class JoinDialogFragment: DialogFragment() {
         alliances?.forEach { allianceInvitationDTO: AllianceInvitationDTO ->
             val allianceButton = RadioButton(context)
             allianceButton.text = allianceInvitationDTO.name
+            allianceButton.ellipsize = TextUtils.TruncateAt.END
+            allianceButton.isSingleLine = true
             allianceRadioGroup.addView(allianceButton)
         }
 
@@ -60,6 +63,8 @@ class JoinDialogFragment: DialogFragment() {
             players?.forEach { player: Player ->
                 var playerButton = RadioButton(context)
                 playerButton.text = player.username
+                playerButton.ellipsize = TextUtils.TruncateAt.END
+                playerButton.isSingleLine = true
                 playersRadioGroup.addView(playerButton)
             }
             if (playersRadioGroup.childCount == 0) {

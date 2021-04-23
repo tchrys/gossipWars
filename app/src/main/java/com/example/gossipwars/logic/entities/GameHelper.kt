@@ -135,8 +135,10 @@ object GameHelper {
     fun String.camelCaseToSpaced(): String {
         var ans = ""
         forEach { c: Char -> ans += if (c in 'A'..'Z') " $c" else c }
-        return ans
+        return ans.removeRange(0, 1)
     }
+
+    fun String.spacedToCamelCase(): String = this.filter { !it.isWhitespace() }
 
     fun getColorByPlayerIdx(idx: Int) = when(idx) {
         0 -> Color.GREEN

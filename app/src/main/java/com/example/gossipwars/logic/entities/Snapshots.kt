@@ -2,6 +2,7 @@ package com.example.gossipwars.logic.entities
 
 import com.example.gossipwars.R
 import com.example.gossipwars.logic.actions.TroopsAction
+import com.example.gossipwars.logic.entities.GameHelper.camelCaseToSpaced
 import com.example.gossipwars.logic.proposals.*
 import java.util.*
 
@@ -46,7 +47,7 @@ object Snapshots {
             content += if (player.capitalRegion == -1) {
                 "(no capital)\n"
             } else {
-                " with capital in ${GameHelper.findRegionById(player.capitalRegion)?.name} (${GameHelper.getColorStringByPlayerIdx(idx)})\n"
+                " with capital in ${GameHelper.findRegionById(player.capitalRegion)?.name?.camelCaseToSpaced()} (${GameHelper.getColorStringByPlayerIdx(idx)})\n"
             }
             idx += 1
         }
@@ -60,7 +61,8 @@ object Snapshots {
             proposal,
             null,
             membersRegions,
-            "${proposal.initiator.username} want ${proposal.target.username} to be part of ${proposal.alliance.name}",
+            "${proposal.initiator.username} want ${proposal.target.username}" +
+                    "to be part of ${proposal.alliance.name}",
             "The members of this alliance are:\n${content}"
         )
     }
@@ -72,7 +74,8 @@ object Snapshots {
             proposal,
             null,
             membersRegions,
-            "${proposal.initiator.username} want ${proposal.target.username} to be kicked from ${proposal.alliance.name}",
+            "${proposal.initiator.username} want ${proposal.target.username}" +
+                    "to be kicked from ${proposal.alliance.name}",
             "The members of this alliance are:\n${content}"
         )
     }
@@ -84,7 +87,8 @@ object Snapshots {
             proposal,
             proposal.targetRegion,
             membersRegions,
-            "${proposal.initiator.username} requests ${proposal.alliance.name}'s members to attack ${GameHelper.findRegionById(proposal.targetRegion)?.name}",
+            "${proposal.initiator.username} requests ${proposal.alliance.name}'s members to " +
+                    "attack ${GameHelper.findRegionById(proposal.targetRegion)?.name?.camelCaseToSpaced()}",
             "The members of this alliance are:\n${content}"
         )
     }
@@ -96,7 +100,8 @@ object Snapshots {
             proposal,
             proposal.targetRegion,
             membersRegions,
-            "${proposal.initiator.username} requests ${proposal.alliance.name}'s members to defend ${GameHelper.findRegionById(proposal.targetRegion)?.name}",
+            "${proposal.initiator.username} requests ${proposal.alliance.name}'s members to " +
+                    "defend ${GameHelper.findRegionById(proposal.targetRegion)?.name?.camelCaseToSpaced()}",
             "The members of this alliance are:\n${content}"
         )
     }
@@ -129,15 +134,15 @@ object Snapshots {
     }
 
     private fun TroopsAction.extractInfoFromTroops(): NewsFeedInfo {
-        val fromName: String? = GameHelper.findRegionById(fromRegion)?.name
-        val toName: String? = GameHelper.findRegionById(toRegion)?.name
+        val fromName: String? = GameHelper.findRegionById(fromRegion)?.name?.camelCaseToSpaced()
+        val toName: String? = GameHelper.findRegionById(toRegion)?.name?.camelCaseToSpaced()
         val title = "${initiator.username} is moving troops"
         val content = "${initiator.username} moved $size soldiers from $fromName to $toName"
         return NewsFeedInfo(this.toRegion, this.fromRegion, title, content)
     }
 
     private fun Fight.extractInfoFromFight(): NewsFeedInfo {
-        val title = "Battle in ${region.name}"
+        val title = "Battle in ${region.name.camelCaseToSpaced()}"
         var content = ""
         attackers.forEachIndexed { index, player ->
             val conjunction = getConjunction(index, attackers.size)
@@ -148,7 +153,7 @@ object Snapshots {
             val conjunction = getConjunction(index, defenders.size)
             content += player.username + conjunction
         }
-        content += " for the control of ${region.name}"
+        content += " for the control of ${region.name.camelCaseToSpaced()}"
         return NewsFeedInfo(region.id, null, title, content)
     }
 

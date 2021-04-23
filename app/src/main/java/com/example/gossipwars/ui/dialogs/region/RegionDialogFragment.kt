@@ -17,6 +17,7 @@ import com.example.gossipwars.logic.actions.StrategyAction
 import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.entities.GameHelper
 import com.example.gossipwars.logic.entities.GameHelper.camelCaseToSpaced
+import com.example.gossipwars.logic.entities.GameHelper.spacedToCamelCase
 import com.example.gossipwars.logic.entities.Player
 import com.example.gossipwars.logic.entities.Region
 import com.example.gossipwars.logic.proposals.ProposalEnum
@@ -91,9 +92,11 @@ class RegionDialogFragment(private val regionName: String) : DialogFragment() {
                 if (targetId != null) {
                     GlobalScope.launch {
                         Game.sendStrategyAction(
-                            StrategyAction(GameHelper.findPlayerByUUID(Game.myId),
+                            StrategyAction(
+                                GameHelper.findPlayerByUUID(Game.myId),
                                 GameHelper.findPlayerByUUID(targetId),
-                                dialogRegion.id, mutableListOf(), ProposalEnum.ATTACK)
+                                dialogRegion.id, mutableListOf(), ProposalEnum.ATTACK
+                            )
                         )
                     }
                 }
@@ -101,36 +104,41 @@ class RegionDialogFragment(private val regionName: String) : DialogFragment() {
         }
 
         val regionsRadioGroup: RadioGroup = regionView.findViewById(R.id.neighborRegionRadioGroup)
-        dialogRegion.getNeighborsList().forEach { region: Region ->
+        dialogRegion.getNeighborsList().filter { region ->
+            GameHelper.soldiersForRegion(region.name, Game.myId).isGreaterThan(0)
+        }.forEach { region: Region ->
             val regionButton = RadioButton(context)
-            regionButton.text = region.name
+            regionButton.text = region.name.camelCaseToSpaced()
             regionsRadioGroup.addView(regionButton)
         }
-
-        val howManySoldiers: TextView = regionView.findViewById(R.id.howManySoldiers)
         val soldiersSlider: Slider = regionView.findViewById(R.id.soldiersSlider)
-        val meAsAPlayer: Player = GameHelper.findPlayerByUUID(Game.myId)
-
-        regionsRadioGroup.setOnCheckedChangeListener { _, checkedIdx ->
-            sizeSelected = 0
-            soldiersSlider.value = 0.toFloat()
-            val checkedRadioButton = regionsRadioGroup.findViewById<RadioButton>(checkedIdx)
-            regionSelected = GameHelper.findRegionByName(checkedRadioButton.text.toString())
-            val soldiersNo: Int? =
-                regionSelected?.name?.let { GameHelper.soldiersForRegion(it, Game.myId) }
-            if (soldiersNo == null || soldiersNo == 0) {
-                soldiersSlider.visibility = View.GONE
-                howManySoldiers.text = getString(R.string.no_soldiers_text)
-                howManySoldiers.setCompoundDrawablesWithIntrinsicBounds(
-                    R.drawable.ic_warning, 0, 0, 0
-                )
-            } else {
+        val howManySoldiers: TextView = regionView.findViewById(R.id.howManySoldiers)
+        if (regionsRadioGroup.childCount == 0) {
+            regionsRadioGroup.visibility = View.GONE
+            howManySoldiers.text = getString(R.string.no_soldiers_in_neighbors)
+            howManySoldiers.setCompoundDrawablesWithIntrinsicBounds(
+                R.drawable.ic_warning, 0, 0, 0
+            )
+            soldiersSlider.visibility = View.GONE
+        } else {
+            val meAsAPlayer: Player = GameHelper.findPlayerByUUID(Game.myId)
+            regionsRadioGroup.setOnCheckedChangeListener { _, checkedIdx ->
+                sizeSelected = 0
+                soldiersSlider.value = 0.toFloat()
+                val checkedRadioButton = regionsRadioGroup.findViewById<RadioButton>(checkedIdx)
+                regionSelected = GameHelper.findRegionByName(checkedRadioButton.text.toString().spacedToCamelCase())
+                val soldiersNo: Int? =
+                    regionSelected?.name?.let { GameHelper.soldiersForRegion(it, Game.myId) }
                 howManySoldiers.text = getString(R.string.how_many_soldiers_to_move)
                 howManySoldiers.setCompoundDrawables(null, null, null, null)
                 soldiersSlider.visibility = View.VISIBLE
                 soldiersSlider.valueFrom = 0.toFloat()
-                soldiersSlider.valueTo = soldiersNo.toFloat()
-                val soldiersAlreadyUsed: Int? = meAsAPlayer.soldiersUsedThisRound[regionSelected?.id]
+                if (soldiersNo != null) {
+                    soldiersSlider.valueTo = soldiersNo.toFloat()
+                    soldiersSlider.stepSize = getStepSize(soldiersSlider.valueTo.toInt())
+                }
+                val soldiersAlreadyUsed: Int? =
+                    meAsAPlayer.soldiersUsedThisRound[regionSelected?.id]
                 if (soldiersAlreadyUsed != null) {
                     soldiersSlider.valueTo -= soldiersAlreadyUsed
                 }
@@ -155,5 +163,19 @@ class RegionDialogFragment(private val regionName: String) : DialogFragment() {
             .setNegativeButton("Cancel") { _, _ -> }
         return builder.create()
     }
+
+    fun Int?.isGreaterThan(other: Int) = this != null && this > other
+
+    fun getStepSize(valueTo: Int): Float {
+        if (valueTo < 1000)
+            return 1f
+        if (valueTo % 100 == 0) {
+            return (valueTo / 100).toFloat()
+        } else if (valueTo % 10 == 0) {
+            return (valueTo / 10).toFloat()
+        }
+        return 1f
+    }
+
 
 }
