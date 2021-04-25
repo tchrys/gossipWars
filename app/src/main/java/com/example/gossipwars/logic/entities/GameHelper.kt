@@ -106,6 +106,36 @@ object GameHelper {
         return null
     }
 
+    fun greatestArmy(excludePlayer: UUID): Player? {
+        var maxArmy: Int = 0
+        var playerWithMax: Player? = null
+        Game.players.value?.forEach { player: Player ->
+            if (player.id != excludePlayer) {
+                val crt = player.army.size
+                if (crt > maxArmy) {
+                    maxArmy = crt
+                    playerWithMax = player
+                }
+            }
+        }
+        return playerWithMax
+    }
+
+    fun regionDominantArmy(regionName: String, excludePlayer: UUID): Player? {
+        var maxSoldiers = 0
+        var playerWithMax: Player? = null
+        Game.players.value?.forEach { player: Player ->
+            if (player.id != excludePlayer) {
+                val crt: Int? = soldiersForRegion(regionName, player.id)
+                if (crt != null && crt > maxSoldiers) {
+                    maxSoldiers = crt
+                    playerWithMax = player
+                }
+            }
+        }
+        return if (playerWithMax != null) playerWithMax else greatestArmy(excludePlayer)
+    }
+
     fun findPlayerRegions(playerId: UUID): MutableList<Int> =
         Game.regions.filter { region -> region.occupiedBy?.id == playerId }
             .map { region -> region.id }.toMutableList()

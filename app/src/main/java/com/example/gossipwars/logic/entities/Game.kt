@@ -14,17 +14,18 @@ import com.example.gossipwars.logic.entities.GameHelper.findPlayerByUUID
 import com.example.gossipwars.logic.entities.GameHelper.findRegionAttackInitiator
 import com.example.gossipwars.logic.entities.GameHelper.findRegionDefOrAtt
 import com.example.gossipwars.logic.entities.GameHelper.findRegionOwner
+import com.example.gossipwars.logic.entities.GameHelper.regionDominantArmy
 import com.example.gossipwars.logic.entities.GameHelper.soldiersForRegion
 import com.example.gossipwars.logic.entities.Notifications.allianceNewStructure
 import com.example.gossipwars.logic.entities.Notifications.alliancesNoForMe
 import com.example.gossipwars.logic.entities.Notifications.attackPropsNo
+import com.example.gossipwars.logic.entities.Notifications.crtRoundNo
 import com.example.gossipwars.logic.entities.Notifications.defensePropsNo
 import com.example.gossipwars.logic.entities.Notifications.joinPropsNo
 import com.example.gossipwars.logic.entities.Notifications.kickPropsNo
 import com.example.gossipwars.logic.entities.Notifications.messageEmitter
 import com.example.gossipwars.logic.entities.Notifications.myPropsNo
 import com.example.gossipwars.logic.entities.Notifications.negotiatePropsNo
-import com.example.gossipwars.logic.entities.Notifications.crtRoundNo
 import com.example.gossipwars.logic.proposals.ArmyRequest
 import com.example.gossipwars.logic.proposals.Proposal
 import com.example.gossipwars.logic.proposals.ProposalEnum
@@ -55,6 +56,26 @@ object Game {
 
     init {
         regions = Region.initAllRegions()
+    }
+
+    fun gameEndCleanup() {
+        players.value?.clear()
+        alliances.clear()
+        regionsPerPlayers.clear()
+        playersWithAllActionsSent.clear()
+        playersReadyForNewRound.clear()
+        strategyActions.clear()
+        troopsActions.clear()
+        armyActions.clear()
+        gameStarted = false
+
+        endpointToId.clear()
+        idToEndpoint.clear()
+        roomInfo = null
+
+        Snapshots.cleanup()
+        Notifications.cleanup()
+        mainActivity.cleanup()
     }
 
     fun addAlliance(player: Player, name: String): Alliance {
@@ -105,6 +126,7 @@ object Game {
     }
 
     suspend fun roundEndCompute() {
+
         Snapshots.armyImprovementsPerRound.add(mutableListOf())
         Snapshots.fightsPerRound.add(mutableListOf())
         Snapshots.troopsMovedPerRound.add(mutableListOf())
@@ -168,7 +190,7 @@ object Game {
         for (playerEndpoint in mainActivity.peers) {
             Nearby.getConnectionsClient(mainActivity).sendPayload(playerEndpoint, streamPayload)
         }
-        if (mainActivity.peers.size == 0) {
+        if (roomInfo?.crtPlayersNr == 1) {
             sendOrderPayload()
         }
     }
@@ -610,6 +632,40 @@ object Game {
                 crtRoundNo.postValue(crtRoundNo.value?.plus(1))
                 playersReadyForNewRound.clear()
             }
+        }
+    }
+
+    fun sendSurrender() {
+        val data = SerializationUtils.serialize(ActionEndDTO(myId))
+        val streamPayload = Payload.zza(data, MessageCode.SURRENDER.toLong())
+        for (player in players.value!!) {
+            if (player.id == myId) continue
+            idToEndpoint[player.id]?.let {
+                Nearby.getConnectionsClient(mainActivity).sendPayload(it, streamPayload)
+            }
+        }
+        gameEndCleanup()
+    }
+
+    suspend fun acknowledgePlayerSurrender(actionsEndDTO: ActionEndDTO) {
+        withContext(Dispatchers.Default) {
+            val player: Player? =
+                players.value?.find { player -> player.id == actionsEndDTO.playerId }
+            player?.regionsOccupied?.forEach { region: Region ->
+                val regionWinner: Player? = regionDominantArmy(region.name, player.id)
+                regionWinner?.winRegion(region)
+                if (regionWinner?.capitalRegion == -1) {
+                    regionWinner.capitalRegion = region.id
+                }
+            }
+            alliances.forEach { alliance: Alliance ->
+                val idx = alliance.playersInvolved.indexOfFirst { player -> player.id == player.id }
+                if (idx != -1)
+                    alliance.playersInvolved.removeAt(idx)
+            }
+            val playerIdx: Int? = players.value?.indexOfFirst { p -> p.id == actionsEndDTO.playerId }
+            if (playerIdx != null && playerIdx != -1)
+                players.value?.removeAt(playerIdx)
         }
     }
 

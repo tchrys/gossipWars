@@ -11,6 +11,12 @@ object Snapshots {
     var troopsMovedPerRound: MutableList<MutableList<TroopsAction>> = mutableListOf()
     var armyImprovementsPerRound: MutableList<MutableList<ArmyRequest>> = mutableListOf()
 
+    fun cleanup() {
+        fightsPerRound.clear()
+        troopsMovedPerRound.clear()
+        armyImprovementsPerRound.clear()
+    }
+
     fun generateNewsFeed(): List<NewsFeedInfo> {
         val ans: MutableList<NewsFeedInfo> = mutableListOf()
         for (i in fightsPerRound.size - 1 downTo 0) {

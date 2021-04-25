@@ -62,6 +62,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var drawer: DrawerLayout
     private lateinit var toggle: ActionBarDrawerToggle
 
+    fun cleanup() {
+        roomsList.clear()
+        mRecyclerView?.adapter?.notifyDataSetChanged()
+        gameJoined = null
+        Toast.makeText(this, "Connection lost", Toast.LENGTH_LONG).show()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -76,6 +83,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setupPlayersSpinner()
         setupRoomList()
         setupRoomCreation()
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        setupRoomList()
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {

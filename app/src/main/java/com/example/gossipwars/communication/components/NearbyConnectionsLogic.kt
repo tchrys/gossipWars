@@ -147,6 +147,10 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
                         val actionsEndDTO: ActionEndDTO = SerializationUtils.deserialize(receivedBytes)
                         GlobalScope.launch { Game.acknowledgeActionEnd(actionsEndDTO) }
                     }
+                    MessageCode.SURRENDER.toLong() -> {
+                        val surrenderDTO: ActionEndDTO = SerializationUtils.deserialize(receivedBytes)
+                        GlobalScope.launch { Game.acknowledgePlayerSurrender(surrenderDTO) }
+                    }
                     MessageCode.PROPOSAL_RESPONSE.toLong() -> {
                         val proposalResponse: ProposalResponse = SerializationUtils.deserialize(receivedBytes)
                         GlobalScope.launch { Game.receiveProposalResponse(proposalResponse) }

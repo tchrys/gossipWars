@@ -31,7 +31,11 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".InGameActivity"
-            android:label="@string/title_activity_in_game" />
+            android:label="@string/title_activity_in_game">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.gossipwars.MainActivity" />
+        </activity>
         <activity
             android:name=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar">

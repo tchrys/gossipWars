@@ -287,94 +287,112 @@ class ActionsFragment : Fragment() {
 
     private fun subscribeToJoinProps() {
         Notifications.joinPropsNo.observe(viewLifecycleOwner, Observer {
-            joinCardText.text = getString(R.string.join_proposals, it)
-            joinProps = GameHelper.findAllPropsFromCategory(ProposalEnum.JOIN)?.map { proposal ->
-                Snapshots.generateContentFromJoinProposal(proposal as JoinProposal) }
+            if (Game.gameStarted) {
+                joinCardText.text = getString(R.string.join_proposals, it)
+                joinProps = GameHelper.findAllPropsFromCategory(ProposalEnum.JOIN)?.map { proposal ->
+                    Snapshots.generateContentFromJoinProposal(proposal as JoinProposal) }
+            }
         })
     }
 
     private fun subscribeToKickProps() {
         Notifications.kickPropsNo.observe(viewLifecycleOwner, Observer {
-            kickCardText.text = getString(R.string.kick_proposals, it)
-            kickProps = GameHelper.findAllPropsFromCategory(ProposalEnum.KICK)?.map { proposal ->
-                Snapshots.generateContentFromKickProposal(proposal as KickProposal)
+            if (Game.gameStarted) {
+                kickCardText.text = getString(R.string.kick_proposals, it)
+                kickProps = GameHelper.findAllPropsFromCategory(ProposalEnum.KICK)?.map { proposal ->
+                    Snapshots.generateContentFromKickProposal(proposal as KickProposal)
+                }
             }
         })
     }
 
     private fun subscribeToAttackProps() {
         Notifications.attackPropsNo.observe(viewLifecycleOwner, Observer {
-            attackCardText.text = getString(R.string.attack_proposals, it)
-            attackProps = GameHelper.findAllPropsFromCategory(ProposalEnum.ATTACK)?.map { proposal ->
-                Snapshots.generateContentFromAttackProposal(proposal as StrategyProposal)
+            if (Game.gameStarted) {
+                attackCardText.text = getString(R.string.attack_proposals, it)
+                attackProps = GameHelper.findAllPropsFromCategory(ProposalEnum.ATTACK)?.map { proposal ->
+                    Snapshots.generateContentFromAttackProposal(proposal as StrategyProposal)
+                }
             }
         })
     }
 
     private fun subscribeToDefenseProps() {
         Notifications.defensePropsNo.observe(viewLifecycleOwner, Observer {
-            defendCardText.text = getString(R.string.defense_proposals, it)
-            defendProps = GameHelper.findAllPropsFromCategory(ProposalEnum.DEFEND)?.map { proposal ->
-                Snapshots.generateContentFromDefendProposal(proposal as StrategyProposal)
+            if (Game.gameStarted) {
+                defendCardText.text = getString(R.string.defense_proposals, it)
+                defendProps = GameHelper.findAllPropsFromCategory(ProposalEnum.DEFEND)?.map { proposal ->
+                    Snapshots.generateContentFromDefendProposal(proposal as StrategyProposal)
+                }
             }
         })
     }
 
     private fun subscribeToNegotiateProps() {
         Notifications.negotiatePropsNo.observe(viewLifecycleOwner, Observer {
-            negotiateCardText.text = getString(R.string.negotiate_proposals, it)
-            negotiateProps = GameHelper.findMyArmyRequests().map { armyRequest ->
-                Snapshots.generateContentFromNegotiateProposal(armyRequest)
+            if (Game.gameStarted) {
+                negotiateCardText.text = getString(R.string.negotiate_proposals, it)
+                negotiateProps = GameHelper.findMyArmyRequests().map { armyRequest ->
+                    Snapshots.generateContentFromNegotiateProposal(armyRequest)
+                }
             }
         })
     }
 
     private fun subscribeToMyProps() {
         Notifications.myPropsNo.observe(viewLifecycleOwner, Observer {
-            yourRequestsText.text = getString(R.string.your_proposals, it)
+            if (Game.gameStarted) {
+                yourRequestsText.text = getString(R.string.your_proposals, it)
+            }
         })
     }
 
     private fun subscribeToChipStateEvents() {
         Notifications.myBonusTaken.observe(viewLifecycleOwner, Observer {
-            val noCapital: Boolean = GameHelper.findPlayerByUUID(Game.myId).capitalRegion == -1
-            val chipColor = if (it || noCapital) R.color.textError else R.color.light_green
-            context?.let { it1 -> ContextCompat.getColor(it1, chipColor) }
-                ?.let { it2 ->
-                    bonusChip.setTextColor(
-                        it2
-                    )
-                }
+            if (Game.gameStarted) {
+                val noCapital: Boolean = GameHelper.findPlayerByUUID(Game.myId).capitalRegion == -1
+                val chipColor = if (it || noCapital) R.color.textError else R.color.light_green
+                context?.let { it1 -> ContextCompat.getColor(it1, chipColor) }
+                    ?.let { it2 ->
+                        bonusChip.setTextColor(
+                            it2
+                        )
+                    }
+            }
         })
 
         Notifications.alliancesNoForMe.observe(viewLifecycleOwner, Observer { value ->
-            val chipColor = if (value == 0) R.color.textError else R.color.light_green
-            context?.let { ContextCompat.getColor(it, chipColor) }?.let {
-                kickChip.setTextColor(it)
-                joinChip.setTextColor(it)
-                attackChip.setTextColor(it)
-                defendChip.setTextColor(it)
+            if (Game.gameStarted) {
+                val chipColor = if (value == 0) R.color.textError else R.color.light_green
+                context?.let { ContextCompat.getColor(it, chipColor) }?.let {
+                    kickChip.setTextColor(it)
+                    joinChip.setTextColor(it)
+                    attackChip.setTextColor(it)
+                    defendChip.setTextColor(it)
+                }
             }
         })
     }
 
     private fun subscribeToTimer() {
         Notifications.roundTimer.observe(viewLifecycleOwner, Observer {
-            if (it > 5) {
-                (context as InGameActivity).supportActionBar?.title =
-                    getString(
-                        R.string.bar_title,
-                        fragmentBarTitle,
-                        GameHelper.roundTimeToString(it)
-                    )
-            } else {
-                (context as InGameActivity).supportActionBar?.title =
-                    HtmlCompat.fromHtml(
+            if (Game.gameStarted) {
+                if (it > 5) {
+                    (context as InGameActivity).supportActionBar?.title =
                         getString(
-                            R.string.bar_title_alert, fragmentBarTitle,
+                            R.string.bar_title,
+                            fragmentBarTitle,
                             GameHelper.roundTimeToString(it)
-                        ), HtmlCompat.FROM_HTML_MODE_LEGACY
-                    )
+                        )
+                } else {
+                    (context as InGameActivity).supportActionBar?.title =
+                        HtmlCompat.fromHtml(
+                            getString(
+                                R.string.bar_title_alert, fragmentBarTitle,
+                                GameHelper.roundTimeToString(it)
+                            ), HtmlCompat.FROM_HTML_MODE_LEGACY
+                        )
+                }
             }
         })
     }

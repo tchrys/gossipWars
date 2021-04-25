@@ -83,6 +83,12 @@ class MessengerActivity : AppCompatActivity() {
             }
             chatInput?.setText("")
         }
+
+        Notifications.roundStoppedFor.observe(this, androidx.lifecycle.Observer {
+            if (it > 10) {
+                finish()
+            }
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
