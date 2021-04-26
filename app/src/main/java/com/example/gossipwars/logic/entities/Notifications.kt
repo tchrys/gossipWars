@@ -8,12 +8,13 @@ import androidx.lifecycle.Observer
 import com.example.gossipwars.communication.messages.actions.ActionEndDTO
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.util.*
 
 
 object Notifications {
     var myBonusTaken: MutableLiveData<Boolean> = MutableLiveData<Boolean>().apply { value = false }
     var allianceNewStructure: MutableLiveData<Boolean> = MutableLiveData<Boolean>().apply { value = false }
-    var messageEmitter: MutableMap<Alliance, MutableLiveData<ChatMessage>> = mutableMapOf()
+    var messageEmitter: MutableMap<UUID, MutableLiveData<ChatMessage>> = mutableMapOf()
     var joinPropsNo: MutableLiveData<Int> = MutableLiveData<Int>().apply { value = 0 }
     var kickPropsNo: MutableLiveData<Int> = MutableLiveData<Int>().apply { value = 0 }
     var attackPropsNo: MutableLiveData<Int> = MutableLiveData<Int>().apply { value = 0 }

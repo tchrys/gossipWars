@@ -82,7 +82,7 @@ object Game {
         val alliance: Alliance = Alliance.initAlliance(player, name)
         alliances.add(alliance)
         allianceNewStructure.value = true
-        messageEmitter[alliance] = MutableLiveData()
+        messageEmitter[alliance.id] = MutableLiveData()
         alliancesNoForMe.value = alliancesNoForMe.value?.plus(1)
         return alliance
     }
@@ -302,7 +302,7 @@ object Game {
             alliance.addPlayer(findPlayerByUUID(myId))
             allianceNewStructure.postValue(true)
             alliancesNoForMe.postValue(alliancesNoForMe.value?.plus(1))
-            messageEmitter[alliance] = MutableLiveData()
+            messageEmitter[alliance.id] = MutableLiveData()
         }
     }
 
@@ -428,7 +428,7 @@ object Game {
                 }
             }
             alliance.addMessage(message.convertToEntity())
-            messageEmitter[alliance]?.postValue(message.convertToEntity())
+            messageEmitter[alliance.id]?.postValue(message.convertToEntity())
         }
     }
 
@@ -436,7 +436,7 @@ object Game {
         withContext(Dispatchers.Default) {
             val alliance: Alliance = findAllianceByUUID(message.allianceId)
             alliance.addMessage(message.convertToEntity())
-            messageEmitter[alliance]?.postValue(message.convertToEntity())
+            messageEmitter[alliance.id]?.postValue(message.convertToEntity())
         }
     }
 

@@ -63,7 +63,7 @@ class MessengerActivity : AppCompatActivity() {
         mRecyclerView?.adapter = mAdapter
         mRecyclerView?.layoutManager = LinearLayoutManager(this)
 
-        Notifications.messageEmitter[alliance]?.observe(this, Observer {
+        Notifications.messageEmitter[alliance.id]?.observe(this, Observer {
             mRecyclerView?.adapter?.notifyDataSetChanged()
 //            mRecyclerView?.adapter?.notifyItemInserted(alliance.messageList.size)
 //            mRecyclerView?.scrollToPosition(alliance.messageList.size)
