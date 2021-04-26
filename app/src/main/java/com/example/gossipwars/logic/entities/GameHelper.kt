@@ -34,7 +34,22 @@ object GameHelper {
             alliance.playersInvolved.any { player -> player.id == playerId }
         }.toMutableList()
 
-    fun findAllProposals(): List<Proposal>? = findAlliancesForPlayer(Game.myId)?.flatMap { alliance -> alliance.proposalsList }
+    fun findAllianceWithJoinOption(playerId: UUID): MutableList<Alliance>? =
+        findAlliancesForPlayer(playerId)?.filter { alliance -> alliance.playersInvolved.size < Game.players.value?.size!! }
+            ?.toMutableList()
+
+    fun existsAllianceWithJoinOption(playerId: UUID): Boolean =
+        !findAllianceWithJoinOption(playerId).isNullOrEmpty()
+
+    fun alliancesWithAtLeast3(playerId: UUID): MutableList<Alliance>? =
+        findAlliancesForPlayer(playerId)?.filter { alliance -> alliance.playersInvolved.size >= 3 }
+            ?.toMutableList()
+
+    fun existsAlliancesWith3(playerId: UUID): Boolean =
+        !alliancesWithAtLeast3(playerId).isNullOrEmpty()
+
+    fun findAllProposals(): List<Proposal>? =
+        findAlliancesForPlayer(Game.myId)?.flatMap { alliance -> alliance.proposalsList }
 
     fun findAllPropsFromCategory(proposalEnum: ProposalEnum): List<Proposal>? =
         findAllProposals()?.filter { proposal ->
@@ -44,7 +59,8 @@ object GameHelper {
     fun findMyProposals(): List<Proposal>? =
         findAllProposals()?.filter { proposal -> proposal.initiator.id == Game.myId }
 
-    fun findMyArmyRequests(): MutableList<ArmyRequest> = findPlayerByUUID(Game.myId).armyRequestReceived
+    fun findMyArmyRequests(): MutableList<ArmyRequest> =
+        findPlayerByUUID(Game.myId).armyRequestReceived
 
     fun findPlayersOutsideAlliance(allianceName: String): MutableList<Player> {
         val answer = mutableListOf<Player>()
@@ -61,16 +77,41 @@ object GameHelper {
 
     fun findAllRegions(): List<Region> = Game.regions.filter { region -> region.occupiedBy != null }
 
+    fun Int?.isGreaterThan(other: Int) = this != null && this > other
+
     fun findAttackableRegions(): List<Region> =
-        Game.regions.filter { region -> region.occupiedBy != null && region.occupiedBy!!.id != Game.myId }
+        Game.regions.filter { region ->
+            region.occupiedBy != null &&
+                    region.occupiedBy!!.id != Game.myId &&
+                    soldiersForRegion(region.name, Game.myId).isGreaterThan(0)
+        }
+
+    fun findDefendableRegions(): List<Region> =
+        Game.regions.filter { region ->
+            region.occupiedBy != null &&
+                    (region.occupiedBy!!.id == Game.myId || soldiersForRegion(region.name, Game.myId).isGreaterThan(0))
+        }
 
     fun findRegionHolderId(regionName: String): Player? = findRegionByName(regionName)?.occupiedBy
+
+    fun canMoveFromThisRegion(region: Region): Boolean {
+        val soldierForRegions: Int? = soldiersForRegion(region.name, Game.myId)
+        if (soldierForRegions == null || soldierForRegions == 0) {
+            return false
+        }
+        val soldiersAlreadyUsed: Int? = findPlayerByUUID(Game.myId).soldiersUsedThisRound[region.id]
+        if (soldiersAlreadyUsed != null && soldiersAlreadyUsed == soldierForRegions) {
+            return false
+        }
+        return true
+    }
 
     fun iCanAttackThisRegion(regionName: String): Boolean {
         val region: Region = findRegionByName(regionName)!!
         val meAsAPlayer: Player = findPlayerByUUID(Game.myId)
         if (region.occupiedBy == null || region.occupiedBy!!.id == Game.myId
-            || !meAsAPlayer.army.sizePerRegion.containsKey(region.id))
+            || !meAsAPlayer.army.sizePerRegion.containsKey(region.id)
+        )
             return false
         return true
     }
@@ -89,10 +130,17 @@ object GameHelper {
 
     fun findRegionPopulation(regionName: String): List<RegionPlayerInfo>? {
         val region: Region = findRegionByName(regionName)!!
-        return Game.players.value?.
-        filter { player: Player -> player.army.sizePerRegion.containsKey(region.id) }
-            ?.map { player -> RegionPlayerInfo(player.username,
-                player.army.sizePerRegion[region.id]!!, regionName) }
+        return Game.players.value?.filter { player: Player ->
+            player.army.sizePerRegion.containsKey(
+                region.id
+            )
+        }
+            ?.map { player ->
+                RegionPlayerInfo(
+                    player.username,
+                    player.army.sizePerRegion[region.id]!!, regionName
+                )
+            }
     }
 
     fun iAmTheHost(): Boolean =
@@ -159,7 +207,8 @@ object GameHelper {
     fun findRegionAttackInitiator(regionId: Int): Player? {
         return Game.strategyActions.filter { strategyAction ->
             strategyAction.proposalEnum == ProposalEnum.ATTACK &&
-                    strategyAction.targetRegion == regionId }.firstOrNull()?.initiator
+                    strategyAction.targetRegion == regionId
+        }.firstOrNull()?.initiator
     }
 
     fun String.camelCaseToSpaced(): String {
@@ -170,7 +219,7 @@ object GameHelper {
 
     fun String.spacedToCamelCase(): String = this.filter { !it.isWhitespace() }
 
-    fun getColorByPlayerIdx(idx: Int) = when(idx) {
+    fun getColorByPlayerIdx(idx: Int) = when (idx) {
         0 -> Color.GREEN
         1 -> Color.BLUE
         2 -> Color.CYAN
@@ -183,7 +232,7 @@ object GameHelper {
         else -> Color.RED
     }
 
-    fun getColorStringByPlayerIdx(idx: Int): String = when(idx) {
+    fun getColorStringByPlayerIdx(idx: Int): String = when (idx) {
         0 -> "green"
         1 -> "blue"
         2 -> "cyan"

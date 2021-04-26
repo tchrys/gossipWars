@@ -102,10 +102,10 @@ class RegionDialogFragment(private val regionName: String) : DialogFragment() {
                 }
             }
         }
-
+        val meAsAPlayer: Player = GameHelper.findPlayerByUUID(Game.myId)
         val regionsRadioGroup: RadioGroup = regionView.findViewById(R.id.neighborRegionRadioGroup)
         dialogRegion.getNeighborsList().filter { region ->
-            GameHelper.soldiersForRegion(region.name, Game.myId).isGreaterThan(0)
+            GameHelper.canMoveFromThisRegion(region)
         }.forEach { region: Region ->
             val regionButton = RadioButton(context)
             regionButton.text = region.name.camelCaseToSpaced()
@@ -121,7 +121,6 @@ class RegionDialogFragment(private val regionName: String) : DialogFragment() {
             )
             soldiersSlider.visibility = View.GONE
         } else {
-            val meAsAPlayer: Player = GameHelper.findPlayerByUUID(Game.myId)
             regionsRadioGroup.setOnCheckedChangeListener { _, checkedIdx ->
                 sizeSelected = 0
                 soldiersSlider.value = 0.toFloat()

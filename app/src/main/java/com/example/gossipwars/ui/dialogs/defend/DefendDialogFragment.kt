@@ -57,7 +57,7 @@ class DefendDialogFragment : DialogFragment() {
             allianceRadioGroup.addView(allianceButton)
         }
 
-        val regions: List<Region>? = GameHelper.findAllRegions()
+        val regions: List<Region>? = GameHelper.findDefendableRegions()
         regions?.forEach { region: Region ->
             val regionButton = RadioButton(context)
             regionButton.text = region.name.camelCaseToSpaced()

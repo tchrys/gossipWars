@@ -9,14 +9,16 @@ import android.view.View
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.Transformations.map
 import com.example.gossipwars.R
 import com.example.gossipwars.communication.messages.actions.AllianceInvitationDTO
 import com.example.gossipwars.logic.entities.Game
 import com.example.gossipwars.logic.entities.GameHelper
 import com.example.gossipwars.logic.entities.Player
 import java.lang.IllegalStateException
+import java.util.Locale.filter
 
-class JoinDialogFragment: DialogFragment() {
+class JoinDialogFragment : DialogFragment() {
     internal lateinit var listener: JoinDialogListener
     var usernameSelected: String? = null
     var allianceNameSelected: String? = null
@@ -41,11 +43,13 @@ class JoinDialogFragment: DialogFragment() {
         val inflater = requireActivity().layoutInflater
         val builder = AlertDialog.Builder(activity)
         val joinProposalView: View = inflater.inflate(R.layout.alliance_join_form, null)
-        val allianceRadioGroup: RadioGroup = joinProposalView.findViewById(R.id.allianceJoinRadioGroup)
-        val playersRadioGroup: RadioGroup = joinProposalView.findViewById(R.id.playersJoinRadioGroup)
+        val allianceRadioGroup: RadioGroup =
+            joinProposalView.findViewById(R.id.allianceJoinRadioGroup)
+        val playersRadioGroup: RadioGroup =
+            joinProposalView.findViewById(R.id.playersJoinRadioGroup)
 
-        val alliances: List<AllianceInvitationDTO>? = GameHelper.findAlliancesForPlayer(Game.myId)?.
-                                                        map { alliance -> alliance.convertToDTO() }
+        val alliances: List<AllianceInvitationDTO>? = GameHelper.findAllianceWithJoinOption(Game.myId)
+            ?.map { alliance -> alliance.convertToDTO() }
         alliances?.forEach { allianceInvitationDTO: AllianceInvitationDTO ->
             val allianceButton = RadioButton(context)
             allianceButton.text = allianceInvitationDTO.name
@@ -58,7 +62,8 @@ class JoinDialogFragment: DialogFragment() {
             val checkedRadioButton = allianceRadioGroup.findViewById<RadioButton>(checkedId)
             allianceNameSelected = checkedRadioButton.text.toString()
             usernameSelected = null
-            val players: MutableList<Player>? = GameHelper.findPlayersOutsideAlliance(checkedRadioButton.text.toString())
+            val players: MutableList<Player>? =
+                GameHelper.findPlayersOutsideAlliance(checkedRadioButton.text.toString())
             playersRadioGroup.removeAllViews()
             players?.forEach { player: Player ->
                 var playerButton = RadioButton(context)
@@ -90,7 +95,7 @@ class JoinDialogFragment: DialogFragment() {
 
         builder.setView(joinProposalView)
         builder.setTitle("Select alliance and player to join")
-            .setPositiveButton("Done") { _, _  ->
+            .setPositiveButton("Done") { _, _ ->
                 listener.onDialogPositiveClick(
                     JoinDialogResult(
                         allianceNameSelected,

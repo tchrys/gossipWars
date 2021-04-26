@@ -45,7 +45,7 @@ class KickDialogFragment : DialogFragment() {
         val playersRadioGroup: RadioGroup =
             kickProposalView.findViewById(R.id.playersKickRadioGroup)
 
-        val alliances: List<AllianceInvitationDTO>? = GameHelper.findAlliancesForPlayer(Game.myId)
+        val alliances: List<AllianceInvitationDTO>? = GameHelper.alliancesWithAtLeast3(Game.myId)
             ?.map { alliance -> alliance.convertToDTO() }
         alliances?.forEach { allianceInvitationDTO: AllianceInvitationDTO ->
             val allianceButton = RadioButton(context)

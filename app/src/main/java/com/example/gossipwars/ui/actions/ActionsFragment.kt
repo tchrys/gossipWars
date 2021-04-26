@@ -117,6 +117,8 @@ class ActionsFragment : Fragment() {
         kickChip.setOnClickListener {
             if (Notifications.alliancesNoForMe.value!! == 0) {
                 showSnackbarForError("You must belong to an alliance to do this action")
+            } else if (!GameHelper.existsAlliancesWith3(Game.myId)) {
+                showSnackbarForError("There is no alliance with at least 3 players")
             } else {
                 fragmentManager?.let {
                     KickDialogFragment()
@@ -130,6 +132,11 @@ class ActionsFragment : Fragment() {
         joinChip.setOnClickListener {
             if (Notifications.alliancesNoForMe.value!! == 0) {
                 showSnackbarForError("You must belong to an alliance to do this action")
+            } else if (Game.players.value?.size!! <= 2 || !GameHelper.existsAllianceWithJoinOption(
+                    Game.myId
+                )
+            ) {
+                showSnackbarForError("Not enough players")
             } else {
                 fragmentManager?.let {
                     JoinDialogFragment()
@@ -143,6 +150,8 @@ class ActionsFragment : Fragment() {
         attackChip.setOnClickListener {
             if (Notifications.alliancesNoForMe.value!! == 0) {
                 showSnackbarForError("You must belong to an alliance to do this action")
+            } else if (GameHelper.findAttackableRegions().isEmpty()) {
+                showSnackbarForError("You must have soldiers in enemy regions to do this")
             } else {
                 fragmentManager?.let {
                     AttackDialogFragment()
@@ -156,6 +165,8 @@ class ActionsFragment : Fragment() {
         defendChip.setOnClickListener {
             if (Notifications.alliancesNoForMe.value!! == 0) {
                 showSnackbarForError("You must belong to an alliance to do this action")
+            } else if (GameHelper.findDefendableRegions().isEmpty()) {
+                showSnackbarForError("No region match this action")
             } else {
                 fragmentManager?.let {
                     DefendDialogFragment()
@@ -271,10 +282,18 @@ class ActionsFragment : Fragment() {
                         "Your requests",
                         GameHelper.findMyProposals()?.map { proposal ->
                             when (proposal.proposalEnum) {
-                                ProposalEnum.KICK -> Snapshots.generateContentFromKickProposal(proposal as KickProposal)
-                                ProposalEnum.JOIN -> Snapshots.generateContentFromJoinProposal(proposal as JoinProposal)
-                                ProposalEnum.ATTACK -> Snapshots.generateContentFromAttackProposal(proposal as StrategyProposal)
-                                ProposalEnum.DEFEND -> Snapshots.generateContentFromDefendProposal(proposal as StrategyProposal)
+                                ProposalEnum.KICK -> Snapshots.generateContentFromKickProposal(
+                                    proposal as KickProposal
+                                )
+                                ProposalEnum.JOIN -> Snapshots.generateContentFromJoinProposal(
+                                    proposal as JoinProposal
+                                )
+                                ProposalEnum.ATTACK -> Snapshots.generateContentFromAttackProposal(
+                                    proposal as StrategyProposal
+                                )
+                                ProposalEnum.DEFEND -> Snapshots.generateContentFromDefendProposal(
+                                    proposal as StrategyProposal
+                                )
                             }
                         } as ArrayList<ProposalVoteContent>
                     ).show(it, "yourReqDialog")
@@ -289,8 +308,10 @@ class ActionsFragment : Fragment() {
         Notifications.joinPropsNo.observe(viewLifecycleOwner, Observer {
             if (Game.gameStarted) {
                 joinCardText.text = getString(R.string.join_proposals, it)
-                joinProps = GameHelper.findAllPropsFromCategory(ProposalEnum.JOIN)?.map { proposal ->
-                    Snapshots.generateContentFromJoinProposal(proposal as JoinProposal) }
+                joinProps =
+                    GameHelper.findAllPropsFromCategory(ProposalEnum.JOIN)?.map { proposal ->
+                        Snapshots.generateContentFromJoinProposal(proposal as JoinProposal)
+                    }
             }
         })
     }
@@ -299,9 +320,10 @@ class ActionsFragment : Fragment() {
         Notifications.kickPropsNo.observe(viewLifecycleOwner, Observer {
             if (Game.gameStarted) {
                 kickCardText.text = getString(R.string.kick_proposals, it)
-                kickProps = GameHelper.findAllPropsFromCategory(ProposalEnum.KICK)?.map { proposal ->
-                    Snapshots.generateContentFromKickProposal(proposal as KickProposal)
-                }
+                kickProps =
+                    GameHelper.findAllPropsFromCategory(ProposalEnum.KICK)?.map { proposal ->
+                        Snapshots.generateContentFromKickProposal(proposal as KickProposal)
+                    }
             }
         })
     }
@@ -310,9 +332,10 @@ class ActionsFragment : Fragment() {
         Notifications.attackPropsNo.observe(viewLifecycleOwner, Observer {
             if (Game.gameStarted) {
                 attackCardText.text = getString(R.string.attack_proposals, it)
-                attackProps = GameHelper.findAllPropsFromCategory(ProposalEnum.ATTACK)?.map { proposal ->
-                    Snapshots.generateContentFromAttackProposal(proposal as StrategyProposal)
-                }
+                attackProps =
+                    GameHelper.findAllPropsFromCategory(ProposalEnum.ATTACK)?.map { proposal ->
+                        Snapshots.generateContentFromAttackProposal(proposal as StrategyProposal)
+                    }
             }
         })
     }
@@ -321,9 +344,10 @@ class ActionsFragment : Fragment() {
         Notifications.defensePropsNo.observe(viewLifecycleOwner, Observer {
             if (Game.gameStarted) {
                 defendCardText.text = getString(R.string.defense_proposals, it)
-                defendProps = GameHelper.findAllPropsFromCategory(ProposalEnum.DEFEND)?.map { proposal ->
-                    Snapshots.generateContentFromDefendProposal(proposal as StrategyProposal)
-                }
+                defendProps =
+                    GameHelper.findAllPropsFromCategory(ProposalEnum.DEFEND)?.map { proposal ->
+                        Snapshots.generateContentFromDefendProposal(proposal as StrategyProposal)
+                    }
             }
         })
     }
