@@ -13,6 +13,8 @@ data class Alliance(val id: UUID): Serializable {
     lateinit var founderId: UUID;
     val messageList: ArrayList<ChatMessage> = ArrayList()
     val proposalsList : MutableList<Proposal> = mutableListOf()
+    var messagesSeen = true
+    var lastMessage: Calendar? = null
 
 
     companion object Factory {

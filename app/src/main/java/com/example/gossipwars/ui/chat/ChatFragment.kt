@@ -8,17 +8,17 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gossipwars.InGameActivity
 import com.example.gossipwars.R
-import com.example.gossipwars.logic.entities.Alliance
-import com.example.gossipwars.logic.entities.Game
-import com.example.gossipwars.logic.entities.GameHelper
-import com.example.gossipwars.logic.entities.Notifications
+import com.example.gossipwars.logic.entities.*
 import com.example.gossipwars.ui.messenger.MessengerActivity
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 class ChatFragment : Fragment() {
@@ -41,10 +41,21 @@ class ChatFragment : Fragment() {
         mRecyclerView?.adapter = mAdapter
         mRecyclerView?.layoutManager = LinearLayoutManager(this.activity)
 
+        (context as InGameActivity).chatSeen()
+
         Notifications.allianceNewStructure.observe(viewLifecycleOwner, Observer {
             alliances.clear()
             GameHelper.findAlliancesForPlayer(Game.myId)?.forEach { alliance: Alliance -> alliances.add(alliance) }
             mRecyclerView?.adapter?.notifyDataSetChanged()
+
+            Notifications.messageEmitter.entries.forEach { mutableEntry: MutableMap.MutableEntry<UUID, MutableLiveData<ChatMessage>> ->
+                mutableEntry.value.observe(viewLifecycleOwner, Observer {
+                    val lastMessage: Calendar? = GameHelper.findAllianceByUUID(mutableEntry.key).lastMessage
+                    if (lastMessage != null && lastMessage < it.messageDate) {
+                        updateAllianceState(mutableEntry.key, false)
+                    }
+                })
+            }
         })
 
         val addChatFab: View = root.findViewById(R.id.add_chat_fab)
@@ -61,9 +72,18 @@ class ChatFragment : Fragment() {
     }
 
     fun enterAllianceChat(alliance: Alliance) {
+        updateAllianceState(alliance.id, true)
         val intent = Intent(context, MessengerActivity::class.java).apply {}
         intent.putExtra("alliance", alliance.id)
         startActivity(intent)
+    }
+
+    private fun updateAllianceState(allianceId: UUID, state: Boolean) {
+        val idx = alliances.indexOfFirst { alliance -> alliance.id == allianceId }
+        if (idx != -1) {
+            alliances[idx].messagesSeen = state
+            mRecyclerView?.adapter?.notifyItemChanged(idx)
+        }
     }
 
     private fun subscribeToTimer() {

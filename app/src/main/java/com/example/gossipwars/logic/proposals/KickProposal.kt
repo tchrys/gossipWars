@@ -15,9 +15,13 @@ class KickProposal @JvmOverloads constructor(override val alliance: Alliance,
                                              override var actionSent: Boolean = false) :
     Proposal(alliance, target, initiator, votes, proposalEnum, proposalId, actionSent) {
 
+    init {
+        votes[initiator] = true
+    }
+
     override fun allPlayersVoted(): Boolean = alliance.allianceSize() == votes.size + 1
 
-    override fun voteResult(): Boolean = votes.values.filter { b -> b }.size > votes.size / 2
+    override fun voteResult(): Boolean = votes.values.filter { b -> b }.size > alliance.allianceSize() / 2
 
     override fun createAction() : MembersAction =
         MembersAction(

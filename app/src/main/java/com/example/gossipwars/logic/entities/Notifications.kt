@@ -86,7 +86,7 @@ object Notifications {
         if (roundTimer.value!! > 0)
             roundTimer.value = roundTimer.value?.minus(1)
         if (roundTimer.value == 0)
-            GlobalScope.launch { Game.sendActionEnd(ActionEndDTO(Game.myId)) }
+            Game.sendActionEnd(ActionEndDTO(Game.myId))
     }
 
 }

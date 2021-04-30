@@ -65,6 +65,8 @@ class MessengerActivity : AppCompatActivity() {
 
         Notifications.messageEmitter[alliance.id]?.observe(this, Observer {
             mRecyclerView?.adapter?.notifyDataSetChanged()
+
+            alliance.lastMessage = it.messageDate
 //            mRecyclerView?.adapter?.notifyItemInserted(alliance.messageList.size)
 //            mRecyclerView?.scrollToPosition(alliance.messageList.size)
         })
@@ -89,6 +91,11 @@ class MessengerActivity : AppCompatActivity() {
                 finish()
             }
         })
+    }
+
+    override fun onDestroy() {
+        alliance.messagesSeen = true
+        super.onDestroy()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

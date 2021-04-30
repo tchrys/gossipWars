@@ -65,6 +65,8 @@ class ActionsFragment : Fragment() {
         val root = inflater.inflate(R.layout.fragment_actions, container, false)
         fragmentBarTitle = (context as InGameActivity).supportActionBar?.title.toString()
 
+        (context as InGameActivity).proposalsSeen()
+
         subscribeToTimer()
 
         kickChip = root.findViewById(R.id.kickChip)

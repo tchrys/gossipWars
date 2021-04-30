@@ -1,6 +1,8 @@
 package com.example.gossipwars
 
+import android.graphics.ColorFilter
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -9,6 +11,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NavUtils
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
@@ -43,6 +46,7 @@ import com.example.gossipwars.ui.dialogs.region.RegionDialogResult
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -59,11 +63,12 @@ class InGameActivity : AppCompatActivity(),
     VoteNegotiateDialog.NegotiateDialogListener {
 
     private lateinit var frameLayout: FrameLayout
+    private lateinit var navView: BottomNavigationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_in_game)
-        val navView: BottomNavigationView = findViewById(R.id.nav_view)
+        navView = findViewById(R.id.nav_view)
         val navController = findNavController(R.id.nav_host_fragment)
         frameLayout = findViewById(R.id.progress_view)
         // Passing each menu ID as a set of Ids because each
@@ -78,6 +83,27 @@ class InGameActivity : AppCompatActivity(),
         navView.setupWithNavController(navController)
         Game.sendMyInfo()
 
+        Notifications.allianceNewStructure.observe(this, androidx.lifecycle.Observer {
+            if (!navView.menu.getItem(1).isChecked && Game.alliances.size > 0) {
+                navView.menu.getItem(1).setIcon(R.drawable.ic_chat_notification)
+                Notifications.messageEmitter.values.forEach { mutableLiveData: MutableLiveData<ChatMessage> ->
+                    mutableLiveData.observe(this, androidx.lifecycle.Observer {
+                        navView.menu.getItem(1).setIcon(R.drawable.ic_chat_notification)
+                    })
+                }
+            }
+        })
+
+        listOf(Notifications.joinPropsNo, Notifications.kickPropsNo, Notifications.attackPropsNo,
+            Notifications.defensePropsNo, Notifications.negotiatePropsNo)
+            .forEach { mutableLiveData: MutableLiveData<Int> ->
+                mutableLiveData.observe(this, androidx.lifecycle.Observer {
+                    if (it > 0 && !navView.menu.getItem(3).isChecked) {
+                        navView.menu.getItem(3).setIcon(R.drawable.ic_actions_notification)
+                    }
+                })
+            }
+
         Notifications.roundOngoing.observe(this, androidx.lifecycle.Observer {
             frameLayout.visibility = if (it) View.GONE else View.VISIBLE
         })
@@ -90,6 +116,14 @@ class InGameActivity : AppCompatActivity(),
             }
         })
 
+    }
+
+    fun chatSeen() {
+        navView.menu.getItem(1).setIcon(R.drawable.ic_chat)
+    }
+
+    fun proposalsSeen() {
+        navView.menu.getItem(3).setIcon(R.drawable.ic_actions)
     }
 
     override fun onBackPressed() {

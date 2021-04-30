@@ -1,5 +1,6 @@
 package com.example.gossipwars.ui.chat
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -52,6 +53,9 @@ class AlliancesListAdapter(
         // retrieve the data for that position
         val mCurrent: Alliance = alliancesList[position]
         holder.allianceNameTextView.text = mCurrent.name
+        if (!mCurrent.messagesSeen) {
+            holder.allianceNameTextView.setTextColor(Color.RED)
+        }
         var allianceMembersString = ""
         for (i in mCurrent.playersInvolved.indices) {
             allianceMembersString += mCurrent.playersInvolved[i].username
