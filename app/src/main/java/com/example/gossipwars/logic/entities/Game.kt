@@ -1,6 +1,8 @@
 package com.example.gossipwars.logic.entities
 
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
+import com.example.gossipwars.InGameActivity
 import com.example.gossipwars.MainActivity
 import com.example.gossipwars.communication.messages.MessageCode
 import com.example.gossipwars.communication.messages.actions.*
@@ -42,6 +44,7 @@ object Game {
     var idToEndpoint: MutableMap<UUID, String> = mutableMapOf()
     var roomInfo: RoomInfoDTO? = null
     lateinit var mainActivity: MainActivity
+    lateinit var inGameActivity: InGameActivity
 
     var players = MutableLiveData<MutableList<Player>>().apply { value = mutableListOf() }
     var regions: MutableList<Region> = mutableListOf()
@@ -162,6 +165,8 @@ object Game {
         val meAsAPlayer = findPlayerByUUID(myId)
         meAsAPlayer.soldiersUsedThisRound.clear()
         meAsAPlayer.armyRequestReceived.clear()
+
+        playersWithAllActionsSent.clear()
         strategyActions.clear()
         troopsActions.clear()
         armyActions.clear()
@@ -441,13 +446,17 @@ object Game {
         }
     }
 
-    suspend fun acknowledgeActionEnd(actionsEndDTO: ActionEndDTO) {
-        withContext(Dispatchers.Default) {
-            playersWithAllActionsSent.add(actionsEndDTO.playerId)
-            if (playersWithAllActionsSent.size == players.value?.size) {
-                // all players sent their actions, can start round end processing
-                roundEndCompute()
-            }
+    fun acknowledgeActionEnd(actionsEndDTO: ActionEndDTO) {
+        playersWithAllActionsSent.add(actionsEndDTO.playerId)
+
+        Toast.makeText(
+            inGameActivity, playersWithAllActionsSent.size.toString() + "/" +
+                    players.value?.size.toString(), Toast.LENGTH_SHORT
+        ).show()
+
+        if (playersWithAllActionsSent.size == players.value?.size) {
+            // all players sent their actions, can start round end processing
+            roundEndCompute()
         }
     }
 
@@ -463,6 +472,10 @@ object Game {
             }
         }
         playersWithAllActionsSent.add(myId)
+        Toast.makeText(
+            inGameActivity, playersWithAllActionsSent.size.toString() + "/" +
+                    players.value?.size.toString(), Toast.LENGTH_SHORT
+        ).show()
         if (playersWithAllActionsSent.size == players.value?.size) {
             roundEndCompute()
         }
@@ -609,6 +622,12 @@ object Game {
             }
         }
         playersReadyForNewRound.add(myId)
+
+        Toast.makeText(
+            inGameActivity, playersReadyForNewRound.size.toString() + "/" +
+                    players.value?.size.toString() + " started", Toast.LENGTH_SHORT
+        ).show()
+
         if (playersReadyForNewRound.size == players.value?.size) {
             Notifications.roundOngoing.postValue(true)
             Notifications.myBonusTaken.postValue(false)
@@ -617,16 +636,20 @@ object Game {
         }
     }
 
-    suspend fun acknowledgeStartRound(startRoundDTO: StartRoundDTO) {
-        withContext(Dispatchers.Default) {
-            playersReadyForNewRound.add(startRoundDTO.playerId)
-            if (playersReadyForNewRound.size == players.value?.size) {
-                // all players are ready to start a new round
-                Notifications.roundOngoing.postValue(true)
-                Notifications.myBonusTaken.postValue(false)
-                crtRoundNo.postValue(crtRoundNo.value?.plus(1))
-                playersReadyForNewRound.clear()
-            }
+    fun acknowledgeStartRound(startRoundDTO: StartRoundDTO) {
+        playersReadyForNewRound.add(startRoundDTO.playerId)
+
+        Toast.makeText(
+            inGameActivity, playersReadyForNewRound.size.toString() + "/" +
+                    players.value?.size.toString() + " started", Toast.LENGTH_SHORT
+        ).show()
+
+        if (playersReadyForNewRound.size == players.value?.size) {
+            // all players are ready to start a new round
+            Notifications.roundOngoing.postValue(true)
+            Notifications.myBonusTaken.postValue(false)
+            crtRoundNo.postValue(crtRoundNo.value?.plus(1))
+            playersReadyForNewRound.clear()
         }
     }
 

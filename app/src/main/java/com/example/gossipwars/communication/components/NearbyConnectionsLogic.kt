@@ -145,7 +145,7 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
                     }
                     MessageCode.ACTION_END.toLong() -> {
                         val actionsEndDTO: ActionEndDTO = SerializationUtils.deserialize(receivedBytes)
-                        GlobalScope.launch { Game.acknowledgeActionEnd(actionsEndDTO) }
+                        Game.acknowledgeActionEnd(actionsEndDTO)
                     }
                     MessageCode.SURRENDER.toLong() -> {
                         val surrenderDTO: ActionEndDTO = SerializationUtils.deserialize(receivedBytes)
@@ -185,7 +185,7 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
                     }
                     MessageCode.START_ROUND.toLong() -> {
                         val startRoundDTO: StartRoundDTO = SerializationUtils.deserialize(receivedBytes)
-                        GlobalScope.launch { Game.acknowledgeStartRound(startRoundDTO) }
+                        Game.acknowledgeStartRound(startRoundDTO)
                     }
                 }
             }

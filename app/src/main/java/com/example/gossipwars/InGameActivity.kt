@@ -81,6 +81,10 @@ class InGameActivity : AppCompatActivity(),
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+
+        Game.inGameActivity = this
+
         Game.sendMyInfo()
 
         Notifications.allianceNewStructure.observe(this, androidx.lifecycle.Observer {
