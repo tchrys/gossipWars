@@ -90,15 +90,13 @@ class RegionDialogFragment(private val regionName: String) : DialogFragment() {
             attackButton.setOnClickListener {
                 val targetId: UUID? = dialogRegion.occupiedBy?.id
                 if (targetId != null) {
-                    GlobalScope.launch {
-                        Game.sendStrategyAction(
-                            StrategyAction(
-                                GameHelper.findPlayerByUUID(Game.myId),
-                                GameHelper.findPlayerByUUID(targetId),
-                                dialogRegion.id, mutableListOf(), ProposalEnum.ATTACK
-                            )
+                    Game.sendStrategyAction(
+                        StrategyAction(
+                            GameHelper.findPlayerByUUID(Game.myId),
+                            GameHelper.findPlayerByUUID(targetId),
+                            dialogRegion.id, mutableListOf(), ProposalEnum.ATTACK
                         )
-                    }
+                    )
                 }
             }
         }
@@ -125,7 +123,9 @@ class RegionDialogFragment(private val regionName: String) : DialogFragment() {
                 sizeSelected = 0
                 soldiersSlider.value = 0.toFloat()
                 val checkedRadioButton = regionsRadioGroup.findViewById<RadioButton>(checkedIdx)
-                regionSelected = GameHelper.findRegionByName(checkedRadioButton.text.toString().spacedToCamelCase())
+                regionSelected = GameHelper.findRegionByName(
+                    checkedRadioButton.text.toString().spacedToCamelCase()
+                )
                 val soldiersNo: Int? =
                     regionSelected?.name?.let { GameHelper.soldiersForRegion(it, Game.myId) }
                 howManySoldiers.text = getString(R.string.how_many_soldiers_to_move)

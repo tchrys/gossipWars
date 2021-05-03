@@ -65,8 +65,8 @@ class ChatFragment : Fragment() {
         }
 
         Game.players.observe(viewLifecycleOwner, Observer {
-            Toast.makeText(context, it.joinToString(",") { player -> player.username },
-                                Toast.LENGTH_LONG).show()
+//            Toast.makeText(context, it.joinToString(",") { player -> player.username },
+//                                Toast.LENGTH_LONG).show()
         })
         return root
     }

@@ -98,8 +98,10 @@ class InGameActivity : AppCompatActivity(),
             }
         })
 
-        listOf(Notifications.joinPropsNo, Notifications.kickPropsNo, Notifications.attackPropsNo,
-            Notifications.defensePropsNo, Notifications.negotiatePropsNo)
+        listOf(
+            Notifications.joinPropsNo, Notifications.kickPropsNo, Notifications.attackPropsNo,
+            Notifications.defensePropsNo, Notifications.negotiatePropsNo
+        )
             .forEach { mutableLiveData: MutableLiveData<Int> ->
                 mutableLiveData.observe(this, androidx.lifecycle.Observer {
                     if (it > 0 && !navView.menu.getItem(3).isChecked) {
@@ -315,11 +317,9 @@ class InGameActivity : AppCompatActivity(),
 
     override fun onDialogPositiveClick(dialog: VoteProposalsResult) {
         dialog.responseList.forEach {
-            GlobalScope.launch {
-                Game.sendProposalResponse(
-                    ProposalResponse(it.allianceId, it.proposalId, it.response, Game.myId)
-                )
-            }
+            Game.sendProposalResponse(
+                ProposalResponse(it.allianceId, it.proposalId, it.response, Game.myId)
+            )
             val alliance = GameHelper.findAllianceByUUID(it.allianceId)
             val propEnum: ProposalEnum? = alliance.proposalsList.find { proposal ->
                 proposal.proposalId == it.proposalId

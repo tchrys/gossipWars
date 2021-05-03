@@ -133,7 +133,7 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
                     }
                     MessageCode.MEMBERS_ACTION.toLong() -> {
                         val membersAction: MembersActionDTO = SerializationUtils.deserialize(receivedBytes)
-                        GlobalScope.launch { Game.acknowledgeMembersAction(membersAction) }
+                        Game.acknowledgeMembersAction(membersAction)
                     }
                     MessageCode.MESSAGE_DTO.toLong() -> {
                         val messageDTO: ChatMessageDTO = SerializationUtils.deserialize(receivedBytes)
@@ -153,7 +153,7 @@ class NearbyConnectionsLogic(val mainActivity: MainActivity) {
                     }
                     MessageCode.PROPOSAL_RESPONSE.toLong() -> {
                         val proposalResponse: ProposalResponse = SerializationUtils.deserialize(receivedBytes)
-                        GlobalScope.launch { Game.receiveProposalResponse(proposalResponse) }
+                        Game.receiveProposalResponse(proposalResponse)
                     }
                     MessageCode.STRATEGY_ACTION.toLong() -> {
                         val strategyActionDTO: StrategyActionDTO = SerializationUtils.deserialize(receivedBytes)
