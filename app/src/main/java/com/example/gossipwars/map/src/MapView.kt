@@ -215,12 +215,6 @@ class MapView @JvmOverloads constructor(
         provincePath?.let {
 
             it.fillColor = color
-//            it.strokeColor = color
-//            RichPathAnimator.animate(it)
-//                .interpolator(AccelerateDecelerateInterpolator())
-//                .fillColor(it.fillColor, color)
-//                .strokeColor(it.strokeColor, color)
-//                .start()
         }
     }
 

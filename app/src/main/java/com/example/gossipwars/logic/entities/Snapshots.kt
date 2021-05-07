@@ -22,14 +22,14 @@ object Snapshots {
         for (i in fightsPerRound.size - 1 downTo 0) {
             for (fight in fightsPerRound[i]) {
                 if (fight.attackers.isNotEmpty() && fight.defenders.isNotEmpty()) {
-                    ans.add(fight.extractInfoFromFight())
+                    ans.add(fight.extractInfo())
                 }
             }
             for (troopAction in troopsMovedPerRound[i]) {
-                ans.add(troopAction.extractInfoFromTroops())
+                ans.add(troopAction.extractInfo())
             }
             for (armyUpgrade in armyImprovementsPerRound[i]) {
-                ans.add(armyUpgrade.extractInfoFromArmyUpgrade())
+                ans.add(armyUpgrade.extractInfo())
             }
         }
         return ans
@@ -125,7 +125,7 @@ object Snapshots {
         )
     }
 
-    private fun ArmyRequest.extractInfoFromArmyUpgrade(): NewsFeedInfo {
+    private fun ArmyRequest.extractInfo(): NewsFeedInfo {
         val title = "${initiator.username}'s army is stronger now"
         var content = String.format(
             "%s raised his army's %s with %s%s.",
@@ -139,7 +139,7 @@ object Snapshots {
         return NewsFeedInfo(initiator.capitalRegion, null, title, content)
     }
 
-    private fun TroopsAction.extractInfoFromTroops(): NewsFeedInfo {
+    private fun TroopsAction.extractInfo(): NewsFeedInfo {
         val fromName: String? = GameHelper.findRegionById(fromRegion)?.name?.camelCaseToSpaced()
         val toName: String? = GameHelper.findRegionById(toRegion)?.name?.camelCaseToSpaced()
         val title = "${initiator.username} is moving troops"
@@ -147,7 +147,7 @@ object Snapshots {
         return NewsFeedInfo(this.toRegion, this.fromRegion, title, content)
     }
 
-    private fun Fight.extractInfoFromFight(): NewsFeedInfo {
+    private fun Fight.extractInfo(): NewsFeedInfo {
         val title = "Battle in ${region.name.camelCaseToSpaced()}"
         var content = ""
         attackers.forEachIndexed { index, player ->

@@ -2,6 +2,7 @@ package com.example.gossipwars.communication.messages.actions
 
 import com.example.gossipwars.logic.actions.StrategyAction
 import com.example.gossipwars.logic.entities.GameHelper
+import com.example.gossipwars.logic.entities.Player
 import com.example.gossipwars.logic.proposals.ProposalEnum
 import java.io.Serializable
 import java.util.*
@@ -17,5 +18,5 @@ class StrategyActionDTO(
             target = GameHelper.findPlayerByUUID(targetId),
             targetRegion = targetRegion,
             proposalEnum = proposalEnum,
-            helpers = helpers.map { uuid -> GameHelper.findPlayerByUUID(uuid) })
+            helpers = helpers.map { uuid -> GameHelper.findPlayerByUUID(uuid) } as MutableList<Player>)
 }

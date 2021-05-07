@@ -190,14 +190,19 @@ object GameHelper {
 
     fun findRegionDefOrAtt(regionId: Int, proposalEnum: ProposalEnum): Set<Player> {
         val ans: MutableSet<Player> = mutableSetOf()
+        val region: Region? = findRegionById(regionId)
         if (proposalEnum == ProposalEnum.DEFEND) {
             findRegionOwner(regionId)?.let { ans.add(it) }
         }
         Game.strategyActions.forEach { strategyAction: StrategyAction ->
             if (strategyAction.proposalEnum == proposalEnum && strategyAction.targetRegion == regionId) {
-                ans.add(findPlayerByUUID(strategyAction.initiator.id))
+                if (region?.name != null && soldiersForRegion(region.name, strategyAction.initiator.id).isGreaterThan(0)) {
+                    ans.add(findPlayerByUUID(strategyAction.initiator.id))
+                }
                 for (helper in strategyAction.helpers) {
-                    ans.add(findPlayerByUUID(helper.id))
+                    if (region?.name != null && soldiersForRegion(region.name, helper.id).isGreaterThan(0)) {
+                        ans.add(findPlayerByUUID(helper.id))
+                    }
                 }
             }
         }

@@ -63,10 +63,6 @@ class MessagesListAdapter(
             holder.cardView.layoutParams as MarginLayoutParams
         holder.cardView.minimumWidth = displayWidth / 6
 
-//        if (chatMessage.getMessageDate().get(Calendar.MILLISECOND) % 2 == 1) {
-//            Log.d("DBG", chatMessage.getContent() + " e pe random");
-//            senderId = UUID.randomUUID();
-//        }
         if (senderId == Game.myId) {
             holder.cardView.setCardBackgroundColor(
                 context.resources.getColor(R.color.light_green)

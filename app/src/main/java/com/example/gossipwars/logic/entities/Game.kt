@@ -1,6 +1,5 @@
 package com.example.gossipwars.logic.entities
 
-import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.example.gossipwars.InGameActivity
 import com.example.gossipwars.MainActivity
@@ -40,7 +39,6 @@ import java.util.*
 
 object Game {
     lateinit var myId: UUID
-    var endpointToId: MutableMap<String, UUID> = mutableMapOf()
     var idToEndpoint: MutableMap<UUID, String> = mutableMapOf()
     var roomInfo: RoomInfoDTO? = null
     lateinit var mainActivity: MainActivity
@@ -49,7 +47,6 @@ object Game {
     var players = MutableLiveData<MutableList<Player>>().apply { value = mutableListOf() }
     var regions: MutableList<Region> = mutableListOf()
     var alliances: MutableList<Alliance> = mutableListOf()
-    var regionsPerPlayers: MutableMap<Int, UUID> = mutableMapOf()
     var playersWithAllActionsSent: MutableSet<UUID> = mutableSetOf()
     var playersReadyForNewRound: MutableSet<UUID> = mutableSetOf()
     var strategyActions: MutableList<StrategyAction> = mutableListOf()
@@ -64,7 +61,6 @@ object Game {
     fun gameEndCleanup() {
         players.value?.clear()
         alliances.clear()
-        regionsPerPlayers.clear()
         playersWithAllActionsSent.clear()
         playersReadyForNewRound.clear()
         strategyActions.clear()
@@ -72,7 +68,6 @@ object Game {
         armyActions.clear()
         gameStarted = false
 
-        endpointToId.clear()
         idToEndpoint.clear()
         roomInfo = null
 
@@ -203,7 +198,6 @@ object Game {
     fun acknowledgePlayer(playerDTO: PlayerDTO, endpointId: String) {
         if (players.value?.find { player -> player.id == playerDTO.id } == null) {
             players.value?.add(Player(playerDTO.username, playerDTO.id))
-            endpointToId[endpointId] = playerDTO.id
             idToEndpoint[playerDTO.id] = endpointId
             if (roomInfo?.username == players.value?.get(0)?.username &&
                 roomInfo?.crtPlayersNr == players.value?.size
@@ -258,7 +252,6 @@ object Game {
             if (index == players.value?.size!! - 1)
                 ceil = regions.size
             for (i in floor until ceil) {
-                regionsPerPlayers[i] = player.id
                 player.winRegion(regions[i])
             }
             player.capitalRegion = regions[floor].id
@@ -350,10 +343,6 @@ object Game {
 
     suspend fun sendMembersAction(membersAction: MembersAction) {
         withContext(Dispatchers.IO) {
-//            Toast.makeText(
-//                inGameActivity, membersAction.proposalEnum.toString() +
-//                        " pt " + membersAction.target.username, Toast.LENGTH_SHORT
-//            ).show()
             val data = SerializationUtils.serialize(membersAction.convertToDTO())
             val streamPayload = Payload.zza(data, MessageCode.MEMBERS_ACTION.toLong())
             val alliance: Alliance = findAllianceByUUID(membersAction.alliance.id)
@@ -391,10 +380,6 @@ object Game {
 
         }
         allianceNewStructure.value = true
-//        Toast.makeText(
-//            inGameActivity, membersAction.proposalEnum.toString() + " pt " +
-//                    alliance.name, Toast.LENGTH_SHORT
-//        ).show()
     }
 
     fun sendProposalResponse(proposalResponse: ProposalResponse) {
@@ -404,23 +389,10 @@ object Game {
         val proposal: Proposal? = alliance.proposalsList.find { proposal ->
             proposal.proposalId == proposalResponse.proposalId
         }
-//            val meAsAPlayer: Player = findPlayerByUUID(myId)
-//            proposal?.votes?.set(meAsAPlayer, proposalResponse.response)
-
-//        if (proposal?.initiator?.id == null) {
-//            Toast.makeText(inGameActivity, "nullll", Toast.LENGTH_SHORT).show()
-//        }
-//
-//        Toast.makeText(inGameActivity, "raspuns pt " + proposal?.initiator?.id?.let {
-//            findPlayerByUUID(
-//                it
-//            ).username
-//        }, Toast.LENGTH_SHORT).show()
         idToEndpoint[proposal?.initiator?.id]?.let {
             Nearby.getConnectionsClient(mainActivity).sendPayload(
                 it, streamPayload
             )
-//            Toast.makeText(inGameActivity, "am trimis raspuns", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -430,7 +402,6 @@ object Game {
             proposal.proposalId == proposalResponse.proposalId
         }
         val sender: Player = findPlayerByUUID(proposalResponse.playerId)
-//        Toast.makeText(inGameActivity, sender.username + " said yes", Toast.LENGTH_SHORT).show()
         proposal?.registerVote(sender, proposalResponse.response)
     }
 
@@ -463,11 +434,6 @@ object Game {
     fun acknowledgeActionEnd(actionsEndDTO: ActionEndDTO) {
         playersWithAllActionsSent.add(actionsEndDTO.playerId)
 
-//        Toast.makeText(
-//            inGameActivity, playersWithAllActionsSent.size.toString() + "/" +
-//                    players.value?.size.toString(), Toast.LENGTH_SHORT
-//        ).show()
-
         if (playersWithAllActionsSent.size == players.value?.size) {
             // all players sent their actions, can start round end processing
             roundEndCompute()
@@ -486,10 +452,6 @@ object Game {
             }
         }
         playersWithAllActionsSent.add(myId)
-//        Toast.makeText(
-//            inGameActivity, playersWithAllActionsSent.size.toString() + "/" +
-//                    players.value?.size.toString(), Toast.LENGTH_SHORT
-//        ).show()
         if (playersWithAllActionsSent.size == players.value?.size) {
             roundEndCompute()
         }
@@ -512,10 +474,6 @@ object Game {
             }
         }
         strategyActions.add(strategyAction)
-//        Toast.makeText(
-//            inGameActivity, strategyAction.proposalEnum.toString() + " in "
-//                    + strategyAction.targetRegion.toString(), Toast.LENGTH_SHORT
-//        ).show()
     }
 
     private fun sendStrategyActions() {
@@ -641,11 +599,6 @@ object Game {
         }
         playersReadyForNewRound.add(myId)
 
-//        Toast.makeText(
-//            inGameActivity, playersReadyForNewRound.size.toString() + "/" +
-//                    players.value?.size.toString() + " started", Toast.LENGTH_SHORT
-//        ).show()
-
         if (playersReadyForNewRound.size == players.value?.size) {
             Notifications.roundOngoing.postValue(true)
             Notifications.myBonusTaken.postValue(false)
@@ -656,11 +609,6 @@ object Game {
 
     fun acknowledgeStartRound(startRoundDTO: StartRoundDTO) {
         playersReadyForNewRound.add(startRoundDTO.playerId)
-
-//        Toast.makeText(
-//            inGameActivity, playersReadyForNewRound.size.toString() + "/" +
-//                    players.value?.size.toString() + " started", Toast.LENGTH_SHORT
-//        ).show()
 
         if (playersReadyForNewRound.size == players.value?.size) {
             // all players are ready to start a new round
@@ -695,16 +643,43 @@ object Game {
                 }
             }
             alliances.forEach { alliance: Alliance ->
-                val idx = alliance.playersInvolved.indexOfFirst { player -> player.id == player.id }
-                if (idx != -1)
+                val idx = alliance.playersInvolved.indexOfFirst { p -> p.id == player?.id }
+                if (idx != -1) {
+                    for (i in alliance.proposalsList.size - 1 downTo 0) {
+                        if (alliance.proposalsList[i].votes.containsKey(player)) {
+                            alliance.proposalsList[i].votes.remove(player)
+                        }
+                        if (alliance.proposalsList[i].target.id == player?.id) {
+                            alliance.proposalsList.removeAt(i)
+                        }
+                    }
                     alliance.playersInvolved.removeAt(idx)
+                }
+
+            }
+
+            for (i in armyActions.size - 1 downTo 0) {
+                if (armyActions[i].approver.id == player?.id || armyActions[i].initiator.id == player?.id) {
+                    armyActions.removeAt(i)
+                }
+            }
+            for (i in troopsActions.size - 1 downTo  0) {
+                if (troopsActions[i].initiator.id == player?.id) {
+                    troopsActions.removeAt(i)
+                }
+            }
+            for (i in strategyActions.size - 1 downTo 0) {
+                if (strategyActions[i].initiator.id == player?.id || strategyActions[i].target.id == player?.id) {
+                    strategyActions.removeAt(i)
+                } else {
+                    val helperIdx = strategyActions[i].helpers.indexOfFirst { p -> p.id == player?.id }
+                    if (helperIdx != -1) {
+                        strategyActions[i].helpers.removeAt(helperIdx)
+                    }
+                }
             }
 
             players.value?.remove(player)
-//            val playerIdx: Int? =
-//                players.value?.indexOfFirst { p -> p.id == actionsEndDTO.playerId }
-//            if (playerIdx != null && playerIdx != -1)
-//                players.value?.removeAt(playerIdx)
             players.postValue(players.value)
         }
     }

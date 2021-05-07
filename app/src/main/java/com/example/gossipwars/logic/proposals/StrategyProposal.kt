@@ -30,7 +30,7 @@ class StrategyProposal(
     override fun createAction(): Action =
         StrategyAction(
             initiator, target, targetRegion,
-            votesToList(), proposalEnum
+            votesToList() as MutableList<Player>, proposalEnum
         )
 
     override fun proposalAccepted(): Boolean = true
